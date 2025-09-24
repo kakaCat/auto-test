@@ -1,0 +1,56 @@
+# Core LangChain and LangGraph dependencies
+langchain>=0.1.0
+langgraph>=0.0.40
+langchain-openai>=0.0.5
+langchain-community>=0.0.10
+
+# Vector stores and embeddings
+chromadb>=0.4.0
+faiss-cpu>=1.7.4
+
+# Web scraping and document processing
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Database dependencies
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+mysqlclient>=2.2.0
+pymysql>=1.1.0
+
+# Web framework
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# Configuration management
+pydantic[dotenv]>=2.0.0
+pydantic-settings>=2.0.0
+
+# Dependency injection
+dependency-injector>=4.40.0
+
+# Structured logging
+structlog>=23.0.0
+
+# Async support
+aiohttp>=3.8.0
+aiofiles>=23.0.0
+
+# Logging and monitoring
+loguru>=0.7.0
+
+# Development dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.5.0
+
+# Optional: Jupyter for experimentation
+jupyter>=1.0.0
+ipykernel>=6.25.0

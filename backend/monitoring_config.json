@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "enabled": true,
+    "interval": 30,
+    "endpoints": [
+      "/metrics",
+      "/health",
+      "/status"
+    ]
+  },
+  "alerts": {
+    "enabled": true,
+    "thresholds": {
+      "cpu_usage": 80,
+      "memory_usage": 85,
+      "response_time": 2000,
+      "error_rate": 5
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "monitoring.log",
+    "max_size": "10MB",
+    "backup_count": 5
+  }
+}

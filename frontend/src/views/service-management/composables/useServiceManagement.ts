@@ -1,0 +1,497 @@
+/**
+ * 服务管理业务逻辑组合式函数
+ */
+
+import { ref, reactive, computed, watch, nextTick } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { debounce } from '../data'
+import { useServiceStore } from '@/stores/service'
+import unifiedApi from '@/api/unified-api'
+
+// 直接使用统一API
+const systemApiProxy = unifiedApi.system
+const moduleApiProxy = unifiedApi.module
+
+import type {
+  System,
+  Module,
+  SystemFormData,
+  ModuleFormData,
+  PaginationConfig,
+  TreeTableNode,
+  SystemCategory
+} from '../types'
+
+import {
+  defaultSearchForm,
+  defaultPagination,
+  defaultSystemForm,
+  defaultModuleForm
+} from '../data'
+
+// 扩展搜索表单接口
+interface ExtendedSearchFormData {
+  name: string
+  category: SystemCategory | undefined
+  enabled: boolean | undefined
+}
+
+export interface UseServiceManagementReturn {
+  // 状态
+  loading: Ref<boolean>
+  expandedRows: Ref<string[]>
+  selectedSystemId: Ref<string | null>
+  error: Ref<string | null>
+  
+  // 对话框状态
+  systemDialogVisible: Ref<boolean>
+  moduleDialogVisible: Ref<boolean>
+  systemDialogTitle: Ref<string>
+  moduleDialogTitle: Ref<string>
+  
+  // 表单数据
+  searchForm: ExtendedSearchFormData
+  systemForm: SystemFormData
+  moduleForm: ModuleFormData
+  pagination: PaginationConfig
+  
+  // 计算属性
+  filteredSystems: ComputedRef<System[]>
+  treeTableData: ComputedRef<TreeTableNode[]>
+  paginatedData: ComputedRef<TreeTableNode[]>
+  
+  // 方法
+  handleExpandChange: (row: TreeTableNode, expandedRows: string[]) => void
+  selectSystem: (systemId: string) => void
+  showAddSystemDialog: () => void
+  showAddModuleDialog: (systemId?: string) => void
+  resetSystemForm: () => void
+  resetModuleForm: () => void
+  saveSystem: () => Promise<void>
+  saveModule: () => Promise<void>
+  handleSystemAction: (command: string) => Promise<void>
+  handleModuleAction: (command: string) => Promise<void>
+  handleCurrentChange: (page: number) => void
+  handleSizeChange: (size: number) => void
+  refreshData: () => Promise<void>
+  clearError: () => void
+  debouncedSearch: () => void
+}
+
+export const useServiceManagement = (): UseServiceManagementReturn => {
+  // Store
+  const serviceStore = useServiceStore()
+  
+  // 状态管理
+  const loading = ref(false)
+  const expandedRows = ref<string[]>([])
+  const selectedSystemId = ref<string | null>(null)
+  const error = ref<string | null>(null)
+  
+  // 对话框状态
+  const systemDialogVisible = ref(false)
+  const moduleDialogVisible = ref(false)
+  const systemDialogTitle = ref('新增管理系统')
+  const moduleDialogTitle = ref('新增模块')
+  
+  // 表单数据
+  const searchForm = reactive<ExtendedSearchFormData>({
+    name: '',
+    category: undefined,
+    enabled: undefined
+  })
+  
+  const systemForm = reactive<SystemFormData>({ ...defaultSystemForm })
+  const moduleForm = reactive<ModuleFormData>({ ...defaultModuleForm })
+  const pagination = reactive<PaginationConfig>({ ...defaultPagination })
+  
+  // 防抖搜索
+  const debouncedSearch = debounce(() => {
+    // 搜索逻辑在计算属性中处理，这里可以添加额外的搜索逻辑
+    pagination.currentPage = 1
+  }, 300)
+  
+  // 监听搜索表单变化
+  watch(
+    () => [searchForm.name, searchForm.category, searchForm.enabled],
+    () => {
+      debouncedSearch()
+    },
+    { deep: true }
+  )
+  
+  // 计算属性
+  const filteredSystems = computed(() => {
+    let filtered = serviceStore.systemsList
+    
+    // 按名称过滤
+    if (searchForm.name) {
+      filtered = filtered.filter((system: System) => 
+        (system.name || '').toLowerCase().includes(searchForm.name.toLowerCase())
+      )
+    }
+    
+    // 按分类过滤
+    if (searchForm.category) {
+      filtered = filtered.filter((system: System) => system.category === searchForm.category)
+    }
+    
+    // 按启用状态过滤
+    if (searchForm.enabled !== undefined) {
+      filtered = filtered.filter((system: System) => system.enabled === searchForm.enabled)
+    }
+    
+    return filtered
+  })
+  
+  const treeTableData = computed(() => {
+    return filteredSystems.value.map((system: System) => {
+      const systemNode: TreeTableNode = {
+        ...system,
+        type: 'system',
+        hasChildren: system.modules ? system.modules.length > 0 : false,
+        children: []
+      }
+      
+      // 如果系统有模块，添加模块作为子节点
+      if (system.modules && system.modules.length > 0) {
+        systemNode.children = system.modules.map((module: Module) => ({
+          ...module,
+          type: 'module',
+          id: `module-${module.id}`,
+          parentId: system.id,
+          hasChildren: false
+        }))
+      }
+      
+      return systemNode
+    })
+  })
+  
+  const paginatedData = computed(() => {
+    const data = treeTableData.value
+    pagination.total = data.length
+    
+    const start = (pagination.currentPage - 1) * pagination.pageSize
+    const end = start + pagination.pageSize
+    
+    return data.slice(start, end)
+  })
+  
+  // 方法
+  const handleExpandChange = (row: TreeTableNode, expandedRows: string[]): void => {
+    if (row.type === 'system') {
+      const isExpanded = expandedRows.includes(row.id)
+      if (isExpanded) {
+        selectedSystemId.value = row.id
+      }
+    }
+  }
+  
+  const selectSystem = (systemId: string): void => {
+    selectedSystemId.value = systemId
+  }
+  
+  const showAddSystemDialog = (): void => {
+    systemDialogTitle.value = '新增管理系统'
+    resetSystemForm()
+    systemDialogVisible.value = true
+  }
+  
+  const showAddModuleDialog = (systemId?: string): void => {
+    moduleDialogTitle.value = '新增模块'
+    resetModuleForm()
+    if (systemId) {
+      moduleForm.system_id = systemId
+    } else if (selectedSystemId.value) {
+      moduleForm.system_id = selectedSystemId.value
+    }
+    moduleDialogVisible.value = true
+  }
+  
+  const resetSystemForm = (): void => {
+    Object.assign(systemForm, { ...defaultSystemForm })
+  }
+  
+  const resetModuleForm = (): void => {
+    Object.assign(moduleForm, { ...defaultModuleForm })
+  }
+  
+  const saveSystem = async (): Promise<void> => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      // 准备保存数据
+      const saveData = {
+        name: systemForm.name,
+        description: systemForm.description,
+        icon: systemForm.icon,
+        category: systemForm.category,
+        enabled: systemForm.enabled,
+        order_index: systemForm.order_index || 0,
+        url: systemForm.url,
+        metadata: systemForm.metadata || {}
+      }
+      
+      if (systemForm.id) {
+        // 编辑模式
+        await systemApiProxy.update(systemForm.id, saveData)
+        ElMessage.success('系统更新成功')
+      } else {
+        // 新增模式
+        await systemApiProxy.create(saveData)
+        ElMessage.success('系统创建成功')
+      }
+      
+      // 刷新数据
+      await refreshData()
+      
+      systemDialogVisible.value = false
+      resetSystemForm()
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '保存系统失败'
+      ElMessage.error('保存系统失败')
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const saveModule = async (): Promise<void> => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      // 准备保存数据
+      const saveData = {
+        system_id: moduleForm.system_id || '',
+        name: moduleForm.name,
+        description: moduleForm.description,
+        icon: moduleForm.icon,
+        path: moduleForm.path,
+        method: moduleForm.method || 'GET',
+        module_type: moduleForm.module_type || 'service',
+        enabled: moduleForm.enabled,
+        version: moduleForm.version || '1.0.0',
+        tags: moduleForm.tags || [],
+        config: moduleForm.config || {},
+        order_index: moduleForm.order_index || 0
+      }
+      
+      if (moduleForm.id) {
+        // 编辑模式
+        await moduleApiProxy.update(moduleForm.id, saveData)
+        ElMessage.success('模块更新成功')
+      } else {
+        // 新增模式
+        await moduleApiProxy.create(saveData)
+        ElMessage.success('模块创建成功')
+      }
+      
+      // 刷新数据
+      await refreshData()
+      
+      moduleDialogVisible.value = false
+      resetModuleForm()
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '保存模块失败'
+      ElMessage.error('保存模块失败')
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const handleSystemAction = async (command: string): Promise<void> => {
+    const [action, systemId] = command.split('-')
+    const system = (serviceStore.systemsList as any[]).find((s: any) => s.id === systemId)
+    
+    if (!system) return
+    
+    switch (action) {
+      case 'add':
+        if (action === 'add' && command.includes('module')) {
+          showAddModuleDialog(systemId)
+        }
+        break
+      case 'edit':
+        systemDialogTitle.value = '编辑管理系统'
+        Object.assign(systemForm, {
+          id: system.id,
+          name: system.name,
+          description: system.description,
+          icon: system.icon,
+          category: system.category,
+          enabled: system.enabled,
+          order_index: system.order_index,
+          url: system.url,
+          metadata: system.metadata
+        })
+        systemDialogVisible.value = true
+        break
+      case 'toggle':
+        try {
+          // TODO: 实现系统状态切换功能
+          ElMessage.info('系统状态切换功能待实现')
+        } catch (error) {
+          ElMessage.error('操作失败: ' + (error as Error).message)
+        }
+        break
+      case 'delete':
+        ElMessageBox.confirm(
+          `确定要删除系统 "${system.name}" 吗？这将同时删除该系统下的所有模块。`,
+          '确认删除',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        ).then(() => {
+          try {
+            // TODO: 实现系统删除功能
+            ElMessage.info('系统删除功能待实现')
+          } catch (error) {
+            ElMessage.error('删除失败: ' + (error as Error).message)
+          }
+        })
+        break
+    }
+  }
+  
+  const handleModuleAction = async (command: string): Promise<void> => {
+    const [action, moduleId] = command.split('-')
+    let targetModule: Module | null = null
+    let targetSystemId: string | null = null
+    
+    // 查找模块
+    for (const system of (serviceStore.systemsList as any[])) {
+      const module = system.modules?.find((m: any) => m.id === moduleId)
+      if (module) {
+        targetModule = module
+        targetSystemId = system.id
+        break
+      }
+    }
+    
+    if (!targetModule || !targetSystemId) return
+    
+    switch (action) {
+      case 'view':
+        ElMessage.info(`查看模块: ${targetModule.name}`)
+        break
+      case 'edit':
+        moduleDialogTitle.value = '编辑模块'
+        Object.assign(moduleForm, {
+          id: targetModule.id,
+          system_id: targetModule.system_id || targetSystemId,
+          name: targetModule.name,
+          description: targetModule.description,
+          icon: targetModule.icon,
+          path: targetModule.path,
+          method: targetModule.method,
+          enabled: targetModule.enabled,
+          version: targetModule.version,
+          module_type: targetModule.module_type,
+          tags: targetModule.tags,
+          config: targetModule.config,
+          order_index: targetModule.order_index
+        })
+        moduleDialogVisible.value = true
+        break
+      case 'toggle':
+        try {
+          // TODO: 实现模块状态切换功能
+          ElMessage.info('模块状态切换功能待实现')
+        } catch (error) {
+          ElMessage.error('操作失败: ' + (error as Error).message)
+        }
+        break
+      case 'delete':
+        ElMessageBox.confirm(
+          `确定要删除模块 "${targetModule.name}" 吗？`,
+          '确认删除',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        ).then(() => {
+          try {
+            // TODO: 实现模块删除功能
+            ElMessage.info('模块删除功能待实现')
+          } catch (error) {
+            ElMessage.error('删除失败: ' + (error as Error).message)
+          }
+        })
+        break
+    }
+  }
+  
+  const handleCurrentChange = (page: number): void => {
+    pagination.currentPage = page
+  }
+  
+  const handleSizeChange = (size: number): void => {
+    pagination.pageSize = size
+    pagination.currentPage = 1
+  }
+  
+  const refreshData = async (): Promise<void> => {
+    try {
+      loading.value = true
+      error.value = null
+      await serviceStore.loadSystems()
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '加载数据失败'
+      ElMessage.error('加载系统列表失败')
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const clearError = (): void => {
+    error.value = null
+  }
+  
+  return {
+    // 状态
+    loading,
+    expandedRows,
+    selectedSystemId,
+    error,
+    
+    // 对话框状态
+    systemDialogVisible,
+    moduleDialogVisible,
+    systemDialogTitle,
+    moduleDialogTitle,
+    
+    // 表单数据
+    searchForm,
+    systemForm,
+    moduleForm,
+    pagination,
+    
+    // 计算属性
+    filteredSystems,
+    treeTableData,
+    paginatedData,
+    
+    // 方法
+    handleExpandChange,
+    selectSystem,
+    showAddSystemDialog,
+    showAddModuleDialog,
+    resetSystemForm,
+    resetModuleForm,
+    saveSystem,
+    saveModule,
+    handleSystemAction,
+    handleModuleAction,
+    handleCurrentChange,
+    handleSizeChange,
+    refreshData,
+    clearError,
+    debouncedSearch
+  }
+}

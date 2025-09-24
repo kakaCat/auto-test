@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .table-box {
+        fill: #f8f9fa;
+        stroke: #2c3e50;
+        stroke-width: 2;
+        rx: 8;
+      }
+      .table-header {
+        fill: #3498db;
+        stroke: #2c3e50;
+        stroke-width: 2;
+        rx: 8 8 0 0;
+      }
+      .table-title {
+        fill: white;
+        font-family: 'Arial', sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        text-anchor: middle;
+      }
+      .field-text {
+        fill: #2c3e50;
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+      }
+      .primary-key {
+        fill: #e74c3c;
+        font-weight: bold;
+      }
+      .foreign-key {
+        fill: #f39c12;
+        font-weight: bold;
+      }
+      .relationship-line {
+        stroke: #e74c3c;
+        stroke-width: 2;
+        marker-end: url(#arrowhead);
+      }
+      .relationship-label {
+        fill: #e74c3c;
+        font-family: 'Arial', sans-serif;
+        font-size: 11px;
+        font-weight: bold;
+      }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+            refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c" />
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="700" fill="#ecf0f1"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" 
+        style="font-family: Arial; font-size: 24px; font-weight: bold; fill: #2c3e50;">
+    Auto-Test 数据库表关系图
+  </text>
+  
+  <!-- system_categories Table -->
+  <g id="system_categories">
+    <rect class="table-box" x="50" y="80" width="280" height="320"/>
+    <rect class="table-header" x="50" y="80" width="280" height="40"/>
+    <text class="table-title" x="190" y="105">system_categories</text>
+    
+    <!-- Fields -->
+    <text class="field-text primary-key" x="60" y="135">🔑 id (INTEGER, PK, AUTO_INCREMENT)</text>
+    <text class="field-text" x="60" y="155">code (TEXT, NOT NULL, UNIQUE)</text>
+    <text class="field-text" x="60" y="175">name (TEXT, NOT NULL)</text>
+    <text class="field-text" x="60" y="195">description (TEXT)</text>
+    <text class="field-text" x="60" y="215">icon (TEXT)</text>
+    <text class="field-text" x="60" y="235">color (TEXT)</text>
+    <text class="field-text" x="60" y="255">enabled (INTEGER, DEFAULT 1)</text>
+    <text class="field-text" x="60" y="275">order_index (INTEGER, DEFAULT 0)</text>
+    <text class="field-text" x="60" y="295">created_at (DATETIME, DEFAULT NOW)</text>
+    <text class="field-text" x="60" y="315">updated_at (DATETIME, DEFAULT NOW)</text>
+    
+    <!-- Indexes -->
+    <text class="field-text" x="60" y="340" style="fill: #7f8c8d; font-style: italic;">📊 索引: code, enabled, order_index</text>
+    <text class="field-text" x="60" y="360" style="fill: #27ae60; font-weight: bold;">✅ 当前使用中</text>
+  </g>
+  
+  <!-- systems Table -->
+  <g id="systems">
+    <rect class="table-box" x="400" y="80" width="280" height="280"/>
+    <rect class="table-header" x="400" y="80" width="280" height="40"/>
+    <text class="table-title" x="540" y="105">systems</text>
+    
+    <!-- Fields -->
+    <text class="field-text primary-key" x="410" y="135">🔑 id (INTEGER, PK, AUTO_INCREMENT)</text>
+    <text class="field-text" x="410" y="155">name (TEXT, NOT NULL, UNIQUE)</text>
+    <text class="field-text" x="410" y="175">description (TEXT)</text>
+    <text class="field-text" x="410" y="195">status (TEXT, DEFAULT 'active')</text>
+    <text class="field-text" x="410" y="215">category (TEXT, DEFAULT 'backend')</text>
+    <text class="field-text" x="410" y="235">created_at (TIMESTAMP, DEFAULT NOW)</text>
+    <text class="field-text" x="410" y="255">updated_at (TIMESTAMP, DEFAULT NOW)</text>
+    
+    <!-- Data Info -->
+    <text class="field-text" x="410" y="285" style="fill: #7f8c8d; font-style: italic;">📊 数据量: 8 条记录</text>
+    <text class="field-text" x="410" y="305" style="fill: #27ae60; font-weight: bold;">✅ 当前使用中</text>
+  </g>
+  
+  <!-- modules Table -->
+  <g id="modules">
+    <rect class="table-box" x="750" y="80" width="220" height="320"/>
+    <rect class="table-header" x="750" y="80" width="220" height="40"/>
+    <text class="table-title" x="860" y="105">modules</text>
+    
+    <!-- Fields -->
+    <text class="field-text primary-key" x="760" y="135">🔑 id (INTEGER, PK, AUTO_INCREMENT)</text>
+    <text class="field-text foreign-key" x="760" y="155">🔗 system_id (INTEGER, FK)</text>
+    <text class="field-text" x="760" y="175">name (TEXT, NOT NULL)</text>
+    <text class="field-text" x="760" y="195">description (TEXT)</text>
+    <text class="field-text" x="760" y="215">status (TEXT, DEFAULT 'active')</text>
+    <text class="field-text" x="760" y="235">tags (TEXT)</text>
+    <text class="field-text" x="760" y="255">path (TEXT, DEFAULT '/')</text>
+    <text class="field-text" x="760" y="275">created_at (TIMESTAMP, DEFAULT NOW)</text>
+    <text class="field-text" x="760" y="295">updated_at (TIMESTAMP, DEFAULT NOW)</text>
+    
+    <!-- Constraints -->
+    <text class="field-text" x="760" y="320" style="fill: #7f8c8d; font-style: italic;">🔒 UNIQUE(system_id, name)</text>
+    <text class="field-text" x="760" y="340" style="fill: #7f8c8d; font-style: italic;">📊 数据量: 10 条记录</text>
+    <text class="field-text" x="760" y="360" style="fill: #27ae60; font-weight: bold;">✅ 当前使用中</text>
+  </g>
+  
+  <!-- Relationship: systems -> modules -->
+  <line class="relationship-line" x1="680" y1="155" x2="750" y2="155"/>
+  <text class="relationship-label" x="715" y="150">1:N</text>
+  <text class="relationship-label" x="700" y="170" style="font-size: 10px;">一个系统包含多个模块</text>
+  
+  <!-- Deleted Tables Section -->
+  <g id="deleted-tables">
+    <rect x="50" y="450" width="920" height="200" fill="#ffebee" stroke="#e57373" stroke-width="2" rx="8"/>
+    <text x="70" y="475" style="font-family: Arial; font-size: 18px; font-weight: bold; fill: #c62828;">
+      🗑️ 已删除的冗余表
+    </text>
+    
+    <text x="70" y="500" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
+      ❌ management_systems - 与 systems 表功能重复
+    </text>
+    <text x="70" y="520" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
+      ❌ service_modules - 与 modules 表功能重复
+    </text>
+    <text x="70" y="540" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
+      ❌ api_interfaces - 未在代码中使用，数据为空
+    </text>
+    <text x="70" y="560" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
+      ❌ test_scenarios - 未在代码中使用，数据为空
+    </text>
+    <text x="70" y="580" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
+      ❌ test_executions - 未在代码中使用，数据为空
+    </text>
+    
+    <text x="70" y="610" style="font-family: Arial; font-size: 12px; fill: #666; font-style: italic;">
+      删除原因: 这些表要么与现有表功能重复，要么完全未被使用且无数据，删除后提高了数据库的维护性和性能。
+    </text>
+  </g>
+  
+  <!-- Legend -->
+  <g id="legend">
+    <rect x="400" y="420" width="280" height="120" fill="#f8f9fa" stroke="#bdc3c7" stroke-width="1" rx="5"/>
+    <text x="540" y="440" text-anchor="middle" style="font-family: Arial; font-size: 14px; font-weight: bold; fill: #2c3e50;">
+      图例说明
+    </text>
+    
+    <text x="410" y="460" style="font-family: Arial; font-size: 12px; fill: #e74c3c; font-weight: bold;">
+      🔑 主键 (Primary Key)
+    </text>
+    <text x="410" y="480" style="font-family: Arial; font-size: 12px; fill: #f39c12; font-weight: bold;">
+      🔗 外键 (Foreign Key)
+    </text>
+    <text x="410" y="500" style="font-family: Arial; font-size: 12px; fill: #e74c3c;">
+      → 一对多关系 (1:N)
+    </text>
+    <text x="410" y="520" style="font-family: Arial; font-size: 12px; fill: #27ae60; font-weight: bold;">
+      ✅ 当前使用的表
+    </text>
+  </g>
+  
+  <!-- Database Info -->
+  <text x="50" y="680" style="font-family: Arial; font-size: 12px; fill: #7f8c8d;">
+    数据库文件: auto_test.db | 最后更新: 2024年 | 表总数: 3 (已优化)
+  </text>
+</svg>
