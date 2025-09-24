@@ -169,6 +169,8 @@ class ModuleTransform:
         
         status = safe_str(module.get('status', 'active'))
         status_map = {
+            'enabled': {'display': '启用', 'color': 'success', 'icon': 'check-circle'},
+            'disabled': {'display': '禁用', 'color': 'danger', 'icon': 'times-circle'},
             'active': {'display': '活跃', 'color': 'success', 'icon': 'check-circle'},
             'inactive': {'display': '非活跃', 'color': 'warning', 'icon': 'pause-circle'},
             'development': {'display': '开发中', 'color': 'info', 'icon': 'code'},
@@ -186,6 +188,9 @@ class ModuleTransform:
         enhanced['status_display'] = status_info['display']
         enhanced['status_color'] = status_info['color']
         enhanced['status_icon'] = status_info['icon']
+        
+        # 添加enabled布尔字段供前端使用
+        enhanced['enabled'] = status == 'active'
         
         return enhanced
     

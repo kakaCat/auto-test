@@ -27,23 +27,26 @@
 
 import { request } from '@/utils/request'
 import { apiHandler } from '@/utils/apiHandler'
+import type { 
+  ApiResponse, 
+  ApiHandlerOptions,
+  ListParams,
+  CreateRequest,
+  UpdateRequest,
+  BatchOperationRequest,
+  StatusUpdateRequest
+} from '@/types'
 
-// 查询参数接口定义
-export interface SystemListParams {
-  keyword?: string
+// 扩展的接口参数类型定义
+export interface SystemListParams extends ListParams {
   category?: string
   enabled?: boolean
-  page?: number
-  pageSize?: number
 }
 
-export interface ModuleListParams {
+export interface ModuleListParams extends ListParams {
   system_id?: string
-  keyword?: string
   enabled_only?: boolean
   tags?: string
-  page?: number
-  pageSize?: number
 }
 
 export interface TagListParams {
@@ -56,19 +59,17 @@ export interface ExportParams {
   format: 'json' | 'yaml' | 'excel'
 }
 
-export interface AlertListParams {
+export interface AlertListParams extends ListParams {
   level?: 'info' | 'warning' | 'error' | 'critical'
   status?: 'active' | 'resolved'
-  page?: number
-  pageSize?: number
 }
 
 export interface MetricsParams {
   timeRange?: '1h' | '6h' | '24h' | '7d' | '30d'
 }
 
-// 数据接口定义
-export interface SystemData {
+// 扩展的数据类型定义
+export interface SystemData extends CreateRequest {
   name: string
   description: string
   category: string
@@ -78,7 +79,7 @@ export interface SystemData {
   enabled?: boolean
 }
 
-export interface ModuleData {
+export interface ModuleData extends CreateRequest {
   system_id: string
   name: string
   description: string
@@ -93,14 +94,13 @@ export interface ModuleData {
   enabled?: boolean
 }
 
-export interface BatchOperationData {
+export interface BatchOperationData extends BatchOperationRequest {
   systemIds?: string[]
   moduleIds?: string[]
-  action: 'enable' | 'disable' | 'delete' | 'move'
   targetSystemId?: string
 }
 
-export interface TagData {
+export interface TagData extends CreateRequest {
   name: string
   color: string
   description?: string
@@ -114,25 +114,6 @@ export interface AlertHandleData {
 
 export interface MonitorConfig {
   [key: string]: any
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data: T
-}
-
-export interface CacheOptions {
-  cache?: boolean
-  cacheKey?: string
-  cacheTTL?: number
-}
-
-export interface ApiOptions extends CacheOptions {
-  invalidateCache?: string[]
-  successMessage?: string
-  confirmMessage?: string
-  loadingMessage?: string
 }
 
 /**
@@ -156,10 +137,9 @@ export const systemApi = {
    * @returns 系统列表数据
    */
   getList(params: SystemListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/systems', params, {
-      cache: true,
-      cacheKey: 'systems-list',
-      cacheTTL: 5 * 60 * 1000 // 5分钟缓存
+    return apiHandler.get('/systems', params, {
+      cacheTime: 300000,
+      successMessage: null
     })
   },
 
@@ -169,10 +149,9 @@ export const systemApi = {
    * @returns 系统详情数据
    */
   getDetail(systemId: string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/systems/${systemId}`, {}, {
-      cache: true,
-      cacheKey: `system-${systemId}`,
-      cacheTTL: 10 * 60 * 1000 // 10分钟缓存
+    return apiHandler.get(`/systems/${systemId}`, {}, {
+      cacheTime: 120000,
+      successMessage: null
     })
   },
 
@@ -182,7 +161,7 @@ export const systemApi = {
    * @returns 创建结果
    */
   create(data: SystemData): Promise<ApiResponse> {
-    return apiHandler.post('/api/systems', data, {
+    return apiHandler.post('/systems', data, {
       invalidateCache: ['systems-list'],
       successMessage: '系统创建成功'
     })
@@ -195,7 +174,7 @@ export const systemApi = {
    * @returns 更新结果
    */
   update(systemId: string, data: Partial<SystemData>): Promise<ApiResponse> {
-    return apiHandler.put(`/api/systems/${systemId}`, data, {
+    return apiHandler.put(`/systems/${systemId}`, data, {
       invalidateCache: ['systems-list', `system-${systemId}`],
       successMessage: '系统更新成功'
     })
@@ -207,10 +186,9 @@ export const systemApi = {
    * @returns 删除结果
    */
   delete(systemId: string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/systems/${systemId}`, {
+    return apiHandler.delete(`/systems/${systemId}`, {
       invalidateCache: ['systems-list', `system-${systemId}`],
-      successMessage: '系统删除成功',
-      confirmMessage: '确定要删除这个系统吗？'
+      successMessage: '系统删除成功'
     })
   },
 
@@ -221,7 +199,7 @@ export const systemApi = {
    * @returns 切换结果
    */
   toggleEnabled(systemId: string, enabled: boolean): Promise<ApiResponse> {
-    return apiHandler.patch(`/api/systems/${systemId}/status`, { enabled }, {
+    return apiHandler.patch(`/systems/${systemId}/status`, { enabled }, {
       invalidateCache: ['systems-list', `system-${systemId}`],
       successMessage: enabled ? '系统已启用' : '系统已禁用'
     })
@@ -241,10 +219,32 @@ export const systemApi = {
    * @returns 统计数据
    */
   getStatistics(): Promise<ApiResponse> {
-    return apiHandler.get('/api/systems/statistics', {}, {
-      cache: true,
-      cacheKey: 'systems-statistics',
-      cacheTTL: 2 * 60 * 1000 // 2分钟缓存
+    return apiHandler.get('/systems/statistics', {}, {
+      cacheTime: 120000,
+      successMessage: null
+    })
+  },
+
+  /**
+   * 获取启用系统列表（用于API管理和页面管理页面）
+   * @returns 启用系统列表
+   */
+  getEnabledList(): Promise<ApiResponse> {
+    return apiHandler.get('/systems/v1/enabled', {}, {
+      cacheTime: 300000,
+      successMessage: null
+    })
+  },
+
+  /**
+   * 根据分类获取启用系统列表
+   * @param category 系统分类 ('backend' 或 'frontend')
+   * @returns 指定分类的启用系统列表
+   */
+  getEnabledListByCategory(category: 'backend' | 'frontend'): Promise<ApiResponse> {
+    return apiHandler.get(`/systems/v1/enabled/${category}`, {}, {
+      cacheTime: 300000,
+      successMessage: null
     })
   }
 }
@@ -271,10 +271,9 @@ export const moduleApi = {
    * @returns 模块列表数据
    */
   getList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/modules', params, {
-      cache: true,
-      cacheKey: 'modules-list',
-      cacheTTL: 5 * 60 * 1000 // 5分钟缓存
+    return apiHandler.get('/modules', params, {
+      cacheTime: 300000,
+      successMessage: null
     })
   },
 
@@ -285,10 +284,9 @@ export const moduleApi = {
    * @returns 模块列表数据
    */
   getBySystem(systemId: string, params: ModuleListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/modules', { ...params, system_id: systemId }, {
-      cache: true,
-      cacheKey: `system-${systemId}-modules`,
-      cacheTTL: 5 * 60 * 1000 // 5分钟缓存
+    return apiHandler.get('/modules', { ...params, system_id: systemId }, {
+      cacheTime: 300000,
+      successMessage: null
     })
   },
 
@@ -298,10 +296,9 @@ export const moduleApi = {
    * @returns 模块详情数据
    */
   getDetail(moduleId: string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/modules/${moduleId}`, {}, {
-      cache: true,
-      cacheKey: `module-${moduleId}`,
-      cacheTTL: 10 * 60 * 1000 // 10分钟缓存
+    return apiHandler.get(`/modules/v1/${moduleId}`, {}, {
+      cacheTime: 600000,
+      successMessage: null
     })
   },
 
@@ -311,7 +308,7 @@ export const moduleApi = {
    * @returns 创建结果
    */
   create(data: ModuleData): Promise<ApiResponse> {
-    return apiHandler.post('/api/modules', data, {
+    return apiHandler.post('/modules', data, {
       invalidateCache: ['modules-list', `system-${data.system_id}-modules`],
       successMessage: '模块创建成功'
     })
@@ -324,8 +321,12 @@ export const moduleApi = {
    * @returns 更新结果
    */
   update(moduleId: string, data: Partial<ModuleData>): Promise<ApiResponse> {
-    return apiHandler.put(`/api/modules/${moduleId}`, data, {
-      invalidateCache: ['modules-list', `module-${moduleId}`, data.system_id ? `system-${data.system_id}-modules` : null].filter(Boolean),
+    const cacheKeys = ['modules-list', `module-${moduleId}`]
+    if (data.system_id) {
+      cacheKeys.push(`system-${data.system_id}-modules`)
+    }
+    return apiHandler.put(`/modules/v1/${moduleId}`, data, {
+      invalidateCache: cacheKeys,
       successMessage: '模块更新成功'
     })
   },
@@ -336,10 +337,9 @@ export const moduleApi = {
    * @returns 删除结果
    */
   delete(moduleId: string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/modules/${moduleId}`, {
+    return apiHandler.delete(`/modules/v1/${moduleId}`, {
       invalidateCache: ['modules-list', `module-${moduleId}`],
-      successMessage: '模块删除成功',
-      confirmMessage: '确定要删除这个模块吗？'
+      successMessage: '模块删除成功'
     })
   },
 
@@ -350,7 +350,7 @@ export const moduleApi = {
    * @returns 切换结果
    */
   toggleEnabled(moduleId: string, enabled: boolean): Promise<ApiResponse> {
-    return apiHandler.patch(`/api/modules/${moduleId}/status`, { enabled }, {
+    return apiHandler.patch(`/modules/${moduleId}/status`, { enabled }, {
       invalidateCache: ['modules-list', `module-${moduleId}`],
       successMessage: enabled ? '模块已启用' : '模块已禁用'
     })
@@ -372,8 +372,8 @@ export const moduleApi = {
    * @returns 移动结果
    */
   moveToSystem(moduleId: string, targetSystemId: string): Promise<ApiResponse> {
-    return apiHandler.patch(`/api/modules/${moduleId}/move`, { targetSystemId }, {
-      invalidateCache: ['modules-list', `module-${moduleId}`],
+    return apiHandler.patch(`/modules/v1/${moduleId}/move`, { targetSystemId }, {
+      invalidateCache: ['modules-list', `module-${moduleId}`, `system-${targetSystemId}-modules`],
       successMessage: '模块移动成功'
     })
   },
@@ -384,10 +384,34 @@ export const moduleApi = {
    * @returns 使用统计数据
    */
   getUsageStatistics(moduleId: string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/modules/${moduleId}/statistics`, {}, {
-      cache: true,
-      cacheKey: `module-${moduleId}-statistics`,
-      cacheTTL: 2 * 60 * 1000 // 2分钟缓存
+    return apiHandler.get(`/modules/v1/${moduleId}/statistics`, {}, {
+      cacheTime: 300000,
+      successMessage: null
+    })
+  },
+
+  /**
+   * 获取启用模块列表（用于API管理和页面管理页面）
+   * @param systemId - 可选的系统ID
+   * @returns 启用模块列表
+   */
+  getEnabledList(systemId?: string): Promise<ApiResponse> {
+    const params = systemId ? { system_id: systemId } : {}
+    return apiHandler.get('/modules/v1/enabled', params, {
+      cacheTime: 300000,
+      successMessage: null
+    })
+  },
+
+  /**
+   * 根据系统ID获取启用模块列表（用于API管理和页面管理页面）
+   * @param systemId - 系统ID
+   * @returns 启用模块列表
+   */
+  getEnabledBySystem(systemId: string): Promise<ApiResponse> {
+    return apiHandler.get(`/modules/v1/enabled/by-system/${systemId}`, {}, {
+      cacheTime: 300000,
+      successMessage: null
     })
   }
 }
@@ -412,10 +436,9 @@ export const categoryApi = {
    * @returns 分类列表
    */
   getSystemCategories(): Promise<ApiResponse> {
-    return apiHandler.get('/api/categories/systems', {}, {
-      cache: true,
-      cacheKey: 'system-categories',
-      cacheTTL: 10 * 60 * 1000 // 10分钟缓存
+    return apiHandler.get('/categories/systems', {}, {
+      cacheTime: 600000,
+      successMessage: null
     })
   },
 
@@ -425,10 +448,9 @@ export const categoryApi = {
    * @returns 标签列表
    */
   getModuleTags(params: TagListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/categories/tags', params, {
-      cache: true,
-      cacheKey: params.systemId ? `tags-system-${params.systemId}` : 'tags-all',
-      cacheTTL: 5 * 60 * 1000 // 5分钟缓存
+    return apiHandler.get('/categories/tags', params, {
+      cacheTime: 300000,
+      successMessage: null
     })
   },
 
@@ -438,8 +460,12 @@ export const categoryApi = {
    * @returns 创建结果
    */
   createTag(data: TagData): Promise<ApiResponse> {
-    return apiHandler.post('/api/categories/tags', data, {
-      invalidateCache: ['tags-all', data.systemId ? `tags-system-${data.systemId}` : null].filter(Boolean),
+    const cacheKeys = ['tags-all']
+    if (data.systemId) {
+      cacheKeys.push(`tags-system-${data.systemId}`)
+    }
+    return apiHandler.post('/categories/tags', data, {
+      invalidateCache: cacheKeys,
       successMessage: '标签创建成功'
     })
   },
@@ -451,7 +477,7 @@ export const categoryApi = {
    * @returns 更新结果
    */
   updateTag(tagId: string, data: Partial<TagData>): Promise<ApiResponse> {
-    return apiHandler.put(`/api/categories/tags/${tagId}`, data, {
+    return apiHandler.put(`/categories/tags/${tagId}`, data, {
       invalidateCache: ['tags-all', `tag-${tagId}`],
       successMessage: '标签更新成功'
     })
@@ -463,10 +489,9 @@ export const categoryApi = {
    * @returns 删除结果
    */
   deleteTag(tagId: string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/categories/tags/${tagId}`, {
+    return apiHandler.delete(`/categories/tags/${tagId}`, {
       invalidateCache: ['tags-all', `tag-${tagId}`],
-      successMessage: '标签删除成功',
-      confirmMessage: '确定要删除这个标签吗？'
+      successMessage: '标签删除成功'
     })
   }
 }
@@ -492,7 +517,7 @@ export const importExportApi = {
    * @param params - 导出参数
    * @returns 导出文件
    */
-  exportSystems(params: ExportParams): Promise<Blob> {
+  exportSystems(params: ExportParams): Promise<void> {
     return request.download('/api/export/systems', params)
   },
 
@@ -510,7 +535,7 @@ export const importExportApi = {
    * @param format - 模板格式
    * @returns 模板文件
    */
-  getImportTemplate(format: 'json' | 'yaml' | 'excel' = 'excel'): Promise<Blob> {
+  getImportTemplate(format: 'json' | 'yaml' | 'excel' = 'excel'): Promise<void> {
     return request.download('/api/import/template', { format })
   },
 
@@ -546,11 +571,10 @@ export const monitorApi = {
    * @returns 健康状态数据
    */
   getHealthStatus(systemId: string | null = null): Promise<ApiResponse> {
-    const url = systemId ? `/api/monitor/health/${systemId}` : '/api/monitor/health'
+    const url = systemId ? `/monitor/health/${systemId}` : '/monitor/health'
     return apiHandler.get(url, {}, {
-      cache: true,
-      cacheKey: systemId ? `health-${systemId}` : 'health-all',
-      cacheTTL: 30 * 1000 // 30秒缓存
+      cacheTime: 30000,
+      successMessage: null
     })
   },
 
@@ -561,10 +585,9 @@ export const monitorApi = {
    * @returns 性能指标数据
    */
   getModuleMetrics(moduleId: string, params: MetricsParams = {}): Promise<ApiResponse> {
-    return apiHandler.get(`/api/monitor/modules/${moduleId}/metrics`, params, {
-      cache: true,
-      cacheKey: `metrics-${moduleId}-${params.timeRange || '1h'}`,
-      cacheTTL: 60 * 1000 // 1分钟缓存
+    return apiHandler.get(`/monitor/modules/${moduleId}/metrics`, params, {
+      cacheTime: 60000,
+      successMessage: null
     })
   },
 
@@ -573,10 +596,9 @@ export const monitorApi = {
    * @returns 概览数据
    */
   getOverview(): Promise<ApiResponse> {
-    return apiHandler.get('/api/monitor/overview', {}, {
-      cache: true,
-      cacheKey: 'monitor-overview',
-      cacheTTL: 30 * 1000 // 30秒缓存
+    return apiHandler.get('/monitor/overview', {}, {
+      cacheTime: 30000,
+      successMessage: null
     })
   },
 
@@ -586,10 +608,9 @@ export const monitorApi = {
    * @returns 告警列表
    */
   getAlerts(params: AlertListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/monitor/alerts', params, {
-      cache: true,
-      cacheKey: `alerts-${JSON.stringify(params)}`,
-      cacheTTL: 60 * 1000 // 1分钟缓存
+    return apiHandler.get('/monitor/alerts', params, {
+      cacheTime: 60000,
+      successMessage: null
     })
   },
 
@@ -601,7 +622,7 @@ export const monitorApi = {
    * @returns 处理结果
    */
   handleAlert(alertId: string, action: 'resolve' | 'acknowledge' | 'ignore', comment: string = ''): Promise<ApiResponse> {
-    return apiHandler.patch(`/api/monitor/alerts/${alertId}`, { action, comment }, {
+    return apiHandler.patch(`/monitor/alerts/${alertId}`, { action, comment }, {
       invalidateCache: ['alerts'],
       successMessage: `告警已${action === 'resolve' ? '解决' : action === 'acknowledge' ? '确认' : '忽略'}`
     })
@@ -612,10 +633,9 @@ export const monitorApi = {
    * @returns 监控配置数据
    */
   getMonitorConfig(): Promise<ApiResponse> {
-    return apiHandler.get('/api/monitor/config', {}, {
-      cache: true,
-      cacheKey: 'monitor-config',
-      cacheTTL: 5 * 60 * 1000 // 5分钟缓存
+    return apiHandler.get('/monitor/config', {}, {
+      cacheTime: 300000,
+      successMessage: null
     })
   },
 
@@ -625,7 +645,7 @@ export const monitorApi = {
    * @returns 更新结果
    */
   updateMonitorConfig(config: MonitorConfig): Promise<ApiResponse> {
-    return apiHandler.put('/api/monitor/config', config, {
+    return apiHandler.put('/monitor/config', config, {
       invalidateCache: ['monitor-config'],
       successMessage: '监控配置更新成功'
     })

@@ -319,7 +319,7 @@ watch(() => props.formData, (newData) => {
       id: newData.id || '',
       name: newData.name || '',
       description: newData.description || '',
-      url: newData.url || '',
+      url: newData.path || newData.url || '', // 后端path字段映射为前端url字段
       method: newData.method || 'GET',
       system_id: newData.system_id || '',
       module_id: newData.module_id || '',
@@ -487,6 +487,7 @@ const handleSave = async () => {
     }
 
     // 准备保存数据
+    
     const saveData = {
       ...localFormData,
       // 字段映射：前端url字段映射为后端path字段
@@ -518,7 +519,7 @@ const handleSave = async () => {
     // 删除前端专用字段，避免后端接收到不期望的字段
     delete saveData.url
     delete saveData.parameters
-
+    
     emit('save', saveData)
   } catch (error) {
     console.error('保存失败:', error)
@@ -526,6 +527,16 @@ const handleSave = async () => {
     saving.value = false
   }
 }
+
+// 重置保存状态的方法
+const resetSavingState = () => {
+  saving.value = false
+}
+
+// 暴露方法给父组件
+defineExpose({
+  resetSavingState
+})
 
 // 生命周期
 onMounted(() => {

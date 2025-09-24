@@ -259,6 +259,8 @@ class ApiInterfaceService:
                 filters['method'] = query_request.method
             if query_request.status:
                 filters['status'] = query_request.status
+            if query_request.enabled_only:
+                filters['status'] = 'active'  # enabled_only为True时只显示active状态的API
             
             # 执行搜索
             raw_apis = ApiInterfaceDAO.search(query_request.keyword or "", filters)

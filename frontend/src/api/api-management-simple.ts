@@ -1,4 +1,5 @@
 import { request } from '@/utils/request'
+import { ApiResponse } from '@/types/api'
 
 /**
  * API管理相关接口 - 简化版
@@ -76,12 +77,6 @@ interface StatsData {
   scenario_stats: ScenarioStats
 }
 
-interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  message?: string
-}
-
 interface ExportParams {
   [key: string]: any
 }
@@ -94,7 +89,7 @@ export const apiManagementApi = {
    * @returns 服务列表数据
    */
   getServiceList(params: ServiceListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/systems', params)
+    return request.get('/api/systems/v1/', params)
   },
 
   /**
@@ -103,7 +98,7 @@ export const apiManagementApi = {
    * @returns 模块列表数据
    */
   getModuleList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/modules', params)
+    return request.get('/api/modules/v1/', params)
   },
 
   /**
@@ -130,7 +125,7 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createService(data: ServiceData): Promise<ApiResponse> {
-    return request.post('/api/systems', data)
+    return request.post('/api/systems/v1/', data)
   },
 
   /**
@@ -149,7 +144,7 @@ export const apiManagementApi = {
    * @returns 更新结果
    */
   updateService(systemId: number, data: ServiceData): Promise<ApiResponse> {
-    return request.put(`/api/systems/${systemId}`, data)
+    return request.put(`/api/systems/v1/${systemId}`, data)
   },
 
   /**
@@ -168,7 +163,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteService(systemId: number): Promise<ApiResponse> {
-    return request.delete(`/api/systems/${systemId}`)
+    return request.delete(`/api/systems/v1/${systemId}`)
   },
 
   /**
@@ -213,7 +208,7 @@ export const apiManagementApi = {
    * @returns 统计数据
    */
   async getStats(): Promise<ApiResponse<StatsData>> {
-    const response = await request.get('/api/stats')
+    const response = await request.get('/api/stats/v1/')
     if (response.success) {
       return {
         success: true,

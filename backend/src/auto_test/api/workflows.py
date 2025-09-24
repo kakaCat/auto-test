@@ -17,14 +17,14 @@ from ..services.workflow_service import WorkflowService
 router = APIRouter()
 
 
-@router.get("/stats")
+@router.get("/workflows/v1/stats")
 async def get_workflow_stats() -> Dict[str, Any]:
     """获取工作流统计信息"""
     stats_data = WorkflowService.collect_workflow_stats_data()
     return stats_data
 
 
-@router.get("/")
+@router.get("/workflows/v1/")
 async def get_workflows() -> Dict[str, Any]:
     """获取工作流列表（预留接口）"""
     workflows_data = WorkflowService.collect_workflows_data()

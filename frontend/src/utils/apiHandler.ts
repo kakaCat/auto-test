@@ -40,35 +40,7 @@
 
 import { ElMessage, ElLoading } from 'element-plus'
 import { request } from './request'
-
-/**
- * API请求配置选项接口
- */
-export interface ApiHandlerOptions {
-  showLoading?: boolean
-  showSuccess?: boolean
-  showError?: boolean
-  retryCount?: number
-  retryDelay?: number
-  timeout?: number
-  cache?: boolean
-  cacheTime?: number
-  transform?: ((data: any) => any) | null
-  successMessage?: string | null
-  errorMessage?: string | null
-  loadingText?: string
-  showProgress?: boolean
-  maxConcurrent?: number
-  stopOnError?: boolean
-}
-
-/**
- * 缓存数据结构
- */
-interface CacheData {
-  data: any
-  expireTime: number
-}
+import type { ApiHandlerOptions, CacheData } from '@/types'
 
 /**
  * 批量操作结果

@@ -14,7 +14,7 @@
     <!-- 页面头部 -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">系统列表</h1>
+        <h1 class="page-title">系统管理</h1>
         <p class="page-description">管理系统和模块的配置信息</p>
       </div>
       <div class="header-actions">
@@ -31,14 +31,28 @@
     <div class="main-content">
       <!-- 左侧树形结构 -->
       <div class="left-panel">
+        <!-- 系统类型筛选 -->
+        <div class="filter-section">
+          <el-select
+            v-model="systemTypeFilter"
+            placeholder="选择系统类型"
+            @change="handleSystemTypeChange"
+            style="width: 100%;"
+          >
+            <el-option label="全部系统" value="all" />
+            <el-option label="前端应用" value="frontend" />
+            <el-option label="后端服务" value="backend" />
+          </el-select>
+        </div>
+        
         <SystemTree
           ref="treeRef"
-          :data="treeData"
+          :data="filteredTreeData"
           search-placeholder="搜索系统或模块"
           :show-actions="true"
+          :show-disabled="true"
           label-key="label"
           children-key="children"
-          :get-icon="getNodeIcon"
           @node-click="handleNodeClick"
           @node-contextmenu="handleNodeContextMenu"
           @tree-action="handleTreeAction"
@@ -108,80 +122,31 @@
               </el-descriptions>
             </el-card>
 
-            <!-- 模块列表 -->
-            <el-card class="modules-card" shadow="never">
+            <!-- 系统统计信息 -->
+            <el-card class="stats-card" shadow="never">
               <template #header>
-                <div class="card-header">
-                  <span class="card-title">模块列表 ({{ selectedNode.modules?.length || 0 }})</span>
-                  <el-button type="primary" size="small" :icon="Plus" @click="showAddModuleDialog(selectedNode.id)">
-                    添加模块
-                  </el-button>
-                </div>
+                <span class="card-title">统计信息</span>
               </template>
-              
-              <div v-if="selectedNode.modules && selectedNode.modules.length > 0" class="modules-grid">
-                <div
-                  v-for="module in selectedNode.modules"
-                  :key="module.id"
-                  class="module-card"
-                  @click="selectModule(module)"
-                >
-                  <div class="module-header">
-                    <el-icon class="module-icon" :size="20">
-                      <component :is="getModuleIcon(module.tags)" />
-                    </el-icon>
-                    <div class="module-info">
-                      <h4 class="module-name">{{ module.name }}</h4>
-                      <p class="module-desc">{{ module.description || '暂无描述' }}</p>
-                    </div>
-                    <el-dropdown @command="handleModuleAction" trigger="click" @click.stop>
-                      <el-icon class="module-action" :size="16">
-                        <MoreFilled />
-                      </el-icon>
-                      <template #dropdown>
-                        <el-dropdown-menu>
-                          <el-dropdown-item :command="`edit-${module.id}`">
-                            <el-icon><Edit /></el-icon>
-                            编辑
-                          </el-dropdown-item>
-                          <el-dropdown-item :command="`toggle-${module.id}`">
-                            <el-icon><Switch /></el-icon>
-                            {{ module.enabled ? '禁用' : '启用' }}
-                          </el-dropdown-item>
-                          <el-dropdown-item :command="`delete-${module.id}`" divided>
-                            <el-icon><Delete /></el-icon>
-                            删除
-                          </el-dropdown-item>
-                        </el-dropdown-menu>
-                      </template>
-                    </el-dropdown>
+              <el-row :gutter="20">
+                <el-col :span="8">
+                  <div class="stat-item">
+                    <div class="stat-value">{{ selectedNode.modules?.length || 0 }}</div>
+                    <div class="stat-label">模块数量</div>
                   </div>
-                  <div class="module-footer">
-                    <div class="module-tags">
-                      <el-tag
-                        v-for="tag in (module.tags || []).slice(0, 2)"
-                        :key="tag"
-                        size="small"
-                        type="info"
-                      >
-                        {{ tag }}
-                      </el-tag>
-                      <span v-if="(module.tags || []).length > 2" class="more-tags">
-                        +{{ (module.tags || []).length - 2 }}
-                      </span>
-                    </div>
-                    <el-tag :type="module.enabled ? 'success' : 'danger'" size="small">
-                      {{ module.enabled ? '启用' : '禁用' }}
-                    </el-tag>
+                </el-col>
+                <el-col :span="8">
+                  <div class="stat-item">
+                    <div class="stat-value">{{ selectedNode.modules?.filter((m: any) => m.enabled).length || 0 }}</div>
+                    <div class="stat-label">启用模块</div>
                   </div>
-                </div>
-              </div>
-              
-              <el-empty v-else description="暂无模块" :image-size="80">
-                <el-button type="primary" size="small" @click="showAddModuleDialog(selectedNode.id)">
-                  添加第一个模块
-                </el-button>
-              </el-empty>
+                </el-col>
+                <el-col :span="8">
+                  <div class="stat-item">
+                    <div class="stat-value">{{ selectedNode.modules?.filter((m: any) => !m.enabled).length || 0 }}</div>
+                    <div class="stat-label">禁用模块</div>
+                  </div>
+                </el-col>
+              </el-row>
             </el-card>
           </div>
         </div>
@@ -202,7 +167,7 @@
               <el-button type="primary" :icon="Edit" @click="editModule(selectedNode)">
                 编辑
               </el-button>
-              <el-button :icon="Switch" @click="toggleModuleStatus(selectedNode)">
+              <el-button :icon="Switch" @click="handleModuleToggle(selectedNode.id)">
                 {{ selectedNode.enabled ? '禁用' : '启用' }}
               </el-button>
               <el-button type="danger" :icon="Delete" @click="deleteModule(selectedNode.id)">
@@ -286,14 +251,14 @@
       </el-form>
       <template #footer>
         <el-button @click="systemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveSystem">保存</el-button>
+        <el-button type="primary" @click="saveSystemWithTreeRefresh">保存</el-button>
       </template>
     </el-dialog>
 
     <!-- 新增/编辑模块对话框 -->
     <el-dialog
       v-model="moduleDialogVisible"
-      :title="moduleDialogTitle"
+      :title="computedModuleDialogTitle"
       width="600px"
       @close="resetModuleForm"
     >
@@ -303,6 +268,21 @@
         :rules="moduleRules"
         label-width="100px"
       >
+        <el-form-item label="所属系统" v-if="moduleForm.system_id">
+          <el-input 
+            :value="getSystemNameById(moduleForm.system_id)" 
+            readonly 
+            placeholder="未选择系统"
+            style="background-color: #f5f7fa;"
+          >
+            <template #prepend>
+              <el-icon style="color: #409eff;"><Monitor /></el-icon>
+            </template>
+          </el-input>
+          <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+            该模块将归属于上述系统
+          </div>
+        </el-form-item>
         <el-form-item label="模块名称" prop="name">
           <el-input v-model="moduleForm.name" placeholder="请输入模块名称" />
         </el-form-item>
@@ -338,7 +318,7 @@
       </el-form>
       <template #footer>
         <el-button @click="moduleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveModule">保存</el-button>
+        <el-button type="primary" @click="saveModuleWithTreeRefresh">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -360,8 +340,11 @@ import {
   MoreFilled,
   ArrowDown,
   ArrowRight,
-  Monitor
-} from '@element-plus/icons-vue'
+  Monitor,
+  Filter,
+  Grid,
+  Cloudy
+} from '@/utils/icons'
 
 // 导入类型定义
 import type { SystemCategory, System, Module } from './types'
@@ -409,6 +392,7 @@ const {
   resetModuleForm,
   saveSystem,
   saveModule,
+  handleModuleAction,
   refreshData,
   clearError
 } = useServiceManagement()
@@ -425,6 +409,9 @@ const {
 const treeRef = ref()
 const selectedNode = ref<any>(null)
 
+// 系统类型筛选
+const systemTypeFilter = ref('all')
+
 // 树形数据
 const treeData = computed(() => {
   return filteredSystems.value.map((system: System) => ({
@@ -440,7 +427,22 @@ const treeData = computed(() => {
   }))
 })
 
+// 根据系统类型筛选的树形数据
+const filteredTreeData = computed(() => {
+  if (systemTypeFilter.value === 'all') {
+    return treeData.value
+  }
+  
+  return treeData.value.filter((system: any) => {
+    return system.category === systemTypeFilter.value
+  })
+})
 
+// 处理系统类型筛选变化
+const handleSystemTypeChange = () => {
+  // 清空当前选中的节点，因为筛选后可能不存在
+  selectedNode.value = null
+}
 
 // SystemTree组件事件处理
 const handleSystemTreeNodeClick = (data: any) => {
@@ -482,22 +484,41 @@ const handleNodeClick = (data: any) => {
   selectedNode.value = data
 }
 
+// 处理模块状态切换
+const handleModuleToggle = async (moduleId: number) => {
+  try {
+    const updatedModule = await handleModuleAction('toggle-' + moduleId)
+    // 如果当前选中的是这个模块，更新selectedNode
+    if (selectedNode.value && selectedNode.value.id === moduleId && updatedModule) {
+      selectedNode.value = Object.assign({}, updatedModule, { isModule: true })
+    }
+  } catch (error) {
+    // 错误已在handleModuleAction中处理
+  }
+}
+
 // 右键菜单
 const handleNodeContextMenu = (event: MouseEvent, data: any) => {
   event.preventDefault()
   // 可以在这里实现右键菜单
 }
 
-// 获取节点图标
-const getNodeIcon = (data: any) => {
-  if (data.isModule || data.type === 'module') {
-    return Document  // 模块使用文件图标
-  } else if (data.type === 'system') {
-    return Monitor   // 系统使用电脑图标
-  } else {
-    return getSystemIcon(data.category)
-  }
+
+
+// 根据系统ID获取系统名称
+const getSystemNameById = (systemId: string) => {
+  const system = filteredSystems.value.find(s => s.id === systemId)
+  return system ? system.name : '未知系统'
 }
+
+// 计算模块弹框标题
+const computedModuleDialogTitle = computed(() => {
+  if (moduleForm.system_id) {
+    const systemName = getSystemNameById(moduleForm.system_id)
+    return `${moduleDialogTitle} - ${systemName}`
+  }
+  return moduleDialogTitle
+})
 
 // 树形操作
 const handleTreeAction = (command: string) => {
@@ -525,38 +546,7 @@ const handleTreeAction = (command: string) => {
   }
 }
 
-// 模块操作
-const handleModuleAction = (command: string) => {
-  const firstDashIndex = command.indexOf('-')
-  if (firstDashIndex === -1) return
-  
-  const action = command.substring(0, firstDashIndex)
-  const id = command.substring(firstDashIndex + 1)
-  
-  // 查找模块
-  let targetModule: Module | null = null
-  for (const system of filteredSystems.value) {
-    const module = system.modules?.find((m: Module) => m.id === id)
-    if (module) {
-      targetModule = module
-      break
-    }
-  }
-  
-  if (!targetModule) return
-  
-  switch (action) {
-    case 'edit':
-      editModule(targetModule)
-      break
-    case 'toggle':
-      toggleModuleStatus(targetModule)
-      break
-    case 'delete':
-      deleteModule(id)
-      break
-  }
-}
+// 模块操作已从 useServiceManagement 导入
 
 // 编辑系统
 const editSystem = (system: System) => {
@@ -575,12 +565,6 @@ const editModule = (module: Module) => {
 // 选择模块
 const selectModule = (module: Module) => {
   selectedNode.value = { ...module, isModule: true }
-}
-
-// 切换模块状态
-const toggleModuleStatus = (module: Module) => {
-  module.enabled = !module.enabled
-  ElMessage.success(`模块已${module.enabled ? '启用' : '禁用'}`)
 }
 
 // 删除系统
@@ -637,6 +621,37 @@ const deleteModule = async (moduleId: string) => {
 const formatTime = (time: string) => {
   if (!time) return '未知'
   return new Date(time).toLocaleString()
+}
+
+// 强制刷新树组件
+const forceRefreshTree = () => {
+  if (treeRef.value) {
+    // 强制树组件重新渲染
+    nextTick(() => {
+      treeRef.value.$forceUpdate?.()
+    })
+  }
+}
+
+// 重写refreshData方法，添加树组件刷新
+const refreshDataWithTree = async () => {
+  await refreshData()
+  // 确保树组件也得到刷新
+  forceRefreshTree()
+}
+
+// 保存系统并刷新树组件
+const saveSystemWithTreeRefresh = async () => {
+  await saveSystem()
+  // 强制刷新树组件以确保新数据显示
+  forceRefreshTree()
+}
+
+// 保存模块并刷新树组件
+const saveModuleWithTreeRefresh = async () => {
+  await saveModule()
+  // 强制刷新树组件以确保新数据显示
+  forceRefreshTree()
 }
 
 // 生命周期
@@ -962,5 +977,42 @@ onMounted(() => {
   .header-actions {
     justify-content: center;
   }
+}
+
+/* 统计卡片样式 */
+.stats-card {
+  margin-top: 16px;
+}
+
+/* 筛选区域样式 */
+.filter-section {
+  padding: 16px;
+  background: var(--el-bg-color-page);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid var(--el-border-color-light);
+}
+
+.filter-section .el-select {
+  --el-select-border-color-hover: var(--el-color-primary);
+}
+
+.stat-item {
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--el-bg-color-page);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--el-color-primary);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--el-text-color-regular);
 }
 </style>

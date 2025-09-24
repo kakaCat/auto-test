@@ -24,9 +24,10 @@
  */
 
 import { request } from '@/utils/request'
+import { ApiResponse } from '@/types/api'
 
 // 统一API基础配置
-const UNIFIED_API_BASE = 'http://localhost:8000'
+const UNIFIED_API_BASE = import.meta.env.VITE_UNIFIED_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 // 查询参数接口
 interface SystemListParams {
@@ -106,12 +107,6 @@ interface TagData {
   color?: string
 }
 
-interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  message?: string
-}
-
 interface RequestConfig {
   baseURL?: string
   [key: string]: any
@@ -174,7 +169,25 @@ export const unifiedSystemApi = {
    * @returns 系统列表数据
    */
   getList(params: SystemListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/systems', params)
+    return unifiedRequest.get('/api/systems/v1', params)
+  },
+
+  /**
+   * 获取启用状态的系统列表
+   * @param params - 查询参数
+   * @returns 启用状态的系统列表数据
+   */
+  getEnabledList(params: SystemListParams = {}): Promise<ApiResponse> {
+    return unifiedRequest.get('/api/systems/v1/enabled', params)
+  },
+
+  /**
+   * 根据分类获取启用的系统列表
+   * @param category 系统分类 ('backend' | 'frontend')
+   * @returns Promise<ApiResponse>
+   */
+  getEnabledListByCategory(category: string): Promise<ApiResponse> {
+    return unifiedRequest.get(`/api/systems/v1/enabled/${category}`)
   },
 
   /**
@@ -183,7 +196,7 @@ export const unifiedSystemApi = {
    * @returns 系统详情数据
    */
   getDetail(systemId: string): Promise<ApiResponse> {
-    return unifiedRequest.get(`/api/v1/systems/${systemId}`)
+    return unifiedRequest.get(`/api/systems/v1/${systemId}`)
   },
 
   /**
@@ -192,7 +205,7 @@ export const unifiedSystemApi = {
    * @returns 创建结果
    */
   create(data: SystemData): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/v1/systems', data)
+    return unifiedRequest.post('/api/systems/v1', data)
   },
 
   /**
@@ -202,7 +215,7 @@ export const unifiedSystemApi = {
    * @returns 更新结果
    */
   update(systemId: string, data: SystemData): Promise<ApiResponse> {
-    return unifiedRequest.put(`/api/v1/systems/${systemId}`, data)
+    return unifiedRequest.put(`/api/systems/v1/${systemId}`, data)
   },
 
   /**
@@ -211,7 +224,7 @@ export const unifiedSystemApi = {
    * @returns 删除结果
    */
   delete(systemId: string): Promise<ApiResponse> {
-    return unifiedRequest.delete(`/api/v1/systems/${systemId}`)
+    return unifiedRequest.delete(`/api/systems/v1/${systemId}`)
   },
 
   /**
@@ -221,7 +234,7 @@ export const unifiedSystemApi = {
    * @returns 切换结果
    */
   toggleEnabled(systemId: string, enabled: boolean): Promise<ApiResponse> {
-    return unifiedRequest.patch(`/api/v1/systems/${systemId}/status`, { enabled })
+    return unifiedRequest.patch(`/api/systems/v1/${systemId}/status`, { enabled })
   },
 
   /**
@@ -230,7 +243,7 @@ export const unifiedSystemApi = {
    * @returns 批量操作结果
    */
   batchOperation(data: BatchOperationData): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/v1/systems/batch', data)
+    return unifiedRequest.post('/api/systems/v1/batch', data)
   },
 
   /**
@@ -238,7 +251,7 @@ export const unifiedSystemApi = {
    * @returns 统计数据
    */
   getStatistics(): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/systems/statistics')
+    return unifiedRequest.get('/api/systems/v1/statistics')
   },
 
   /**
@@ -246,7 +259,7 @@ export const unifiedSystemApi = {
    * @returns 分类列表
    */
   getCategories(): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/systems/categories')
+    return unifiedRequest.get('/api/systems/v1/categories')
   }
 }
 
@@ -266,7 +279,16 @@ export const unifiedModuleApi = {
    * @returns 模块列表数据
    */
   getList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/modules', params)
+    return unifiedRequest.get('/api/modules/v1', params)
+  },
+
+  /**
+   * 获取启用状态的模块列表
+   * @param params 查询参数
+   * @returns Promise<ApiResponse>
+   */
+  getEnabledList(params: ModuleListParams = {}): Promise<ApiResponse> {
+    return unifiedRequest.get('/api/modules/v1/enabled', params)
   },
 
   /**
@@ -276,7 +298,17 @@ export const unifiedModuleApi = {
    * @returns 模块列表数据
    */
   getBySystem(systemId: string, params: ModuleListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get(`/api/v1/systems/${systemId}/modules`, params)
+    return unifiedRequest.get('/api/modules/v1/', { ...params, system_id: systemId })
+  },
+
+  /**
+   * 根据系统ID获取启用状态的模块列表
+   * @param systemId 系统ID
+   * @param params 查询参数
+   * @returns Promise<ApiResponse>
+   */
+  getEnabledBySystem(systemId: string, params: ModuleListParams = {}): Promise<ApiResponse> {
+    return unifiedRequest.get(`/api/modules/v1/enabled/by-system/${systemId}`, params)
   },
 
   /**
@@ -285,7 +317,7 @@ export const unifiedModuleApi = {
    * @returns 模块详情数据
    */
   getDetail(moduleId: string): Promise<ApiResponse> {
-    return unifiedRequest.get(`/api/v1/modules/${moduleId}`)
+    return unifiedRequest.get(`/api/modules/v1/${moduleId}`)
   },
 
   /**
@@ -294,7 +326,7 @@ export const unifiedModuleApi = {
    * @returns 创建结果
    */
   create(data: ModuleData): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/v1/modules', data)
+    return unifiedRequest.post('/api/modules/v1/', data)
   },
 
   /**
@@ -304,7 +336,7 @@ export const unifiedModuleApi = {
    * @returns 更新结果
    */
   update(moduleId: string, data: ModuleData): Promise<ApiResponse> {
-    return unifiedRequest.put(`/api/v1/modules/${moduleId}`, data)
+    return unifiedRequest.put(`/api/modules/v1/${moduleId}`, data)
   },
 
   /**
@@ -313,7 +345,7 @@ export const unifiedModuleApi = {
    * @returns 删除结果
    */
   delete(moduleId: string): Promise<ApiResponse> {
-    return unifiedRequest.delete(`/api/v1/modules/${moduleId}`)
+    return unifiedRequest.delete(`/api/modules/v1/${moduleId}`)
   },
 
   /**
@@ -323,7 +355,7 @@ export const unifiedModuleApi = {
    * @returns 切换结果
    */
   toggleEnabled(moduleId: string, enabled: boolean): Promise<ApiResponse> {
-    return unifiedRequest.patch(`/api/v1/modules/${moduleId}/status`, { enabled })
+    return unifiedRequest.patch(`/api/modules/${moduleId}/status`, { enabled })
   },
 
   /**
@@ -332,7 +364,7 @@ export const unifiedModuleApi = {
    * @returns 批量操作结果
    */
   batchOperation(data: BatchOperationData): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/v1/modules/batch', data)
+    return unifiedRequest.post('/api/modules/v1/batch', data)
   },
 
   /**
@@ -342,7 +374,7 @@ export const unifiedModuleApi = {
    * @returns 移动结果
    */
   moveToSystem(moduleId: string, targetSystemId: string): Promise<ApiResponse> {
-    return unifiedRequest.patch(`/api/v1/modules/${moduleId}/move`, {
+    return unifiedRequest.patch(`/api/modules/v1/${moduleId}/move`, {
       target_system_id: targetSystemId
     })
   },
@@ -353,7 +385,7 @@ export const unifiedModuleApi = {
    * @returns 使用统计数据
    */
   getUsageStatistics(moduleId: string): Promise<ApiResponse> {
-    return unifiedRequest.get(`/api/v1/modules/${moduleId}/statistics`)
+    return unifiedRequest.get(`/api/modules/v1/${moduleId}/statistics`)
   },
 
   /**
@@ -362,7 +394,7 @@ export const unifiedModuleApi = {
    * @returns 标签列表
    */
   getTags(params: TagListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/modules/tags', params)
+    return unifiedRequest.get('/api/modules/v1/tags', params)
   }
 }
 
@@ -380,7 +412,7 @@ export const unifiedCategoryApi = {
    * @returns 分类列表
    */
   getSystemCategories(): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/categories/systems')
+    return unifiedRequest.get('/api/categories/v1/systems')
   },
 
   /**
@@ -389,7 +421,7 @@ export const unifiedCategoryApi = {
    * @returns 标签列表
    */
   getModuleTags(params: TagListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/tags/modules', params)
+    return unifiedRequest.get('/api/tags/v1/modules', params)
   },
 
   /**
@@ -398,7 +430,7 @@ export const unifiedCategoryApi = {
    * @returns 创建结果
    */
   createTag(data: TagData): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/v1/tags', data)
+    return unifiedRequest.post('/api/tags/v1', data)
   },
 
   /**
@@ -408,7 +440,7 @@ export const unifiedCategoryApi = {
    * @returns 更新结果
    */
   updateTag(tagId: string, data: TagData): Promise<ApiResponse> {
-    return unifiedRequest.put(`/api/v1/tags/${tagId}`, data)
+    return unifiedRequest.put(`/api/tags/v1/${tagId}`, data)
   },
 
   /**
@@ -417,7 +449,7 @@ export const unifiedCategoryApi = {
    * @returns 删除结果
    */
   deleteTag(tagId: string): Promise<ApiResponse> {
-    return unifiedRequest.delete(`/api/v1/tags/${tagId}`)
+    return unifiedRequest.delete(`/api/tags/v1/${tagId}`)
   }
 }
 
@@ -436,7 +468,7 @@ export const unifiedLogApi = {
    * @returns 日志列表数据
    */
   getList(params: LogListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/logs', params)
+    return unifiedRequest.get('/api/logs/v1', params)
   },
 
   /**
@@ -445,7 +477,7 @@ export const unifiedLogApi = {
    * @returns 日志统计数据
    */
   getStatistics(params: LogListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/logs/statistics', params)
+    return unifiedRequest.get('/api/logs/v1/statistics', params)
   }
 }
 
@@ -464,7 +496,7 @@ export const unifiedMonitorApi = {
    * @returns 健康状态数据
    */
   getHealthStatus(systemId: string | null = null): Promise<ApiResponse> {
-    const url = systemId ? `/api/v1/monitor/health/${systemId}` : '/api/v1/monitor/health'
+    const url = systemId ? `/api/monitor/v1/health/${systemId}` : '/api/monitor/v1/health'
     return unifiedRequest.get(url)
   },
 
@@ -473,7 +505,7 @@ export const unifiedMonitorApi = {
    * @returns 监控概览数据
    */
   getOverview(): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/monitor/overview')
+    return unifiedRequest.get('/api/monitor/v1/overview')
   },
 
   /**
@@ -482,8 +514,34 @@ export const unifiedMonitorApi = {
    * @returns 性能指标数据
    */
   getMetrics(params: MetricsParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/monitor/metrics', params)
+    return unifiedRequest.get('/api/monitor/v1/metrics', params)
   }
+}
+
+// API管理相关接口定义
+interface ApiListParams {
+  system_id?: string
+  module_id?: string
+  enabled_only?: boolean
+  keyword?: string
+  method?: string
+}
+
+interface ApiData {
+  system_id: string
+  name: string
+  description: string
+  url: string
+  enabled: boolean
+  tags: string[]
+}
+
+interface TestData {
+  [key: string]: any
+}
+
+interface TestConfig {
+  [key: string]: any
 }
 
 /**
@@ -499,7 +557,7 @@ export const unifiedApiManagementApi = {
    * @returns 统计数据
    */
   getStats(): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/v1/stats')
+    return unifiedRequest.get('/api/stats/v1')
   },
 
   /**
@@ -518,6 +576,102 @@ export const unifiedApiManagementApi = {
    */
   getModuleList(params: ModuleListParams = {}): Promise<ApiResponse> {
     return unifiedModuleApi.getList(params)
+  },
+
+  /**
+   * 获取API列表
+   * @param params - 查询参数
+   * @returns API列表数据
+   */
+  getApis(params: ApiListParams = {}): Promise<ApiResponse> {
+    return unifiedRequest.get('/api/api-interfaces/v1/', params)
+  },
+
+  /**
+   * 获取API详情
+   * @param apiId - API ID
+   * @returns API详情数据
+   */
+  getApiDetail(apiId: string): Promise<ApiResponse> {
+    return unifiedRequest.get(`/api/api-interfaces/v1/${apiId}`)
+  },
+
+  /**
+   * 创建API
+   * @param data - API数据
+   * @returns 创建结果
+   */
+  createApi(data: ApiData): Promise<ApiResponse> {
+    return unifiedRequest.post('/api/api-interfaces/v1/', data)
+  },
+
+  /**
+   * 更新API
+   * @param apiId - API ID
+   * @param data - API数据
+   * @returns 更新结果
+   */
+  updateApi(apiId: string, data: Partial<ApiData>): Promise<ApiResponse> {
+    return unifiedRequest.put(`/api/api-interfaces/v1/${apiId}`, data)
+  },
+
+  /**
+   * 删除API
+   * @param apiId - API ID
+   * @returns 删除结果
+   */
+  deleteApi(apiId: string): Promise<ApiResponse> {
+    return unifiedRequest.delete(`/api/api-interfaces/v1/${apiId}`)
+  },
+
+  /**
+   * 测试API
+   * @param apiId - API ID
+   * @param testData - 测试数据
+   * @returns 测试结果
+   */
+  testApi(apiId: string, testData: TestData = {}): Promise<ApiResponse> {
+    return unifiedRequest.post(`/api/api-interfaces/v1/${apiId}/test`, testData)
+  },
+
+  /**
+   * 批量测试API
+   * @param apiIds - API ID数组
+   * @param testConfig - 测试配置
+   * @returns 批量测试结果
+   */
+  batchTestApis(apiIds: string[], testConfig: TestConfig = {}): Promise<ApiResponse> {
+    return unifiedRequest.post('/api/api-interfaces/v1/batch-test', { api_ids: apiIds, ...testConfig })
+  },
+
+  /**
+   * 获取API统计
+   * @returns API统计数据
+   */
+  getApiStatistics(): Promise<ApiResponse> {
+    return unifiedRequest.get('/api/api-interfaces/v1/stats/summary')
+  },
+
+  /**
+   * 导入API
+   * @param formData - 包含文件的表单数据
+   * @returns 导入结果
+   */
+  importApis(formData: FormData): Promise<ApiResponse> {
+    return unifiedRequest.post('/api/api-interfaces/v1/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  /**
+   * 导出API
+   * @param params - 导出参数
+   * @returns 导出结果
+   */
+  exportApis(params: Record<string, any> = {}): Promise<ApiResponse> {
+    return unifiedRequest.get('/api/api-interfaces/v1/export', params)
   }
 }
 
@@ -530,6 +684,8 @@ export const compatibilityAdapter = {
   // 系统API兼容映射
   systemApi: {
     getList: unifiedSystemApi.getList,
+    getEnabledList: unifiedSystemApi.getEnabledList,
+    getEnabledListByCategory: unifiedSystemApi.getEnabledListByCategory,
     getDetail: unifiedSystemApi.getDetail,
     create: unifiedSystemApi.create,
     update: unifiedSystemApi.update,
@@ -542,7 +698,9 @@ export const compatibilityAdapter = {
   // 模块API兼容映射
   moduleApi: {
     getList: unifiedModuleApi.getList,
+    getEnabledList: unifiedModuleApi.getEnabledList,
     getBySystem: unifiedModuleApi.getBySystem,
+    getEnabledBySystem: unifiedModuleApi.getEnabledBySystem,
     getDetail: unifiedModuleApi.getDetail,
     create: unifiedModuleApi.create,
     update: unifiedModuleApi.update,
@@ -584,9 +742,20 @@ export default {
   monitor: unifiedMonitorApi,
   apiManagementApi: unifiedApiManagementApi,
   compatibility: compatibilityAdapter,
-  // 兼容性接口
+  // 兼容性接口 - 直接暴露API管理方法到根级别
   getModuleList: unifiedApiManagementApi.getModuleList,
-  getServiceList: unifiedApiManagementApi.getServiceList
+  getServiceList: unifiedApiManagementApi.getServiceList,
+  getApis: unifiedApiManagementApi.getApis,
+  getApiDetail: unifiedApiManagementApi.getApiDetail,
+  createApi: unifiedApiManagementApi.createApi,
+  updateApi: unifiedApiManagementApi.updateApi,
+  deleteApi: unifiedApiManagementApi.deleteApi,
+  testApi: unifiedApiManagementApi.testApi,
+  batchTestApis: unifiedApiManagementApi.batchTestApis,
+  getApiStatistics: unifiedApiManagementApi.getApiStatistics,
+  importApis: unifiedApiManagementApi.importApis,
+  exportApis: unifiedApiManagementApi.exportApis,
+  getStats: unifiedApiManagementApi.getStats
 }
 
 /**

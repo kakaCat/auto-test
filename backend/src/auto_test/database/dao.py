@@ -60,7 +60,7 @@ class SystemDAO:
             raise
     
     @staticmethod
-    def update(system_id: int, name: str = None, description: str = None, status: str = None) -> bool:
+    def update(system_id: int, name: str = None, description: str = None, status: str = None, category: str = None) -> bool:
         """更新系统"""
         try:
             updates = []
@@ -75,6 +75,9 @@ class SystemDAO:
             if status is not None:
                 updates.append("status = ?")
                 params.append(status)
+            if category is not None:
+                updates.append("category = ?")
+                params.append(category)
             
             if not updates:
                 return False
@@ -621,4 +624,268 @@ class ApiInterfaceDAO:
                 return cursor.rowcount
         except Exception as e:
             logger.error(f"批量删除API接口失败: {e}")
+            raise
+
+
+class PageDAO:
+    """页面数据访问对象"""
+    
+    @staticmethod
+    def get_all(system_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        """获取页面列表"""
+        try:
+            with get_db_cursor() as cursor:
+                if system_id:
+                    cursor.execute("""
+                        SELECT id, system_id, name, description, route_path, page_type, status, 
+                               created_at, updated_at 
+                        FROM pages 
+                        WHERE system_id = ?
+                        ORDER BY created_at DESC
+                    """, (system_id,))
+                else:
+                    cursor.execute("""
+                        SELECT id, system_id, name, description, route_path, page_type, status, 
+                               created_at, updated_at 
+                        FROM pages 
+                        ORDER BY created_at DESC
+                    """)
+                return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"获取页面列表失败: {e}")
+            raise
+    
+    @staticmethod
+    def get_by_id(page_id: int) -> Optional[Dict[str, Any]]:
+        """根据ID获取页面"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, system_id, name, description, route_path, page_type, status, 
+                           created_at, updated_at 
+                    FROM pages 
+                    WHERE id = ?
+                """, (page_id,))
+                row = cursor.fetchone()
+                return dict(row) if row else None
+        except Exception as e:
+            logger.error(f"获取页面详情失败: {e}")
+            raise
+    
+    @staticmethod
+    def create(system_id: int, name: str, description: str = None, route_path: str = None, 
+               page_type: str = "page", status: str = "active") -> int:
+        """创建页面"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO pages (system_id, name, description, route_path, page_type, status) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (system_id, name, description, route_path, page_type, status))
+                return cursor.lastrowid
+        except Exception as e:
+            logger.error(f"创建页面失败: {e}")
+            raise
+    
+    @staticmethod
+    def update(page_id: int, name: str = None, description: str = None, route_path: str = None,
+               page_type: str = None, status: str = None) -> bool:
+        """更新页面"""
+        try:
+            with get_db_cursor() as cursor:
+                updates = []
+                params = []
+                
+                if name is not None:
+                    updates.append("name = ?")
+                    params.append(name)
+                if description is not None:
+                    updates.append("description = ?")
+                    params.append(description)
+                if route_path is not None:
+                    updates.append("route_path = ?")
+                    params.append(route_path)
+                if page_type is not None:
+                    updates.append("page_type = ?")
+                    params.append(page_type)
+                if status is not None:
+                    updates.append("status = ?")
+                    params.append(status)
+                
+                if not updates:
+                    return False
+                
+                updates.append("updated_at = CURRENT_TIMESTAMP")
+                params.append(page_id)
+                
+                cursor.execute(f"""
+                    UPDATE pages 
+                    SET {', '.join(updates)} 
+                    WHERE id = ?
+                """, params)
+                return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"更新页面失败: {e}")
+            raise
+    
+    @staticmethod
+    def delete(page_id: int) -> bool:
+        """删除页面"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("DELETE FROM pages WHERE id = ?", (page_id,))
+                return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"删除页面失败: {e}")
+            raise
+    
+    @staticmethod
+    def search(keyword: str = None, system_id: int = None, page_type: str = None, 
+               status: str = None, page: int = 1, size: int = 10) -> List[Dict[str, Any]]:
+        """搜索页面"""
+        try:
+            with get_db_cursor() as cursor:
+                conditions = []
+                params = []
+                
+                if keyword:
+                    conditions.append("(name LIKE ? OR description LIKE ?)")
+                    params.extend([f"%{keyword}%", f"%{keyword}%"])
+                if system_id:
+                    conditions.append("system_id = ?")
+                    params.append(system_id)
+                if page_type:
+                    conditions.append("page_type = ?")
+                    params.append(page_type)
+                if status:
+                    conditions.append("status = ?")
+                    params.append(status)
+                
+                where_clause = " AND ".join(conditions) if conditions else "1=1"
+                offset = (page - 1) * size
+                
+                cursor.execute(f"""
+                    SELECT id, system_id, name, description, route_path, page_type, status, 
+                           created_at, updated_at 
+                    FROM pages 
+                    WHERE {where_clause}
+                    ORDER BY created_at DESC
+                    LIMIT ? OFFSET ?
+                """, params + [size, offset])
+                
+                return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"搜索页面失败: {e}")
+            raise
+
+
+class PageApiDAO:
+    """页面API关联数据访问对象"""
+    
+    @staticmethod
+    def get_by_page_id(page_id: int) -> List[Dict[str, Any]]:
+        """根据页面ID获取API关联列表"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("""
+                    SELECT pa.id, pa.page_id, pa.api_id, pa.execution_type, pa.execution_order,
+                           pa.trigger_action, pa.api_purpose, pa.success_action, pa.error_action,
+                           pa.conditions, pa.created_at, pa.updated_at,
+                           ai.name as api_name, ai.method, ai.path, ai.description as api_description
+                    FROM page_apis pa
+                    LEFT JOIN api_interfaces ai ON pa.api_id = ai.id
+                    WHERE pa.page_id = ?
+                    ORDER BY pa.execution_order, pa.created_at
+                """, (page_id,))
+                return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"获取页面API关联列表失败: {e}")
+            raise
+    
+    @staticmethod
+    def create(page_id: int, api_id: int, execution_type: str = "parallel", 
+               execution_order: int = 0, trigger_action: str = None, api_purpose: str = None,
+               success_action: str = None, error_action: str = None, conditions: str = None) -> int:
+        """创建页面API关联"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO page_apis (page_id, api_id, execution_type, execution_order,
+                                         trigger_action, api_purpose, success_action, error_action, conditions) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (page_id, api_id, execution_type, execution_order, trigger_action, 
+                      api_purpose, success_action, error_action, conditions))
+                return cursor.lastrowid
+        except Exception as e:
+            logger.error(f"创建页面API关联失败: {e}")
+            raise
+    
+    @staticmethod
+    def update(relation_id: int, execution_type: str = None, execution_order: int = None,
+               trigger_action: str = None, api_purpose: str = None, success_action: str = None,
+               error_action: str = None, conditions: str = None) -> bool:
+        """更新页面API关联"""
+        try:
+            with get_db_cursor() as cursor:
+                updates = []
+                params = []
+                
+                if execution_type is not None:
+                    updates.append("execution_type = ?")
+                    params.append(execution_type)
+                if execution_order is not None:
+                    updates.append("execution_order = ?")
+                    params.append(execution_order)
+                if trigger_action is not None:
+                    updates.append("trigger_action = ?")
+                    params.append(trigger_action)
+                if api_purpose is not None:
+                    updates.append("api_purpose = ?")
+                    params.append(api_purpose)
+                if success_action is not None:
+                    updates.append("success_action = ?")
+                    params.append(success_action)
+                if error_action is not None:
+                    updates.append("error_action = ?")
+                    params.append(error_action)
+                if conditions is not None:
+                    updates.append("conditions = ?")
+                    params.append(conditions)
+                
+                if not updates:
+                    return False
+                
+                updates.append("updated_at = CURRENT_TIMESTAMP")
+                params.append(relation_id)
+                
+                cursor.execute(f"""
+                    UPDATE page_apis 
+                    SET {', '.join(updates)} 
+                    WHERE id = ?
+                """, params)
+                return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"更新页面API关联失败: {e}")
+            raise
+    
+    @staticmethod
+    def delete(relation_id: int) -> bool:
+        """删除页面API关联"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("DELETE FROM page_apis WHERE id = ?", (relation_id,))
+                return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"删除页面API关联失败: {e}")
+            raise
+    
+    @staticmethod
+    def delete_by_page_id(page_id: int) -> int:
+        """删除页面的所有API关联"""
+        try:
+            with get_db_cursor() as cursor:
+                cursor.execute("DELETE FROM page_apis WHERE page_id = ?", (page_id,))
+                return cursor.rowcount
+        except Exception as e:
+            logger.error(f"删除页面API关联失败: {e}")
             raise

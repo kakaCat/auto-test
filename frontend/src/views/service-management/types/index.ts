@@ -2,7 +2,9 @@
  * 服务管理模块类型定义
  */
 
+// 基础类型定义
 import type { Component } from 'vue'
+import { ApiResponse } from '@/types/api'
 
 // 系统分类枚举
 export enum SystemCategory {
@@ -175,13 +177,7 @@ export interface ServiceError extends Error {
   details?: any
 }
 
-// API 响应接口
-export interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  message?: string
-  error?: ServiceError
-}
+
 
 // 批量操作接口
 export interface BatchOperation {

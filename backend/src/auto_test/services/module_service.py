@@ -197,19 +197,21 @@ class ModuleService:
             if not existing_module:
                 return None
             
-            # 业务规则验证
-            if module_data.system_id and not SystemDAO.get_by_id(module_data.system_id):
-                raise ValueError(f"系统ID {module_data.system_id} 不存在")
-            
-            # 检查模块名称在系统中是否重复
-            check_system_id = module_data.system_id or existing_module.get('system_id')
+            # 检查模块名称在系统中是否重复（使用现有模块的system_id）
+            check_system_id = existing_module.get('system_id')
             if (module_data.name and 
                 module_data.name != existing_module.get('name') and
                 ModuleService._is_module_name_exists_in_system(module_data.name, check_system_id)):
                 raise ValueError(f"系统中已存在名称为 '{module_data.name}' 的模块")
             
-            # 更新模块
-            success = ModuleDAO.update(module_id, module_data)
+            # 更新模块 - 传递单独的参数而不是对象
+            success = ModuleDAO.update(
+                module_id, 
+                name=module_data.name,
+                description=module_data.description,
+                status=module_data.status,
+                tags=module_data.tags
+            )
             if success:
                 updated_module = ModuleDAO.get_by_id(module_id)
                 logger.info(f"模块更新成功: ID {module_id}")
@@ -410,3 +412,80 @@ class ModuleService:
             return any(module.get('name') == name for module in modules)
         except Exception:
             return False
+    
+    @staticmethod
+    def toggle_enabled(module_id: int, enabled: bool) -> Optional[Dict[str, Any]]:
+        """
+        切换模块启用状态
+        
+        Args:
+            module_id (int): 模块ID
+            enabled (bool): 启用状态
+            
+        Returns:
+            Optional[Dict[str, Any]]: 更新后的模块信息
+        """
+        try:
+            logger.info(f"开始切换模块状态: module_id={module_id}, enabled={enabled}")
+            
+            # 检查模块是否存在
+            existing_module = ModuleDAO.get_by_id(module_id)
+            logger.info(f"查询模块结果: {existing_module}")
+            
+            if not existing_module:
+                logger.warning(f"模块不存在: {module_id}")
+                return None
+            
+            # 更新状态
+            status = 'active' if enabled else 'inactive'
+            
+            # 调用DAO层更新
+            success = ModuleDAO.update(module_id, status=status)
+            if not success:
+                logger.error(f"更新模块状态失败: {module_id}")
+                return None
+            
+            # 获取更新后的模块信息
+            updated_module = ModuleDAO.get_by_id(module_id)
+            if not updated_module:
+                logger.error(f"获取更新后的模块信息失败: {module_id}")
+                return None
+            
+            # 转换输出格式
+            result = ModuleTransform.to_response(updated_module)
+            logger.info(f"模块状态切换成功: {module_id}, 新状态: {status}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"切换模块状态失败: {e}")
+            return None
+    
+    @staticmethod
+    def get_enabled_modules(system_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        获取启用状态的模块列表（用于API管理和页面管理页面）
+        
+        Args:
+            system_id (Optional[int]): 系统ID，如果提供则筛选该系统的启用模块
+            
+        Returns:
+            List[Dict[str, Any]]: 启用状态的模块列表
+        """
+        try:
+            # 获取所有模块或指定系统的模块
+            all_modules = ModuleService.get_modules(system_id)
+            
+            # 过滤出启用状态的模块（active、testing、production状态被认为是启用状态）
+            enabled_statuses = ['active', 'testing', 'production']
+            enabled_modules = [
+                module for module in all_modules 
+                if module.get('status') in enabled_statuses
+            ]
+            
+            logger.info(f"获取启用模块列表，系统ID: {system_id}，共 {len(enabled_modules)} 个启用模块")
+            return enabled_modules
+            
+        except Exception as e:
+            logger.error(f"获取启用模块列表失败: {e}")
+            return []

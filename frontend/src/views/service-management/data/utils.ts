@@ -13,8 +13,8 @@ import type { Module, IconMap, TagTypeMap } from '../types'
 
 // 系统图标映射
 const systemIconMap: IconMap = {
-  [SystemCategory.BACKEND]: Service,
-  [SystemCategory.FRONTEND]: Document
+  [SystemCategory.BACKEND]: Service,    // 后端服务使用服务图标
+  [SystemCategory.FRONTEND]: Monitor    // 前端应用使用显示器图标
 }
 
 // 模块图标映射

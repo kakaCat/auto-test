@@ -2,26 +2,31 @@
  * API相关的TypeScript类型定义
  */
 
-// 基础响应类型
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data?: T
-  timestamp: string
-}
+// 导入公共类型
+import type {
+  ApiResponse,
+  PaginationParams,
+  PaginationData,
+  BaseEntity,
+  CreateRequest,
+  UpdateRequest,
+  ListParams,
+  StatusUpdateRequest,
+  BatchOperationRequest,
+  BatchOperationResponse,
+  StatsData
+} from './common'
 
-// 分页相关类型
-export interface PaginationParams {
-  page?: number
-  pageSize?: number
-}
-
-export interface PaginationData<T> {
-  list: T[]
-  total: number
-  page: number
-  pageSize: number
-}
+// 重新导出公共类型，保持向后兼容
+export type {
+  ApiResponse,
+  PaginationParams,
+  PaginationData,
+  StatusUpdateRequest,
+  BatchOperationRequest,
+  BatchOperationResponse,
+  StatsData
+} from './common'
 
 // 系统管理相关类型
 export interface SystemData {
@@ -273,34 +278,4 @@ export interface ScenarioExecuteResponse {
   execution_id: string
   status: string
   result?: any
-}
-
-// 统计数据类型
-export interface StatsData {
-  total: number
-  active: number
-  inactive: number
-  categories?: Record<string, number>
-  trends?: Array<{
-    date: string
-    count: number
-  }>
-}
-
-// 状态更新类型
-export interface StatusUpdateRequest {
-  enabled: boolean
-}
-
-// 批量操作类型
-export interface BatchOperationRequest {
-  ids: string[]
-  action: 'enable' | 'disable' | 'delete'
-  target_id?: string
-}
-
-export interface BatchOperationResponse {
-  success_count: number
-  failed_count: number
-  errors?: string[]
 }

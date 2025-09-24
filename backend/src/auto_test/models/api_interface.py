@@ -73,13 +73,14 @@ class ApiInterface(ApiInterfaceBase):
 class ApiInterfaceQueryRequest(BaseModel):
     """API接口查询请求模型"""
     page: int = Field(1, ge=1, description="页码")
-    size: int = Field(20, ge=1, le=100, description="每页数量")
+    size: int = Field(20, ge=1, le=1000, description="每页数量")
     system_id: Optional[int] = Field(None, description="系统ID筛选")
     module_id: Optional[int] = Field(None, description="模块ID筛选")
     method: Optional[str] = Field(None, description="HTTP方法筛选")
     status: Optional[str] = Field(None, description="状态筛选")
     keyword: Optional[str] = Field(None, description="关键词搜索")
     tags: Optional[str] = Field(None, description="标签筛选")
+    enabled_only: Optional[bool] = Field(None, description="仅显示启用的")
 
 
 class ApiInterfaceResponse(BaseModel):

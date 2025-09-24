@@ -17,14 +17,14 @@ from ..services.scenario_service import ScenarioService
 router = APIRouter()
 
 
-@router.get("/stats")
+@router.get("/scenarios/v1/stats")
 async def get_scenario_stats() -> Dict[str, Any]:
     """获取场景统计信息"""
     stats_data = ScenarioService.collect_scenario_stats_data()
     return stats_data
 
 
-@router.get("/")
+@router.get("/scenarios/v1/")
 async def get_scenarios() -> Dict[str, Any]:
     """获取场景列表（预留接口）"""
     scenarios_data = ScenarioService.collect_scenarios_data()

@@ -121,12 +121,18 @@ class SystemService:
                 SystemService._is_system_name_exists(system_data.name)):
                 raise ValueError(f"系统名称 '{system_data.name}' 已存在")
             
+            # 处理enabled字段，将其转换为status
+            status = system_data.status
+            if system_data.enabled is not None:
+                status = "active" if system_data.enabled else "inactive"
+            
             # 更新系统
             success = SystemDAO.update(
                 system_id, 
                 name=system_data.name,
                 description=system_data.description,
-                status=system_data.status
+                status=status,
+                category=system_data.category
             )
             if success:
                 updated_system = SystemDAO.get_by_id(system_id)
@@ -193,6 +199,9 @@ class SystemService:
             'maintenance': '维护中'
         }
         transformed['status_display'] = status_map.get(system.get('status', 'active'), '未知')
+        
+        # 添加enabled字段，基于status转换
+        transformed['enabled'] = system.get('status', 'active') == 'active'
         
         # 添加创建时间格式化
         if system.get('created_at'):
@@ -389,4 +398,96 @@ class SystemService:
             
         except Exception as e:
             logger.error(f"收集系统分类数据失败: {e}")
+            return []
+    
+    @staticmethod
+    def toggle_enabled(system_id: int, enabled: bool) -> Optional[Dict[str, Any]]:
+        """
+        切换系统启用状态
+        
+        Args:
+            system_id (int): 系统ID
+            enabled (bool): 启用状态
+            
+        Returns:
+            Optional[Dict[str, Any]]: 更新后的系统信息
+        """
+        try:
+            # 检查系统是否存在
+            existing_system = SystemDAO.get_by_id(system_id)
+            if not existing_system:
+                logger.warning(f"系统不存在: {system_id}")
+                return None
+            
+            # 更新状态
+            status = 'enabled' if enabled else 'disabled'
+            update_data = {'status': status, 'updated_at': datetime.now()}
+            
+            # 调用DAO层更新
+            updated_system = SystemDAO.update(system_id, update_data)
+            if not updated_system:
+                logger.error(f"更新系统状态失败: {system_id}")
+                return None
+            
+            # 转换输出格式
+            result = SystemTransform.to_detail_response(updated_system)
+            logger.info(f"系统状态切换成功: {system_id}, 新状态: {status}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"切换系统状态失败: {e}")
+            return None
+    
+    @staticmethod
+    def get_enabled_systems() -> List[Dict[str, Any]]:
+        """
+        获取启用状态的系统列表（用于API管理和页面管理页面）
+        
+        Returns:
+            List[Dict[str, Any]]: 启用状态的系统列表
+        """
+        try:
+            # 获取所有系统
+            all_systems = SystemService.get_systems()
+            
+            # 过滤出启用状态的系统（检查enabled字段为True）
+            enabled_systems = [
+                system for system in all_systems 
+                if system.get('enabled') == True
+            ]
+            
+            logger.info(f"获取启用系统列表，共 {len(enabled_systems)} 个启用系统")
+            return enabled_systems
+            
+        except Exception as e:
+            logger.error(f"获取启用系统列表失败: {e}")
+            return []
+
+    @staticmethod
+    def get_enabled_systems_by_category(category: str) -> List[Dict[str, Any]]:
+        """
+        根据分类获取启用状态的系统列表
+        
+        Args:
+            category (str): 系统分类 ('backend' 或 'frontend')
+            
+        Returns:
+            List[Dict[str, Any]]: 指定分类的启用状态系统列表
+        """
+        try:
+            # 获取所有启用的系统
+            enabled_systems = SystemService.get_enabled_systems()
+            
+            # 根据分类过滤系统
+            filtered_systems = [
+                system for system in enabled_systems 
+                if system.get('category') == category
+            ]
+            
+            logger.info(f"获取分类为 '{category}' 的启用系统列表，共 {len(filtered_systems)} 个系统")
+            return filtered_systems
+            
+        except Exception as e:
+            logger.error(f"获取分类为 '{category}' 的启用系统列表失败: {e}")
             return []

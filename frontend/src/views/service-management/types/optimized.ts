@@ -4,6 +4,7 @@
  */
 
 import type { Component } from 'vue'
+import { ApiResponse } from '@/types/api'
 
 // 系统分类枚举
 export enum SystemCategory {
@@ -265,14 +266,7 @@ export interface ServiceError extends Error {
   details?: any
 }
 
-// API响应接口
-export interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  message?: string
-  error?: ServiceError
-  timestamp?: string
-}
+
 
 // 批量操作接口
 export interface BatchOperation {

@@ -23,10 +23,11 @@ from .utils.logger import get_logger
 from .api.systems import router as systems_router
 from .api.modules import router as modules_router
 from .api.stats import router as stats_router
-from .api.v1 import router as v1_router
 from .api.workflows import router as workflows_router
 from .api.scenarios import router as scenarios_router
 from .api.api_interfaces import router as api_interfaces_router
+from .api.logs import router as logs_router
+from .api.pages import router as pages_router
 
 # 设置日志
 logger = get_logger(__name__)
@@ -67,14 +68,15 @@ def create_app() -> FastAPI:
         logger.info(f"{request.method} {request.url} - {response.status_code} - {process_time:.3f}s")
         return response
     
-    # 注册API路由
-    app.include_router(systems_router, prefix="/api/systems", tags=["系统管理"])
-    app.include_router(modules_router, prefix="/api/modules", tags=["模块管理"])
-    app.include_router(api_interfaces_router, prefix="/api/interfaces", tags=["API接口管理"])
-    app.include_router(stats_router, prefix="/api/stats", tags=["统计信息"])
-    app.include_router(v1_router, prefix="/api/v1", tags=["V1兼容接口"])
-    app.include_router(workflows_router, prefix="/api/workflows", tags=["工作流管理"])
-    app.include_router(scenarios_router, prefix="/api/scenarios", tags=["场景管理"])
+    # 注册路由 - 版本号由各业务模块自己管理
+    app.include_router(systems_router, prefix="/api", tags=["System Management"])
+    app.include_router(modules_router, prefix="/api", tags=["Module Management"])
+    app.include_router(stats_router, prefix="/api", tags=["Statistics"])
+    app.include_router(workflows_router, prefix="/api", tags=["Workflow Management"])
+    app.include_router(scenarios_router, prefix="/api", tags=["Scenario Management"])
+    app.include_router(api_interfaces_router, prefix="/api", tags=["API Interface Management"])
+    app.include_router(logs_router, prefix="/api", tags=["Log Management"])
+    app.include_router(pages_router, prefix="/api", tags=["Page Management"])
     
     # 根路径
     @app.get("/")

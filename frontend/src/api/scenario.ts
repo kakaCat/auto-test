@@ -1,4 +1,5 @@
 import { request } from '@/utils/request'
+import { ApiResponse } from '@/types/api'
 
 /**
  * 场景管理API接口
@@ -74,12 +75,6 @@ export interface TagData {
   description?: string
 }
 
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data: T
-}
-
 // 场景管理相关接口
 export const scenarioApi = {
   /**
@@ -88,7 +83,7 @@ export const scenarioApi = {
    * @returns 场景列表数据
    */
   getList(params: ScenarioListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/scenarios', params)
+    return request.get('/api/scenarios/v1/', params)
   },
 
   /**
@@ -97,7 +92,7 @@ export const scenarioApi = {
    * @returns 场景详情数据
    */
   getDetail(scenarioId: string): Promise<ApiResponse> {
-    return request.get(`/api/scenarios/${scenarioId}`)
+    return request.get(`/api/scenarios/v1/${scenarioId}`)
   },
 
   /**
@@ -106,7 +101,7 @@ export const scenarioApi = {
    * @returns 创建结果
    */
   create(data: ScenarioData): Promise<ApiResponse> {
-    return request.post('/api/scenarios', data)
+    return request.post('/api/scenarios/v1/', data)
   },
 
   /**
@@ -116,7 +111,7 @@ export const scenarioApi = {
    * @returns 更新结果
    */
   update(scenarioId: string, data: Partial<ScenarioData>): Promise<ApiResponse> {
-    return request.put(`/api/scenarios/${scenarioId}`, data)
+    return request.put(`/api/scenarios/v1/${scenarioId}`, data)
   },
 
   /**
@@ -125,7 +120,7 @@ export const scenarioApi = {
    * @returns 删除结果
    */
   delete(scenarioId: string): Promise<ApiResponse> {
-    return request.delete(`/api/scenarios/${scenarioId}`)
+    return request.delete(`/api/scenarios/v1/${scenarioId}`)
   },
 
   /**
@@ -174,7 +169,7 @@ export const scenarioApi = {
    * @returns 执行历史数据
    */
   getExecutionHistory(scenarioId: string, params: ExecutionHistoryParams = {}): Promise<ApiResponse> {
-    return request.get(`/api/scenarios/${scenarioId}/executions`, params)
+    return request.get(`/api/scenarios/v1/${scenarioId}/executions`, { params })
   },
 
   /**
@@ -184,7 +179,7 @@ export const scenarioApi = {
    * @returns 执行详情数据
    */
   getExecutionDetail(scenarioId: string, executionId: string): Promise<ApiResponse> {
-    return request.get(`/api/scenarios/${scenarioId}/executions/${executionId}`)
+    return request.get(`/api/scenarios/v1/executions/${executionId}`)
   },
 
   /**
@@ -192,7 +187,7 @@ export const scenarioApi = {
    * @returns 统计数据
    */
   getStatistics(): Promise<ApiResponse> {
-    return request.get('/api/scenarios/statistics')
+    return request.get('/api/scenarios/v1/stats')
   }
 }
 

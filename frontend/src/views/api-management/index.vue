@@ -91,9 +91,9 @@
           :data="systemTreeData"
           search-placeholder="搜索系统"
           :show-count="false"
+          :show-disabled="false"
           label-key="label"
           children-key="children"
-          :get-icon="getSystemTreeIcon"
           @node-click="handleSystemNodeClick"
         />
       </div>
@@ -293,6 +293,7 @@
 
     <!-- API表单对话框 -->
     <ApiFormDialog
+      ref="apiFormDialogRef"
       v-model="dialogVisible"
       :title="dialogTitle"
       :form-data="form"
@@ -309,7 +310,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   DocumentAdd, Upload, Download, Search, Refresh, ArrowDown, ArrowRight,
-  Folder, View, Edit, VideoPlay, Delete, Check, Close, Monitor, Document
+  View, Edit, VideoPlay, Delete, Check, Close, Monitor, Document,
+  Link, Cloudy, Phone, Connection, DataBoard, Cpu, Platform
 } from '@element-plus/icons-vue'
 import unifiedApi from '@/api/unified-api'
 import ApiFormDialog from './components/ApiFormDialog.vue'
@@ -327,6 +329,7 @@ const loading = ref(false)
 const dialogVisible = ref(false)
 const dialogTitle = ref('新增API')
 const systemTreeRef = ref()
+const apiFormDialogRef = ref()
 
 // 系统相关数据
 const systemList = ref([])
@@ -411,7 +414,8 @@ const filteredApiList = computed(() => {
 // 方法
 const loadSystemList = async (retryCount = 0) => {
   try {
-    const response = await apiProxy.getServiceList()
+    // 使用新的按分类获取启用系统接口
+    const response = await apiProxy.system.getEnabledListByCategory('backend')
     if (response && response.success) {
       // 确保response.data是数组
       const data = response.data
@@ -424,19 +428,19 @@ const loadSystemList = async (retryCount = 0) => {
       await loadModuleList() // 加载系统后立即加载模块
       buildSystemTree()
     } else {
-      throw new Error(response?.message || '获取系统列表失败')
+      throw new Error(response?.message || '获取启用系统列表失败')
     }
   } catch (error) {
-    console.error('加载系统列表失败:', error)
+    console.error('加载启用系统列表失败:', error)
     systemList.value = [] // 确保在错误时设置为空数组
     
     if (retryCount < 2) {
-      ElMessage.warning(`加载系统列表失败，正在重试... (${retryCount + 1}/3)`)
+      ElMessage.warning(`加载启用系统列表失败，正在重试... (${retryCount + 1}/3)`)
       setTimeout(() => loadSystemList(retryCount + 1), 1000)
     } else {
-      ElMessage.error('加载系统列表失败: ' + (error.message || '网络连接错误'))
+      ElMessage.error('加载启用系统列表失败: ' + (error.message || '网络连接错误'))
       ElMessageBox.confirm(
-        '加载系统列表失败，是否重新尝试？',
+        '加载启用系统列表失败，是否重新尝试？',
         '网络错误',
         {
           confirmButtonText: '重试',
@@ -454,7 +458,8 @@ const loadSystemList = async (retryCount = 0) => {
 
 const loadModuleList = async (retryCount = 0) => {
   try {
-    const response = await apiProxy.getModuleList() // 获取所有模块
+    // 使用新的启用模块接口
+    const response = await apiProxy.module.getEnabledList()
     if (response && response.success) {
       // 确保response.data是数组
       const data = response.data
@@ -465,67 +470,85 @@ const loadModuleList = async (retryCount = 0) => {
         moduleList.value = []
       }
     } else {
-      throw new Error(response?.message || '获取模块列表失败')
+      throw new Error(response?.message || '获取启用模块列表失败')
     }
   } catch (error) {
-    console.error('加载模块列表失败:', error)
+    console.error('加载启用模块列表失败:', error)
     moduleList.value = [] // 确保在错误时设置为空数组
     
     if (retryCount < 2) {
-      ElMessage.warning(`加载模块列表失败，正在重试... (${retryCount + 1}/3)`)
+      ElMessage.warning(`加载启用模块列表失败，正在重试... (${retryCount + 1}/3)`)
       setTimeout(() => loadModuleList(retryCount + 1), 1000)
     } else {
-      ElMessage.error('加载模块列表失败: ' + (error.message || '网络连接错误'))
+      ElMessage.error('加载启用模块列表失败: ' + (error.message || '网络连接错误'))
     }
   }
 }
 
-const buildSystemTree = () => {
-  // 确保systemList和moduleList都是数组
-  const systems = Array.isArray(systemList.value) ? systemList.value : []
-  const modules = Array.isArray(moduleList.value) ? moduleList.value : []
-  
-  const treeData = []
-  
-  systems.forEach(system => {
-    // 获取该系统下的模块
-    const systemModules = modules.filter(module => 
-      module && system && module.system_uuid === system.id
-    )
-    
-    const systemNode = {
-      id: system.id,
-      label: system.name,
-      type: 'system',
-      children: []
-    }
-    
-    // 添加模块作为系统的子节点
-    systemModules.forEach(module => {
-      systemNode.children.push({
-        id: module.id,
-        label: module.name,
-        type: 'module',
-        systemId: system.id
+const buildSystemTree = async () => {
+  try {
+    const response = await apiProxy.system.getEnabledListByCategory('backend')
+    if (response.success && response.data) {
+      const systems = Array.isArray(response.data) ? response.data : []
+      const modules = Array.isArray(moduleList.value) ? moduleList.value : []
+      
+      const treeData = []
+      
+      systems.forEach(system => {
+        // 获取该系统下的模块
+        const systemModules = modules.filter(module => 
+          module && system && module.system_id === system.id
+        )
+        
+        const systemNode = {
+          id: system.id,
+          label: system.name,
+          type: 'system',
+          category: system.category,
+          children: []
+        }
+        
+        // 添加模块作为系统的子节点
+        systemModules.forEach(module => {
+          const moduleNode = {
+            id: module.id,
+            label: module.name,
+            type: 'module',
+            systemId: system.id
+          }
+          systemNode.children.push(moduleNode)
+        })
+        
+        treeData.push(systemNode)
       })
-    })
-    
-    treeData.push(systemNode)
-  })
-  
-  systemTreeData.value = treeData
+      
+      systemTreeData.value = treeData
+    }
+  } catch (error) {
+    console.error('获取backend系统列表失败:', error)
+    systemTreeData.value = []
+  }
 }
 
 const loadApiList = async (retryCount = 0) => {
   try {
     loading.value = true
-    const params = {
-      system_id: selectedSystemId.value,
-      module_id: selectedModuleId.value,
-      keyword: searchForm.keyword,
-      method: searchForm.method,
-      enabled_only: false
+    const params = {}
+    
+    // 只传递有值的参数，避免空字符串导致后端验证失败
+    if (selectedSystemId.value) {
+      params.system_id = selectedSystemId.value
     }
+    if (selectedModuleId.value) {
+      params.module_id = selectedModuleId.value
+    }
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.method) {
+      params.method = searchForm.method
+    }
+    params.enabled_only = false
     
     const response = await apiProxy.getApis(params)
     if (response.success) {
@@ -568,10 +591,6 @@ const handleSystemNodeClick = (data) => {
   } else if (data.type === 'module') {
     selectedSystemId.value = data.systemId
     selectedModuleId.value = data.id
-  } else {
-    // 全部系统
-    selectedSystemId.value = ''
-    selectedModuleId.value = ''
   }
   
   // 更新URL参数
@@ -592,9 +611,29 @@ const handleSystemNodeClick = (data) => {
   loadApiList()
 }
 
+/**
+ * 根据系统分类获取图标
+ */
+const getSystemIcon = (category) => {
+  const iconMap = {
+    'backend': Cloudy,      // 后端服务使用云图标
+    'frontend': Monitor,    // 前端应用使用显示器图标
+    'web': Link,
+    'api': Cloudy,
+    'mobile': Phone,
+    'desktop': Monitor,
+    'database': DataBoard,
+    'middleware': Connection,
+    'hardware': Cpu,
+    'other': Platform
+  }
+  return iconMap[category] || Platform
+}
+
 const getSystemTreeIcon = (data) => {
   if (data.type === 'system') {
-    return Monitor  // 系统使用电脑图标
+    // 根据系统分类返回对应图标
+    return getSystemIcon(data.category)
   } else if (data.type === 'module') {
     return Document // 模块使用文件图标
   } else {
@@ -734,9 +773,36 @@ const saveApi = async (formData) => {
     
     dialogVisible.value = false
     loadApiList()
+    
+    // 重置子组件的保存状态
+    if (apiFormDialogRef.value) {
+      apiFormDialogRef.value.resetSavingState()
+    }
   } catch (error) {
     console.error('保存API失败:', error)
-    ElMessage.error('保存失败')
+    
+    // 显示详细错误信息
+    let errorMessage = '保存失败'
+    if (error.response && error.response.data) {
+      if (typeof error.response.data === 'string') {
+        errorMessage = `保存失败: ${error.response.data}`
+      } else if (error.response.data.message) {
+        errorMessage = `保存失败: ${error.response.data.message}`
+      } else if (error.response.data.detail) {
+        errorMessage = `保存失败: ${JSON.stringify(error.response.data.detail)}`
+      } else {
+        errorMessage = `保存失败: ${JSON.stringify(error.response.data)}`
+      }
+    } else if (error.message) {
+      errorMessage = `保存失败: ${error.message}`
+    }
+    
+    ElMessage.error(errorMessage)
+    
+    // 保存失败时也要重置子组件的保存状态
+    if (apiFormDialogRef.value) {
+      apiFormDialogRef.value.resetSavingState()
+    }
   }
 }
 

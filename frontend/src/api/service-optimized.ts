@@ -1,8 +1,13 @@
 import { request } from '@/utils/request'
+import { ApiResponse } from '@/types/api'
+import { SystemService } from './services/SystemService'
+import { ModuleService } from './services/ModuleService'
+import { SystemConverter } from './converters/SystemConverter'
+import { ModuleConverter } from './converters/ModuleConverter'
 
 /**
- * 服务管理API接口 - 优化版
- * 适配新的后端接口结构，使用自增ID主键和UUID业务标识符
+ * 服务管理API接口 - 重构版
+ * 使用分层架构：Service层负责业务逻辑，Converter层负责数据转换
  */
 
 // 查询参数接口
@@ -43,12 +48,6 @@ interface ModuleData {
   tags?: string[]
 }
 
-interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  message?: string
-}
-
 interface StatsData {
   systems?: Record<string, any>
   modules?: Record<string, any>
@@ -63,7 +62,7 @@ export const systemApiOptimized = {
    * @returns 系统列表数据
    */
   getList(params: SystemListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/systems', params)
+    return SystemService.collectSystemListData(params)
   },
 
   /**
@@ -72,7 +71,7 @@ export const systemApiOptimized = {
    * @returns 系统详情数据
    */
   getDetail(systemId: string): Promise<ApiResponse> {
-    return request.get(`/api/systems/${systemId}`)
+    return SystemService.collectSystemDetailData(systemId)
   },
 
   /**
@@ -81,7 +80,7 @@ export const systemApiOptimized = {
    * @returns 创建结果
    */
   create(systemData: SystemData): Promise<ApiResponse> {
-    return request.post('/api/systems', systemData)
+    return SystemService.createSystemData(systemData)
   },
 
   /**
@@ -91,7 +90,7 @@ export const systemApiOptimized = {
    * @returns 更新结果
    */
   update(systemId: string, systemData: SystemData): Promise<ApiResponse> {
-    return request.put(`/api/systems/${systemId}`, systemData)
+    return SystemService.updateSystemData(systemId, systemData)
   },
 
   /**
@@ -100,7 +99,7 @@ export const systemApiOptimized = {
    * @returns 删除结果
    */
   delete(systemId: string): Promise<ApiResponse> {
-    return request.delete(`/api/systems/${systemId}`)
+    return SystemService.deleteSystemData(systemId)
   },
 
   /**
@@ -110,7 +109,7 @@ export const systemApiOptimized = {
    * @returns 更新结果
    */
   updateStatus(systemId: string, enabled: boolean): Promise<ApiResponse> {
-    return request.patch(`/api/systems/${systemId}/status`, { enabled })
+    return SystemService.updateSystemStatus(systemId, enabled)
   },
 
   /**
@@ -119,7 +118,7 @@ export const systemApiOptimized = {
    * @returns 搜索结果
    */
   search(keyword: string): Promise<ApiResponse> {
-    return request.get('/api/systems', { keyword })
+    return SystemService.searchSystemData(keyword)
   },
 
   /**
@@ -128,7 +127,7 @@ export const systemApiOptimized = {
    * @returns 系统列表
    */
   getByCategory(category: string): Promise<ApiResponse> {
-    return request.get('/api/systems', { category })
+    return SystemService.collectSystemsByCategory(category)
   }
 }
 
@@ -140,7 +139,7 @@ export const moduleApiOptimized = {
    * @returns 模块列表数据
    */
   getList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/modules', params)
+    return ModuleService.collectModuleListData(params)
   },
 
   /**
@@ -150,16 +149,16 @@ export const moduleApiOptimized = {
    * @returns 模块列表数据
    */
   getBySystem(systemId: string, params: ModuleListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/modules', { ...params, system_id: systemId })
+    return ModuleService.collectModulesBySystem(systemId, params)
   },
 
   /**
    * 获取模块详情
    * @param moduleId - 模块UUID
-   * @returns 模块详情数据
+   * @returns 模块详情
    */
   getDetail(moduleId: string): Promise<ApiResponse> {
-    return request.get(`/api/modules/${moduleId}`)
+    return ModuleService.collectModuleDetailData(moduleId)
   },
 
   /**
@@ -168,7 +167,7 @@ export const moduleApiOptimized = {
    * @returns 创建结果
    */
   create(moduleData: ModuleData): Promise<ApiResponse> {
-    return request.post('/api/modules', moduleData)
+    return ModuleService.createModuleData(moduleData)
   },
 
   /**
@@ -178,7 +177,7 @@ export const moduleApiOptimized = {
    * @returns 更新结果
    */
   update(moduleId: string, moduleData: ModuleData): Promise<ApiResponse> {
-    return request.put(`/api/modules/${moduleId}`, moduleData)
+    return ModuleService.updateModuleData(moduleId, moduleData)
   },
 
   /**
@@ -187,7 +186,7 @@ export const moduleApiOptimized = {
    * @returns 删除结果
    */
   delete(moduleId: string): Promise<ApiResponse> {
-    return request.delete(`/api/modules/${moduleId}`)
+    return ModuleService.deleteModuleData(moduleId)
   },
 
   /**
@@ -197,7 +196,7 @@ export const moduleApiOptimized = {
    * @returns 更新结果
    */
   updateStatus(moduleId: string, enabled: boolean): Promise<ApiResponse> {
-    return request.patch(`/api/modules/${moduleId}/status`, { enabled })
+    return ModuleService.updateModuleStatus(moduleId, enabled)
   },
 
   /**
@@ -207,11 +206,7 @@ export const moduleApiOptimized = {
    * @returns 搜索结果
    */
   search(keyword: string, systemId: string | null = null): Promise<ApiResponse> {
-    const params: ModuleListParams = { keyword }
-    if (systemId) {
-      params.system_id = systemId
-    }
-    return request.get('/api/modules', params)
+    return ModuleService.searchModuleData(keyword, systemId)
   },
 
   /**
@@ -220,7 +215,7 @@ export const moduleApiOptimized = {
    * @returns 模块列表
    */
   getByTags(tags: string[]): Promise<ApiResponse> {
-    return request.get('/api/modules', { tags: tags.join(',') })
+    return ModuleService.collectModulesByTags(tags)
   }
 }
 
@@ -281,129 +276,32 @@ export const healthApiOptimized = {
   }
 }
 
-// 数据转换工具
-export const dataTransformUtils = {
-  /**
-   * 转换后端系统数据为前端格式
-   * @param backendSystem - 后端系统数据
-   * @returns 前端系统数据
-   */
-  transformSystemFromBackend(backendSystem: any): any {
-    return {
-      id: backendSystem.uuid,
-      name: backendSystem.name,
-      description: backendSystem.description,
-      icon: backendSystem.icon,
-      category: backendSystem.category,
-      enabled: backendSystem.enabled,
-      orderIndex: backendSystem.order_index,
-      url: backendSystem.url,
-      metadata: backendSystem.metadata,
-      createdAt: backendSystem.created_at,
-      updatedAt: backendSystem.updated_at
-    }
-  },
-
-  /**
-   * 转换后端模块数据为前端格式
-   * @param backendModule - 后端模块数据
-   * @returns 前端模块数据
-   */
-  transformModuleFromBackend(backendModule: any): any {
-    return {
-      id: backendModule.uuid,
-      systemId: backendModule.system_id,
-      name: backendModule.name,
-      description: backendModule.description,
-      icon: backendModule.icon,
-      url: backendModule.url,
-      enabled: backendModule.enabled,
-      orderIndex: backendModule.order_index,
-      metadata: backendModule.metadata,
-      tags: backendModule.tags,
-      createdAt: backendModule.created_at,
-      updatedAt: backendModule.updated_at
-    }
-  },
-
-  /**
-   * 转换前端系统数据为后端格式
-   * @param frontendSystem - 前端系统数据
-   * @returns 后端系统数据
-   */
-  transformSystemToBackend(frontendSystem: any): any {
-    return {
-      name: frontendSystem.name,
-      description: frontendSystem.description,
-      icon: frontendSystem.icon,
-      category: frontendSystem.category,
-      enabled: frontendSystem.enabled,
-      order_index: frontendSystem.orderIndex,
-      url: frontendSystem.url,
-      metadata: frontendSystem.metadata
-    }
-  },
-
-  /**
-   * 转换前端模块数据为后端格式
-   * @param frontendModule - 前端模块数据
-   * @returns 后端模块数据
-   */
-  transformModuleToBackend(frontendModule: any): any {
-    return {
-      system_id: frontendModule.systemId,
-      name: frontendModule.name,
-      description: frontendModule.description,
-      icon: frontendModule.icon,
-      url: frontendModule.url,
-      enabled: frontendModule.enabled,
-      order_index: frontendModule.orderIndex,
-      metadata: frontendModule.metadata,
-      tags: frontendModule.tags
-    }
-  },
-
-  /**
-   * 批量转换系统数据
-   * @param backendSystems - 后端系统数据列表
-   * @returns 前端系统数据列表
-   */
-  transformSystemsFromBackend(backendSystems: any[]): any[] {
-    return backendSystems.map(this.transformSystemFromBackend)
-  },
-
-  /**
-   * 批量转换模块数据
-   * @param backendModules - 后端模块数据列表
-   * @returns 前端模块数据列表
-   */
-  transformModulesFromBackend(backendModules: any[]): any[] {
-    return backendModules.map(this.transformModuleFromBackend)
-  }
-}
+// 数据转换功能已移至专门的Converter类中
+// SystemConverter: ./converters/SystemConverter.ts
+// ModuleConverter: ./converters/ModuleConverter.ts
 
 // 兼容性API（保持向后兼容）
 export const systemApi = {
   getList: (params: SystemListParams = {}) => {
     return systemApiOptimized.getList(params).then(response => ({
       ...response,
-      data: dataTransformUtils.transformSystemsFromBackend(response.data || [])
+      data: SystemConverter.transformListFromBackend(response.data || [])
     }))
   },
 
   getDetail: (systemId: string) => {
     return systemApiOptimized.getDetail(systemId).then(response => ({
       ...response,
-      data: response.data ? dataTransformUtils.transformSystemFromBackend(response.data) : null
+      data: response.data ? SystemConverter.transformFromBackend(response.data) : null
     }))
   },
 
   create: (systemData: any) => {
-    return systemApiOptimized.create(dataTransformUtils.transformSystemToBackend(systemData))
+    return systemApiOptimized.create(SystemConverter.transformToBackend(systemData))
   },
 
   update: (systemId: string, systemData: any) => {
-    return systemApiOptimized.update(systemId, dataTransformUtils.transformSystemToBackend(systemData))
+    return systemApiOptimized.update(systemId, SystemConverter.transformToBackend(systemData))
   },
 
   delete: systemApiOptimized.delete,
@@ -416,30 +314,30 @@ export const moduleApi = {
   getList: (params: ModuleListParams = {}) => {
     return moduleApiOptimized.getList(params).then(response => ({
       ...response,
-      data: dataTransformUtils.transformModulesFromBackend(response.data || [])
+      data: ModuleConverter.transformListFromBackend(response.data || [])
     }))
   },
 
   getBySystem: (systemId: string, params: ModuleListParams = {}) => {
     return moduleApiOptimized.getBySystem(systemId, params).then(response => ({
       ...response,
-      data: dataTransformUtils.transformModulesFromBackend(response.data || [])
+      data: ModuleConverter.transformListFromBackend(response.data || [])
     }))
   },
 
   getDetail: (moduleId: string) => {
     return moduleApiOptimized.getDetail(moduleId).then(response => ({
       ...response,
-      data: response.data ? dataTransformUtils.transformModuleFromBackend(response.data) : null
+      data: response.data ? ModuleConverter.transformFromBackend(response.data) : null
     }))
   },
 
   create: (moduleData: any) => {
-    return moduleApiOptimized.create(dataTransformUtils.transformModuleToBackend(moduleData))
+    return moduleApiOptimized.create(ModuleConverter.transformToBackend(moduleData))
   },
 
   update: (moduleId: string, moduleData: any) => {
-    return moduleApiOptimized.update(moduleId, dataTransformUtils.transformModuleToBackend(moduleData))
+    return moduleApiOptimized.update(moduleId, ModuleConverter.transformToBackend(moduleData))
   },
 
   delete: moduleApiOptimized.delete,
@@ -456,7 +354,5 @@ export default {
   health: healthApiOptimized,
   // 优化版API
   systemOptimized: systemApiOptimized,
-  moduleOptimized: moduleApiOptimized,
-  // 数据转换工具
-  transform: dataTransformUtils
+  moduleOptimized: moduleApiOptimized
 }

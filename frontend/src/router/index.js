@@ -84,6 +84,26 @@ const routes = [
     ]
   },
   {
+    path: '/page-management',
+    component: Layout,
+    redirect: '/page-management/list',
+    meta: {
+      title: '页面管理',
+      icon: 'Document'
+    },
+    children: [
+      {
+        path: 'list',
+        name: 'PageList',
+        component: () => import('@/views/page-management/index.vue'),
+        meta: {
+          title: '页面列表',
+          icon: 'List'
+        }
+      }
+    ]
+  },
+  {
     path: '/workflow-orchestration',
     component: Layout,
     redirect: '/workflow-orchestration/list',
@@ -128,7 +148,7 @@ const routes = [
     component: Layout,
     redirect: '/service-management/systems',
     meta: {
-      title: '服务管理',
+      title: '系统管理',
       icon: 'Monitor'
     },
     children: [

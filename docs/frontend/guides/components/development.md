@@ -564,6 +564,255 @@ const { form, loading, errors, validate, reset, save } = useApiForm()
 </script>
 ```
 
+### 5. 父子组件状态管理最佳实践
+
+#### 5.1 状态重置模式
+当子组件需要父组件通知其重置状态时，推荐使用以下模式：
+
+**方案一：使用 defineExpose 暴露方法**
+```vue
+<!-- 子组件 (FormDialog.vue) -->
+<template>
+  <el-dialog v-model="visible" :title="title">
+    <el-form ref="formRef" :model="form">
+      <!-- 表单内容 -->
+    </el-form>
+    <template #footer>
+      <el-button @click="handleCancel">取消</el-button>
+      <el-button 
+        type="primary" 
+        :loading="saving" 
+        @click="handleSave"
+      >
+        保存
+      </el-button>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+
+const props = defineProps<{
+  visible: boolean
+  title: string
+  formData: FormData
+}>()
+
+const emit = defineEmits<{
+  'update:visible': [value: boolean]
+  save: [data: FormData]
+  cancel: []
+}>()
+
+const saving = ref(false)
+const form = reactive({ ...props.formData })
+
+const handleSave = async () => {
+  saving.value = true
+  emit('save', form)
+  // 注意：不在这里重置 saving 状态
+}
+
+const handleCancel = () => {
+  emit('cancel')
+}
+
+// 暴露重置方法给父组件
+const resetSavingState = () => {
+  saving.value = false
+}
+
+const resetForm = () => {
+  Object.assign(form, props.formData)
+}
+
+defineExpose({
+  resetSavingState,
+  resetForm
+})
+</script>
+```
+
+```vue
+<!-- 父组件 (ParentPage.vue) -->
+<template>
+  <div>
+    <FormDialog
+      ref="formDialogRef"
+      v-model:visible="dialogVisible"
+      :title="dialogTitle"
+      :form-data="formData"
+      @save="handleSave"
+      @cancel="handleCancel"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const formDialogRef = ref()
+const dialogVisible = ref(false)
+
+const handleSave = async (formData) => {
+  try {
+    await apiService.save(formData)
+    
+    // 保存成功后的处理
+    ElMessage.success('保存成功')
+    dialogVisible.value = false
+    
+    // 重置子组件状态
+    formDialogRef.value.resetSavingState()
+    
+  } catch (error) {
+    ElMessage.error('保存失败')
+    
+    // 保存失败也要重置状态
+    formDialogRef.value.resetSavingState()
+  }
+}
+
+const handleCancel = () => {
+  dialogVisible.value = false
+  formDialogRef.value.resetSavingState()
+}
+</script>
+```
+
+**方案二：使用事件通信**
+```vue
+<!-- 子组件 -->
+<script setup>
+const props = defineProps<{
+  resetTrigger: number
+}>()
+
+// 监听重置触发器
+watch(() => props.resetTrigger, () => {
+  saving.value = false
+  // 其他重置逻辑
+})
+</script>
+
+<!-- 父组件 -->
+<template>
+  <FormDialog 
+    :reset-trigger="resetTrigger"
+    @save="handleSave"
+  />
+</template>
+
+<script setup>
+const resetTrigger = ref(0)
+
+const handleSave = async (formData) => {
+  try {
+    await apiService.save(formData)
+  } finally {
+    // 无论成功失败都触发重置
+    resetTrigger.value++
+  }
+}
+</script>
+```
+
+#### 5.2 异步操作状态管理
+```vue
+<script setup>
+// 统一的异步操作状态管理
+const useAsyncOperation = () => {
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  
+  const execute = async <T>(operation: () => Promise<T>): Promise<T> => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const result = await operation()
+      return result
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '操作失败'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const reset = () => {
+    loading.value = false
+    error.value = null
+  }
+  
+  return {
+    loading: readonly(loading),
+    error: readonly(error),
+    execute,
+    reset
+  }
+}
+
+// 在组件中使用
+const { loading, error, execute, reset } = useAsyncOperation()
+
+const handleSave = () => {
+  execute(async () => {
+    await apiService.save(formData)
+    emit('save-success')
+  }).catch(() => {
+    // 错误已经在 execute 中处理
+  })
+}
+</script>
+```
+
+#### 5.3 状态管理最佳实践总结
+
+1. **明确状态责任边界**
+   - 子组件负责内部状态管理
+   - 父组件负责业务逻辑和状态协调
+   - 避免状态管理责任混乱
+
+2. **及时重置状态**
+   - 异步操作完成后立即重置loading状态
+   - 使用 finally 块确保状态重置
+   - 错误情况下也要重置状态
+
+3. **提供明确的状态反馈**
+   - 成功操作给予明确提示
+   - 失败操作显示具体错误信息
+   - 加载状态要有视觉反馈
+
+4. **使用类型安全的通信**
+   - 使用 TypeScript 定义 Props 和 Emits
+   - 明确方法的参数和返回值类型
+   - 避免使用 any 类型
+
+5. **错误处理策略**
+   ```typescript
+   // 统一的错误处理
+   const handleError = (error: unknown, context: string) => {
+     console.error(`${context} 错误:`, error)
+     
+     if (error instanceof Error) {
+       ElMessage.error(error.message)
+     } else {
+       ElMessage.error(`${context}失败，请重试`)
+     }
+   }
+   
+   // 在异步操作中使用
+   try {
+     await apiService.save(formData)
+   } catch (error) {
+     handleError(error, '保存操作')
+   } finally {
+     resetState()
+   }
+   ```
+
 ## 🧪 组件测试策略
 
 ### 1. 单元测试

@@ -9,7 +9,7 @@ API Interfaces Management API - With Service Layer
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
 from ..models.api_interface import (
     ApiInterface, ApiInterfaceCreate, ApiInterfaceUpdate, 
     ApiInterfaceQueryRequest, ApiInterfaceResponse,
@@ -20,16 +20,52 @@ from ..utils.response import success_response, error_response
 
 router = APIRouter(tags=["API接口管理"])
 
-@router.get("/", response_model=dict, summary="获取API接口列表")
-async def get_api_interfaces():
-    """获取所有API接口列表"""
+
+def create_query_request(
+    system_id: Optional[int] = Query(None, description="系统ID筛选"),
+    module_id: Optional[int] = Query(None, description="模块ID筛选"),
+    keyword: Optional[str] = Query(None, description="搜索关键词"),
+    method: Optional[str] = Query(None, description="HTTP方法筛选"),
+    status: Optional[str] = Query(None, description="状态筛选"),
+    enabled_only: Optional[bool] = Query(None, description="仅显示启用的"),
+    page: int = Query(1, ge=1, description="页码"),
+    size: int = Query(1000, ge=1, le=1000, description="每页数量")
+) -> ApiInterfaceQueryRequest:
+    """创建API接口查询请求对象"""
+    return ApiInterfaceQueryRequest(
+        system_id=system_id,
+        module_id=module_id,
+        keyword=keyword,
+        method=method,
+        status=status,
+        enabled_only=enabled_only,
+        page=page,
+        size=size
+    )
+
+@router.get("/api-interfaces/v1/", response_model=dict, summary="获取API接口列表")
+async def get_api_interfaces(query_request: ApiInterfaceQueryRequest = Depends(create_query_request)):
+    """获取API接口列表，支持多种筛选条件"""
     try:
-        apis = ApiInterfaceService.get_api_interfaces()
+        # 如果有筛选条件，使用搜索接口
+        if any([
+            query_request.system_id, 
+            query_request.module_id, 
+            query_request.keyword, 
+            query_request.method, 
+            query_request.status, 
+            query_request.enabled_only
+        ]):
+            apis = ApiInterfaceService.search_api_interfaces(query_request)
+        else:
+            # 没有筛选条件时返回所有API
+            apis = ApiInterfaceService.get_api_interfaces()
+        
         return success_response(data=apis, message="获取API接口列表成功")
     except Exception as e:
         return error_response(message=f"获取API接口列表失败: {str(e)}")
 
-@router.get("/{api_id}", response_model=dict, summary="获取API接口详情")
+@router.get("/api-interfaces/v1/{api_id}", response_model=dict, summary="获取API接口详情")
 async def get_api_interface(api_id: int):
     """根据ID获取API接口详情"""
     try:
@@ -42,7 +78,7 @@ async def get_api_interface(api_id: int):
     except Exception as e:
         return error_response(message=f"获取API接口详情失败: {str(e)}")
 
-@router.post("/", response_model=dict, summary="创建API接口")
+@router.post("/api-interfaces/v1/", response_model=dict, summary="创建API接口")
 async def create_api_interface(api: ApiInterfaceCreate):
     """创建新API接口"""
     try:
@@ -53,7 +89,7 @@ async def create_api_interface(api: ApiInterfaceCreate):
     except Exception as e:
         return error_response(message=f"创建API接口失败: {str(e)}")
 
-@router.put("/{api_id}", response_model=dict, summary="更新API接口")
+@router.put("/api-interfaces/v1/{api_id}", response_model=dict, summary="更新API接口")
 async def update_api_interface(api_id: int, api: ApiInterfaceUpdate):
     """更新API接口信息"""
     try:
@@ -68,7 +104,7 @@ async def update_api_interface(api_id: int, api: ApiInterfaceUpdate):
     except Exception as e:
         return error_response(message=f"更新API接口失败: {str(e)}")
 
-@router.delete("/{api_id}", response_model=dict, summary="删除API接口")
+@router.delete("/api-interfaces/v1/{api_id}", response_model=dict, summary="删除API接口")
 async def delete_api_interface(api_id: int):
     """删除API接口"""
     try:
@@ -81,7 +117,7 @@ async def delete_api_interface(api_id: int):
     except Exception as e:
         return error_response(message=f"删除API接口失败: {str(e)}")
 
-@router.post("/search", response_model=dict, summary="搜索API接口")
+@router.post("/api-interfaces/v1/search", response_model=dict, summary="搜索API接口")
 async def search_api_interfaces(query: ApiInterfaceQueryRequest):
     """搜索API接口"""
     try:
@@ -90,7 +126,7 @@ async def search_api_interfaces(query: ApiInterfaceQueryRequest):
     except Exception as e:
         return error_response(message=f"搜索API接口失败: {str(e)}")
 
-@router.get("/search/simple", response_model=dict, summary="简单搜索API接口")
+@router.get("/api-interfaces/v1/search/simple", response_model=dict, summary="简单搜索API接口")
 async def search_api_interfaces_simple(
     keyword: Optional[str] = Query(None, description="搜索关键词"),
     system_id: Optional[int] = Query(None, description="系统ID"),
@@ -116,7 +152,7 @@ async def search_api_interfaces_simple(
     except Exception as e:
         return error_response(message=f"搜索API接口失败: {str(e)}")
 
-@router.get("/system/{system_id}", response_model=dict, summary="获取系统的API接口")
+@router.get("/api-interfaces/v1/system/{system_id}", response_model=dict, summary="获取系统的API接口")
 async def get_api_interfaces_by_system(system_id: int):
     """根据系统ID获取API接口列表"""
     try:
@@ -127,7 +163,7 @@ async def get_api_interfaces_by_system(system_id: int):
     except Exception as e:
         return error_response(message=f"获取系统API接口列表失败: {str(e)}")
 
-@router.get("/module/{module_id}", response_model=dict, summary="获取模块的API接口")
+@router.get("/api-interfaces/v1/module/{module_id}", response_model=dict, summary="获取模块的API接口")
 async def get_api_interfaces_by_module(module_id: int):
     """根据模块ID获取API接口列表"""
     try:
@@ -138,7 +174,7 @@ async def get_api_interfaces_by_module(module_id: int):
     except Exception as e:
         return error_response(message=f"获取模块API接口列表失败: {str(e)}")
 
-@router.get("/stats/summary", response_model=dict, summary="获取API接口统计")
+@router.get("/api-interfaces/v1/stats/summary", response_model=dict, summary="获取API接口统计")
 async def get_api_interface_stats():
     """获取API接口统计信息"""
     try:
@@ -147,7 +183,7 @@ async def get_api_interface_stats():
     except Exception as e:
         return error_response(message=f"获取统计信息失败: {str(e)}")
 
-@router.post("/batch/status", response_model=dict, summary="批量更新状态")
+@router.post("/api-interfaces/v1/batch/status", response_model=dict, summary="批量更新状态")
 async def batch_update_status(batch_request: ApiInterfaceBatchRequest):
     """批量更新API接口状态"""
     try:
@@ -158,7 +194,7 @@ async def batch_update_status(batch_request: ApiInterfaceBatchRequest):
     except Exception as e:
         return error_response(message=f"批量更新状态失败: {str(e)}")
 
-@router.post("/batch/delete", response_model=dict, summary="批量删除API接口")
+@router.post("/api-interfaces/v1/batch/delete", response_model=dict, summary="批量删除API接口")
 async def batch_delete_api_interfaces(api_ids: List[int] = Body(..., description="API接口ID列表")):
     """批量删除API接口"""
     try:
@@ -169,7 +205,7 @@ async def batch_delete_api_interfaces(api_ids: List[int] = Body(..., description
     except Exception as e:
         return error_response(message=f"批量删除失败: {str(e)}")
 
-@router.get("/export/data", response_model=dict, summary="导出API接口数据")
+@router.get("/api-interfaces/v1/export/data", response_model=dict, summary="导出API接口数据")
 async def export_api_interfaces(
     system_id: Optional[int] = Query(None, description="系统ID"),
     status: Optional[str] = Query(None, description="状态筛选")
@@ -200,7 +236,7 @@ async def export_api_interfaces(
     except Exception as e:
         return error_response(message=f"导出数据失败: {str(e)}")
 
-@router.post("/import/data", response_model=dict, summary="导入API接口数据")
+@router.post("/api-interfaces/v1/import/data", response_model=dict, summary="导入API接口数据")
 async def import_api_interfaces(apis_data: List[ApiInterfaceCreate]):
     """批量导入API接口数据"""
     try:
@@ -236,7 +272,7 @@ async def import_api_interfaces(apis_data: List[ApiInterfaceCreate]):
     except Exception as e:
         return error_response(message=f"导入数据失败: {str(e)}")
 
-@router.get("/methods/list", response_model=dict, summary="获取HTTP方法列表")
+@router.get("/api-interfaces/v1/methods/list", response_model=dict, summary="获取HTTP方法列表")
 async def get_http_methods():
     """获取支持的HTTP方法列表"""
     try:
@@ -253,7 +289,7 @@ async def get_http_methods():
     except Exception as e:
         return error_response(message=f"获取HTTP方法列表失败: {str(e)}")
 
-@router.get("/statuses/list", response_model=dict, summary="获取状态列表")
+@router.get("/api-interfaces/v1/statuses/list", response_model=dict, summary="获取状态列表")
 async def get_api_statuses():
     """获取API接口状态列表"""
     try:

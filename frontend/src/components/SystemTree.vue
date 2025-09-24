@@ -53,12 +53,21 @@
       <div class="tree-actions">
         <el-button
           size="small"
+          @click="handleRefresh"
+          :loading="refreshing"
+          title="刷新"
+        >
+          <el-icon>
+            <Refresh />
+          </el-icon>
+        </el-button>
+        <el-button
+          size="small"
           @click="toggleExpandAll"
           :title="expandAll ? '收起所有' : '展开所有'"
         >
           <el-icon>
-            <ArrowDown v-if="expandAll" />
-            <ArrowRight v-else />
+            <component :is="IconManager.getArrowIcon(expandAll)" />
           </el-icon>
         </el-button>
       </div>
@@ -80,11 +89,12 @@
         @node-contextmenu="handleNodeContextMenu"
       >
         <template #default="{ node, data }">
-          <div class="tree-node">
-            <el-icon class="node-icon" :size="16">
+          <div class="tree-node" :class="{ 'disabled-node': data.enabled === false }">
+            <el-icon class="node-icon" :size="16" :class="{ 'disabled-icon': data.enabled === false }">
               <component :is="getNodeIcon(data)" />
             </el-icon>
-            <span class="node-label">{{ node.label }}</span>
+            <span class="node-label" :class="{ 'disabled-label': data.enabled === false }">{{ node.label }}</span>
+            <span v-if="data.enabled === false" class="disabled-tag">已禁用</span>
             <span v-if="showCount && data.apiCount !== undefined" class="node-count">
               ({{ data.apiCount }})
             </span>
@@ -119,22 +129,20 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
-import {
+import { ref, computed, nextTick, watch } from 'vue'
+import { IconManager } from '@/utils/IconManager'
+
+// 获取系统树组件所需的图标
+const {
   Search,
-  ArrowDown,
-  ArrowRight,
+  Refresh,
   MoreFilled,
   Plus,
   Edit,
   Delete,
-  Folder,
   DocumentAdd,
-  FolderOpened,
-  Document,
-  Setting,
-  Monitor
-} from '@element-plus/icons-vue'
+  Setting
+} = IconManager.getSystemTreeIcons()
 
 /**
  * 组件Props定义
@@ -177,17 +185,22 @@ const props = defineProps({
   getIcon: {
     type: Function,
     default: undefined
+  },
+  showDisabled: {
+    type: Boolean,
+    default: true
   }
 })
 
 // Emits定义
-const emit = defineEmits(['node-click', 'node-contextmenu', 'tree-action'])
+const emit = defineEmits(['node-click', 'node-contextmenu', 'tree-action', 'refresh'])
 
 // 响应式数据
 const treeRef = ref()
 const treeKey = ref(0)
 const searchKeyword = ref('')
 const expandAll = ref(false)
+const refreshing = ref(false)
 
 // 树形配置
 const treeProps = computed(() => ({
@@ -196,7 +209,52 @@ const treeProps = computed(() => ({
 }))
 
 // 树形数据
-const treeData = computed(() => props.data)
+const treeData = computed(() => {
+  if (props.showDisabled) {
+    return props.data
+  }
+  
+  // 递归过滤禁用的节点
+  const filterDisabled = (nodes) => {
+    return nodes.filter(node => {
+      // 如果节点被禁用，则过滤掉
+      if (node.enabled === false) {
+        return false
+      }
+      
+      // 如果有子节点，递归过滤子节点
+      if (node[props.childrenKey] && node[props.childrenKey].length > 0) {
+        node[props.childrenKey] = filterDisabled(node[props.childrenKey])
+      }
+      
+      return true
+    })
+  }
+  
+  return filterDisabled([...props.data])
+})
+
+// 监听数据变化，强制重新渲染树组件
+watch(
+  () => props.data,
+  (newData, oldData) => {
+    // 当数据发生变化时，强制重新渲染树组件
+    if (newData !== oldData || (Array.isArray(newData) && newData.length !== (Array.isArray(oldData) ? oldData.length : 0))) {
+      nextTick(() => {
+        treeKey.value++
+        // 如果有搜索关键词，重新应用过滤
+        if (searchKeyword.value && treeRef.value) {
+          setTimeout(() => {
+            if (treeRef.value) {
+              treeRef.value.filter(searchKeyword.value)
+            }
+          }, 100)
+        }
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 // 方法
 const handleSearch = () => {
@@ -259,6 +317,46 @@ const handleTreeAction = (command) => {
 }
 
 /**
+ * 处理刷新操作
+ */
+const handleRefresh = async () => {
+  refreshing.value = true
+  try {
+    emit('refresh')
+    // 延迟重置刷新状态，给用户视觉反馈
+    setTimeout(() => {
+      refreshing.value = false
+    }, 500)
+  } catch (error) {
+    refreshing.value = false
+    console.error('刷新失败:', error)
+  }
+}
+
+/**
+ * 根据系统分类获取对应图标
+ * 
+ * @param {string} category - 系统分类
+ * @returns {any} 图标组件
+ */
+const getSystemIcon = (category) => {
+  const systemTypeIcons = IconManager.getSystemTypeIcons()
+  const iconMap = {
+    'backend': systemTypeIcons.Cloudy,      // 后端服务使用云图标
+    'frontend': systemTypeIcons.Monitor,    // 前端应用使用显示器图标
+    'web': systemTypeIcons.Link,
+    'api': systemTypeIcons.Cloudy,
+    'mobile': systemTypeIcons.Phone,
+    'desktop': systemTypeIcons.Monitor,
+    'database': systemTypeIcons.DataBoard,
+    'middleware': systemTypeIcons.Connection,
+    'hardware': systemTypeIcons.Cpu,
+    'other': systemTypeIcons.Platform
+  }
+  return iconMap[category] || systemTypeIcons.Platform
+}
+
+/**
  * 获取节点图标
  * 
  * @param {any} data - 节点数据
@@ -271,13 +369,14 @@ const getNodeIcon = (data) => {
   
   // 默认图标逻辑
   if (data.type === 'system') {
-    return Monitor  // 系统使用电脑图标
+    // 根据系统分类返回对应图标
+    return getSystemIcon(data.category)
   } else if (data.type === 'module' || data.isModule) {
-    return Document // 模块使用文件图标
+    return IconManager.getDefaultModuleIcon() // 模块使用文件图标
   } else if (data.type === 'all') {
-    return FolderOpened
+    return IconManager.getFolderIcon(true)
   } else {
-    return Document
+    return IconManager.getDefaultModuleIcon()
   }
 }
 
@@ -292,7 +391,8 @@ defineExpose({
     if (treeRef.value) {
       treeRef.value.setCurrentKey(key)
     }
-  }
+  },
+  getSystemIcon
 })
 </script>
 
@@ -431,5 +531,28 @@ defineExpose({
 :deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
   background-color: var(--el-color-primary-light-8);
   color: var(--el-color-primary);
+}
+
+/* 禁用状态样式 */
+.disabled-node {
+  opacity: 0.8;
+}
+
+.disabled-icon {
+  color: var(--el-color-danger) !important;
+}
+
+.disabled-label {
+  color: var(--el-color-danger) !important;
+  font-weight: 500;
+}
+
+.disabled-tag {
+  font-size: 10px;
+  color: var(--el-color-danger);
+  background-color: var(--el-color-danger-light-9);
+  padding: 1px 4px;
+  border-radius: 2px;
+  margin-left: 4px;
 }
 </style>

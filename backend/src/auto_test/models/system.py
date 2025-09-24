@@ -21,6 +21,8 @@ class SystemUpdate(BaseModel):
     name: Optional[str] = Field(None, description="系统名称")
     description: Optional[str] = Field(None, description="系统描述")
     status: Optional[str] = Field(None, description="系统状态")
+    category: Optional[str] = Field(None, description="系统分类")
+    enabled: Optional[bool] = Field(None, description="是否启用")
 
 class System(SystemBase):
     """系统模型"""

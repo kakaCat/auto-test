@@ -22,16 +22,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, CancelTokenSource, InternalAxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
-
-/**
- * API响应数据结构
- */
-export interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  message?: string
-  code?: number
-}
+import type { ApiResponse, DownloadParams } from '@/types'
 
 /**
  * 请求配置选项
@@ -42,12 +33,7 @@ export interface RequestConfig extends AxiosRequestConfig {
   skipErrorHandler?: boolean
 }
 
-/**
- * 文件下载参数
- */
-export interface DownloadParams {
-  [key: string]: any
-}
+
 
 /**
  * 请求方法接口

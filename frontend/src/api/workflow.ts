@@ -1,4 +1,5 @@
 import { request } from '@/utils/request'
+import { ApiResponse } from '@/types/api'
 
 /**
  * 工作流编排相关接口
@@ -74,12 +75,6 @@ export interface ExportParams {
   format?: string
 }
 
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data: T
-}
-
 // 工作流管理
 export const workflowApi = {
   /**
@@ -88,7 +83,7 @@ export const workflowApi = {
    * @returns 工作流列表数据
    */
   getWorkflowList(params: WorkflowListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/workflows', params)
+    return request.get('/api/workflows/v1/', params)
   },
 
   /**
@@ -97,7 +92,7 @@ export const workflowApi = {
    * @returns 工作流详情数据
    */
   getWorkflowDetail(workflowId: string): Promise<ApiResponse> {
-    return request.get(`/api/workflows/${workflowId}`)
+    return request.get(`/api/workflows/v1/${workflowId}`)
   },
 
   /**
@@ -106,7 +101,7 @@ export const workflowApi = {
    * @returns 创建结果
    */
   createWorkflow(data: WorkflowData): Promise<ApiResponse> {
-    return request.post('/api/workflows', data)
+    return request.post('/api/workflows/v1/', data)
   },
 
   /**
@@ -116,7 +111,7 @@ export const workflowApi = {
    * @returns 更新结果
    */
   updateWorkflow(workflowId: string, data: Partial<WorkflowData>): Promise<ApiResponse> {
-    return request.put(`/api/workflows/${workflowId}`, data)
+    return request.put(`/api/workflows/v1/${workflowId}`, data)
   },
 
   /**
@@ -125,7 +120,7 @@ export const workflowApi = {
    * @returns 删除结果
    */
   deleteWorkflow(workflowId: string): Promise<ApiResponse> {
-    return request.delete(`/api/workflows/${workflowId}`)
+    return request.delete(`/api/workflows/v1/${workflowId}`)
   },
 
   /**
@@ -135,7 +130,7 @@ export const workflowApi = {
    * @returns 发布结果
    */
   publishWorkflow(workflowId: string, data: PublishData): Promise<ApiResponse> {
-    return request.post(`/api/workflows/${workflowId}/publish`, data)
+    return request.post(`/api/workflows/v1/${workflowId}/publish`, data)
   },
 
   /**
@@ -145,7 +140,7 @@ export const workflowApi = {
    * @returns 执行结果
    */
   executeWorkflow(workflowId: string, data: ExecutionData = {}): Promise<ApiResponse> {
-    return request.post(`/api/workflows/${workflowId}/execute`, data)
+    return request.post(`/api/workflows/v1/${workflowId}/execute`, data)
   },
 
   /**
@@ -155,7 +150,7 @@ export const workflowApi = {
    * @returns 停止结果
    */
   stopExecution(workflowId: string, executionId: string): Promise<ApiResponse> {
-    return request.post(`/api/workflows/${workflowId}/stop`, { execution_id: executionId })
+    return request.post(`/api/workflows/v1/${workflowId}/stop`, { execution_id: executionId })
   },
 
   /**
@@ -165,7 +160,7 @@ export const workflowApi = {
    * @returns 执行历史
    */
   getExecutionHistory(workflowId: string, params: ExecutionHistoryParams = {}): Promise<ApiResponse> {
-    return request.get(`/api/workflows/${workflowId}/executions`, { params })
+    return request.get(`/api/workflows/v1/${workflowId}/executions`, { params })
   },
 
   /**
@@ -182,7 +177,7 @@ export const workflowApi = {
    * @returns 统计数据
    */
   getWorkflowStatistics(): Promise<ApiResponse> {
-    return request.get('/api/workflows/stats')
+    return request.get('/api/workflows/v1/stats')
   },
 
   /**
@@ -192,7 +187,7 @@ export const workflowApi = {
    * @returns 复制结果
    */
   copyWorkflow(workflowId: string, data: CopyWorkflowData): Promise<ApiResponse> {
-    return request.post(`/api/workflows/${workflowId}/copy`, data)
+    return request.post(`/api/workflows/v1/${workflowId}/copy`, data)
   },
 
   /**
@@ -200,12 +195,13 @@ export const workflowApi = {
    * @returns 统计数据
    */
   getStats(): Promise<ApiResponse> {
-    // TODO: 后端需要实现 GET /api/workflows/stats 接口
+    // TODO: 后端需要实现 GET /api/workflows/v1/stats 接口
     console.warn('获取工作流统计数据接口未在后端实现')
     return Promise.resolve({
       success: true,
       message: '模拟数据',
-      data: {}
+      data: {},
+      timestamp: new Date().toISOString()
     })
   }
 }
@@ -223,7 +219,8 @@ export const workflowTemplateApi = {
     return Promise.resolve({
       success: true,
       message: '模拟数据',
-      data: []
+      data: [],
+      timestamp: new Date().toISOString()
     })
   },
 
@@ -233,12 +230,13 @@ export const workflowTemplateApi = {
    * @returns 模板详情数据
    */
   getTemplateDetail(templateId: string): Promise<ApiResponse> {
-    // TODO: 后端需要实现 /api/workflow-templates/{templateId} 接口
-    console.warn('工作流模板详情接口未在后端实现')
+    // TODO: 后端需要实现 /api/workflow-templates/{id} 接口
+    console.warn('工作流模板接口未在后端实现')
     return Promise.resolve({
-      success: true,
-      message: '模拟数据',
-      data: null
+      success: false,
+      message: '接口未实现',
+      data: null,
+      timestamp: new Date().toISOString()
     })
   },
 
@@ -249,11 +247,12 @@ export const workflowTemplateApi = {
    */
   createTemplate(data: TemplateData): Promise<ApiResponse> {
     // TODO: 后端需要实现 POST /api/workflow-templates 接口
-    console.warn('创建工作流模板接口未在后端实现')
+    console.warn('工作流模板接口未在后端实现')
     return Promise.resolve({
       success: false,
       message: '接口未实现',
-      data: null
+      data: null,
+      timestamp: new Date().toISOString()
     })
   },
 
@@ -264,12 +263,13 @@ export const workflowTemplateApi = {
    * @returns 更新结果
    */
   updateTemplate(templateId: string, data: Partial<TemplateData>): Promise<ApiResponse> {
-    // TODO: 后端需要实现 PUT /api/workflow-templates/{templateId} 接口
-    console.warn('更新工作流模板接口未在后端实现')
+    // TODO: 后端需要实现 PUT /api/workflow-templates/{id} 接口
+    console.warn('工作流模板接口未在后端实现')
     return Promise.resolve({
       success: false,
       message: '接口未实现',
-      data: null
+      data: null,
+      timestamp: new Date().toISOString()
     })
   },
 
@@ -279,12 +279,13 @@ export const workflowTemplateApi = {
    * @returns 删除结果
    */
   deleteTemplate(templateId: string): Promise<ApiResponse> {
-    // TODO: 后端需要实现 DELETE /api/workflow-templates/{templateId} 接口
-    console.warn('删除工作流模板接口未在后端实现')
+    // TODO: 后端需要实现 DELETE /api/workflow-templates/{id} 接口
+    console.warn('工作流模板接口未在后端实现')
     return Promise.resolve({
       success: false,
       message: '接口未实现',
-      data: null
+      data: null,
+      timestamp: new Date().toISOString()
     })
   },
 
@@ -295,34 +296,44 @@ export const workflowTemplateApi = {
    * @returns 创建结果
    */
   createWorkflowFromTemplate(templateId: string, data: Partial<WorkflowData>): Promise<ApiResponse> {
-    // TODO: 后端需要实现 POST /api/workflow-templates/{templateId}/create-workflow 接口
-    console.warn('从模板创建工作流接口未在后端实现')
+    // TODO: 后端需要实现 POST /api/workflow-templates/{id}/create-workflow 接口
+    console.warn('工作流模板接口未在后端实现')
     return Promise.resolve({
       success: false,
       message: '接口未实现',
-      data: null
+      data: null,
+      timestamp: new Date().toISOString()
     })
   }
 }
 
-// 工作流导入导出
+// 工作流导入导出管理 (注意：以下接口在后端未实现，仅作为前端接口定义)
 export const workflowImportExportApi = {
   /**
-   * 导入工作流
+   * 导入工作流 (后端未实现)
    * @param formData - 文件数据
    * @returns 导入结果
    */
   importWorkflow(formData: FormData): Promise<ApiResponse> {
-    return request.upload('/api/workflows/import', formData)
+    // TODO: 后端需要实现 POST /api/workflows/v1/import 接口
+    console.warn('工作流导入接口未在后端实现')
+    return Promise.resolve({
+      success: false,
+      message: '接口未实现',
+      data: null,
+      timestamp: new Date().toISOString()
+    })
   },
 
   /**
-   * 导出工作流
+   * 导出工作流 (后端未实现)
    * @param params - 导出参数
-   * @returns 导出结果
+   * @returns 文件数据
    */
   exportWorkflow(params: ExportParams = {}): Promise<Blob> {
-    return request.download('/api/workflows/export', params, 'workflows.json')
+    // TODO: 后端需要实现 GET /api/workflows/v1/export 接口
+    console.warn('工作流导出接口未在后端实现')
+    return Promise.resolve(new Blob())
   }
 }
 

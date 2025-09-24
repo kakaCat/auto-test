@@ -1,4 +1,5 @@
 import { request } from '@/utils/request'
+import { ApiResponse } from '@/types/api'
 
 /**
  * API管理相关接口
@@ -75,12 +76,6 @@ export interface StatsData {
   recent_activity: any[]
 }
 
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data: T
-}
-
 // API接口管理
 export const apiManagementApi = {
   /**
@@ -89,7 +84,7 @@ export const apiManagementApi = {
    * @returns 服务列表数据
    */
   getServiceList(params: ServiceListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/systems', params)
+    return request.get('/api/systems/v1/', params)
   },
 
   /**
@@ -98,7 +93,7 @@ export const apiManagementApi = {
    * @returns 模块列表数据
    */
   getModuleList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/modules', params)
+    return request.get('/api/modules/v1/', params)
   },
 
   /**
@@ -125,7 +120,7 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createService(data: ServiceData): Promise<ApiResponse> {
-    return request.post('/api/systems', data)
+    return request.post('/api/systems/v1/', data)
   },
 
   /**
@@ -144,7 +139,7 @@ export const apiManagementApi = {
    * @returns 更新结果
    */
   updateService(systemId: string, data: Partial<ServiceData>): Promise<ApiResponse> {
-    return request.put(`/api/systems/${systemId}`, data)
+    return request.put(`/api/systems/v1/${systemId}`, data)
   },
 
   /**
@@ -163,7 +158,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteService(systemId: string): Promise<ApiResponse> {
-    return request.delete(`/api/systems/${systemId}`)
+    return request.delete(`/api/systems/v1/${systemId}`)
   },
 
   /**
@@ -209,8 +204,8 @@ export const apiManagementApi = {
    */
   getStats(): Promise<ApiResponse<StatsData>> {
     return Promise.all([
-      request.get('/api/workflows/stats'),
-      request.get('/api/scenarios/stats')
+      request.get('/api/workflows/v1/stats'),
+      request.get('/api/scenarios/v1/stats')
     ]).then(([workflowResponse, scenarioResponse]) => {
       return {
         success: true,
@@ -222,7 +217,8 @@ export const apiManagementApi = {
             total_apis: 0 // 暂时使用默认值
           },
           recent_activity: []
-        }
+        },
+        timestamp: new Date().toISOString()
       }
     }).catch((error: Error) => {
       console.error('获取统计数据失败:', error)
@@ -234,7 +230,8 @@ export const apiManagementApi = {
           scenario_stats: { total_scenarios: 0 },
           api_stats: { total_apis: 0 },
           recent_activity: []
-        }
+        },
+        timestamp: new Date().toISOString()
       }
     })
   },
@@ -245,16 +242,25 @@ export const apiManagementApi = {
    * @returns 导入结果
    */
   importApis(formData: FormData): Promise<ApiResponse> {
-    return request.upload('/api/interfaces/import', formData)
+    // TODO: 后端需要实现 POST /api/import 接口
+    console.warn('导入API接口未在后端实现')
+    return Promise.resolve({
+      success: false,
+      message: '接口未实现',
+      data: null,
+      timestamp: new Date().toISOString()
+    })
   },
 
   /**
    * 导出API
    * @param params - 导出参数
-   * @returns 导出文件
+   * @returns 文件数据
    */
   exportApis(params: Record<string, any> = {}): Promise<Blob> {
-    return request.download('/api/interfaces/export', params, 'apis.json')
+    // TODO: 后端需要实现 GET /api/export 接口
+    console.warn('导出API接口未在后端实现')
+    return Promise.resolve(new Blob())
   }
 }
 

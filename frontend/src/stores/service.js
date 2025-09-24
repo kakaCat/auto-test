@@ -6,7 +6,11 @@ import {
   SystemCategory,
   SystemCategoryLabels 
 } from '@/types/service'
-import { systemApi, moduleApi } from '@/api/service'
+import unifiedApi from '@/api/unified-api'
+
+// 使用统一API
+const systemApi = unifiedApi.system
+const moduleApi = unifiedApi.module
 
 export const useServiceStore = defineStore('service', () => {
   // 状态

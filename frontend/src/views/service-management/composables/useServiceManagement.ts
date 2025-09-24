@@ -71,7 +71,7 @@ export interface UseServiceManagementReturn {
   saveSystem: () => Promise<void>
   saveModule: () => Promise<void>
   handleSystemAction: (command: string) => Promise<void>
-  handleModuleAction: (command: string) => Promise<void>
+  handleModuleAction: (command: string) => Promise<any | void>
   handleCurrentChange: (page: number) => void
   handleSizeChange: (size: number) => void
   refreshData: () => Promise<void>
@@ -263,29 +263,49 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
       loading.value = true
       error.value = null
       
-      // 准备保存数据
-      const saveData = {
-        system_id: moduleForm.system_id || '',
-        name: moduleForm.name,
-        description: moduleForm.description,
-        icon: moduleForm.icon,
-        path: moduleForm.path,
-        method: moduleForm.method || 'GET',
-        module_type: moduleForm.module_type || 'service',
-        enabled: moduleForm.enabled,
-        version: moduleForm.version || '1.0.0',
-        tags: moduleForm.tags || [],
-        config: moduleForm.config || {},
-        order_index: moduleForm.order_index || 0
-      }
-      
       if (moduleForm.id) {
-        // 编辑模式
-        await moduleApiProxy.update(moduleForm.id, saveData)
+        // 编辑模式 - 不发送system_id字段
+        const updateData: any = {
+          name: moduleForm.name,
+          description: moduleForm.description,
+          path: moduleForm.path || '/'
+        }
+        
+        // 处理tags字段 - 后端期望字符串，前端可能是数组
+        if (moduleForm.tags) {
+          if (Array.isArray(moduleForm.tags)) {
+            updateData.tags = moduleForm.tags.join(',')
+          } else {
+            updateData.tags = moduleForm.tags
+          }
+        }
+        
+        await moduleApiProxy.update(moduleForm.id, updateData)
         ElMessage.success('模块更新成功')
       } else {
-        // 新增模式
-        await moduleApiProxy.create(saveData)
+        // 新增模式 - 需要发送system_id字段
+        const createData: any = {
+          system_id: moduleForm.system_id || '',
+          name: moduleForm.name,
+          description: moduleForm.description,
+          path: moduleForm.path || '/'
+        }
+        
+        // 处理system_id - 后端期望数字，前端可能是字符串
+        if (moduleForm.system_id) {
+          createData.system_id = parseInt(moduleForm.system_id)
+        }
+        
+        // 处理tags字段 - 后端期望字符串，前端可能是数组
+        if (moduleForm.tags) {
+          if (Array.isArray(moduleForm.tags)) {
+            createData.tags = moduleForm.tags.join(',')
+          } else {
+            createData.tags = moduleForm.tags
+          }
+        }
+        
+        await moduleApiProxy.create(createData)
         ElMessage.success('模块创建成功')
       }
       
@@ -331,8 +351,16 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
         break
       case 'toggle':
         try {
-          // TODO: 实现系统状态切换功能
-          ElMessage.info('系统状态切换功能待实现')
+          const newStatus = !system.enabled
+          await systemApiProxy.toggleEnabled(systemId, newStatus)
+          
+          // 更新本地状态
+          system.enabled = newStatus
+          
+          ElMessage.success(`系统已${newStatus ? '启用' : '禁用'}`)
+          
+          // 刷新数据以确保状态同步
+          await refreshData()
         } catch (error) {
           ElMessage.error('操作失败: ' + (error as Error).message)
         }
@@ -358,7 +386,7 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
     }
   }
   
-  const handleModuleAction = async (command: string): Promise<void> => {
+  const handleModuleAction = async (command: string): Promise<any> => {
     const [action, moduleId] = command.split('-')
     let targetModule: Module | null = null
     let targetSystemId: string | null = null
@@ -400,10 +428,22 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
         break
       case 'toggle':
         try {
-          // TODO: 实现模块状态切换功能
-          ElMessage.info('模块状态切换功能待实现')
+          const newStatus = !targetModule.enabled
+          const response = await moduleApiProxy.toggleEnabled(moduleId, newStatus)
+          
+          // 更新本地状态
+          targetModule.enabled = newStatus
+          
+          ElMessage.success(`模块已${newStatus ? '启用' : '禁用'}`)
+          
+          // 刷新数据以确保状态同步
+          await refreshData()
+          
+          // 返回更新后的模块数据，供调用方更新selectedNode
+          return response.data
         } catch (error) {
           ElMessage.error('操作失败: ' + (error as Error).message)
+          throw error
         }
         break
       case 'delete':
