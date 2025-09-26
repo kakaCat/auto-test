@@ -120,6 +120,15 @@ const routes = [
           title: 'API调用流程列表',
           icon: 'List'
         }
+      },
+      {
+        path: 'designer',
+        name: 'WorkflowDesigner',
+        component: () => import('@/views/workflow-orchestration/designer.vue'),
+        meta: {
+          title: '可视化设计器',
+          icon: 'Setting'
+        }
       }
     ]
   },
@@ -164,155 +173,155 @@ const routes = [
       }
     ]
   },
-  {
-    path: '/ai-execution',
-    component: Layout,
-    redirect: '/ai-execution/console',
-    meta: {
-      title: 'AI场景执行',
-      icon: 'MagicStick'
-    },
-    children: [
-      {
-        path: 'console',
-        name: 'AiConsole',
-        component: () => import('@/views/ai-scenario-execution/index.vue'),
-        meta: {
-          title: '执行控制台',
-          icon: 'Monitor'
-        }
-      },
-      {
-        path: 'history',
-        name: 'AiHistory',
-        component: () => import('@/views/ai-scenario-execution/index.vue'),
-        meta: {
-          title: '执行历史',
-          icon: 'Clock'
-        }
-      },
-      {
-        path: 'config',
-        name: 'AiConfig',
-        component: () => import('@/views/ai-scenario-execution/index.vue'),
-        meta: {
-          title: 'AI配置',
-          icon: 'Setting'
-        }
-      }
-    ]
-  },
-  {
-    path: '/integration',
-    component: Layout,
-    redirect: '/integration/dashboard',
-    meta: {
-      title: '系统集成',
-      icon: 'Connection'
-    },
-    children: [
-      {
-        path: 'dashboard',
-        name: 'IntegrationDashboard',
-        component: () => import('@/views/system-integration/index.vue'),
-        meta: {
-          title: '集成仪表板',
-          icon: 'DataBoard'
-        }
-      },
-      {
-        path: 'batch-operations',
-        name: 'BatchOperations',
-        component: () => import('@/views/system-integration/index.vue'),
-        meta: {
-          title: '批量操作',
-          icon: 'Operation'
-        }
-      },
-      {
-        path: 'monitor',
-        name: 'SystemMonitor',
-        component: () => import('@/views/system-integration/index.vue'),
-        meta: {
-          title: '系统监控',
-          icon: 'Monitor'
-        }
-      },
-      {
-        path: 'settings',
-        name: 'SystemSettings',
-        component: () => import('@/views/system-integration/index.vue'),
-        meta: {
-          title: '系统设置',
-          icon: 'Setting'
-        }
-      }
-    ]
-  },
-  {
-    path: '/monitor',
-    component: Layout,
-    redirect: '/monitor/logs',
-    meta: {
-      title: '监控管理',
-      icon: 'Monitor'
-    },
-    children: [
-      {
-        path: 'logs',
-        name: 'MonitorLogs',
-        component: () => import('@/views/monitor/logs.vue'),
-        meta: {
-          title: '日志管理',
-          icon: 'DocumentCopy'
-        }
-      }
-    ]
-  },
-  {
-    path: '/api-test',
-    component: Layout,
-    meta: {
-      title: 'API切换测试',
-      icon: 'Setting'
-    },
-    children: [
-      {
-        path: '',
-        name: 'ApiTest',
-        component: () => import('@/views/api-test.vue'),
-        meta: {
-          title: 'API切换测试',
-          icon: 'Setting'
-        }
-      }
-    ]
-  },
+  // {
+  //   path: '/ai-execution',
+  //   component: Layout,
+  //   redirect: '/ai-execution/console',
+  //   meta: {
+  //     title: 'AI场景执行',
+  //     icon: 'MagicStick'
+  //   },
+  //   children: [
+  //     {
+  //       path: 'console',
+  //       name: 'AiConsole',
+  //       component: () => import('@/views/ai-scenario-execution/index.vue'),
+  //       meta: {
+  //         title: '执行控制台',
+  //         icon: 'Monitor'
+  //       }
+  //     },
+  //     {
+  //       path: 'history',
+  //       name: 'AiHistory',
+  //       component: () => import('@/views/ai-scenario-execution/index.vue'),
+  //       meta: {
+  //         title: '执行历史',
+  //         icon: 'Clock'
+  //       }
+  //     },
+  //     {
+  //       path: 'config',
+  //       name: 'AiConfig',
+  //       component: () => import('@/views/ai-scenario-execution/index.vue'),
+  //       meta: {
+  //         title: 'AI配置',
+  //         icon: 'Setting'
+  //       }
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: '/integration',
+  //   component: Layout,
+  //   redirect: '/integration/dashboard',
+  //   meta: {
+  //     title: '系统集成',
+  //     icon: 'Connection'
+  //   },
+  //   children: [
+  //     {
+  //       path: 'dashboard',
+  //       name: 'IntegrationDashboard',
+  //       component: () => import('@/views/system-integration/index.vue'),
+  //       meta: {
+  //         title: '集成仪表板',
+  //         icon: 'DataBoard'
+  //       }
+  //     },
+  //     {
+  //       path: 'batch-operations',
+  //       name: 'BatchOperations',
+  //       component: () => import('@/views/system-integration/index.vue'),
+  //       meta: {
+  //         title: '批量操作',
+  //         icon: 'Operation'
+  //       }
+  //     },
+  //     {
+  //       path: 'monitor',
+  //       name: 'SystemMonitor',
+  //       component: () => import('@/views/system-integration/index.vue'),
+  //       meta: {
+  //         title: '系统监控',
+  //         icon: 'Monitor'
+  //       }
+  //     },
+  //     {
+  //       path: 'settings',
+  //       name: 'SystemSettings',
+  //       component: () => import('@/views/system-integration/index.vue'),
+  //       meta: {
+  //         title: '系统设置',
+  //         icon: 'Setting'
+  //       }
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: '/monitor',
+  //   component: Layout,
+  //   redirect: '/monitor/logs',
+  //   meta: {
+  //     title: '监控管理',
+  //     icon: 'Monitor'
+  //   },
+  //   children: [
+  //     {
+  //       path: 'logs',
+  //       name: 'MonitorLogs',
+  //       component: () => import('@/views/monitor/logs.vue'),
+  //       meta: {
+  //         title: '日志管理',
+  //         icon: 'DocumentCopy'
+  //       }
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: '/api-test',
+  //   component: Layout,
+  //   meta: {
+  //     title: 'API切换测试',
+  //     icon: 'Setting'
+  //   },
+  //   children: [
+  //     {
+  //       path: '',
+  //       name: 'ApiTest',
+  //       component: () => import('@/views/api-test.vue'),
+  //       meta: {
+  //         title: 'API切换测试',
+  //         icon: 'Setting'
+  //       }
+  //     }
+  //   ]
+  // },
 
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/login/index.vue'),
-    meta: {
-      title: '登录',
-      hidden: true,
-      requiresAuth: false
-    }
-  },
-  {
-    path: '/404',
-    name: '404',
-    component: () => import('@/views/404.vue'),
-    meta: {
-      title: '页面不存在',
-      hidden: true,
-      requiresAuth: false
-    }
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/404'
-  }
+  // {
+  //   path: '/login',
+  //   name: 'Login',
+  //   component: () => import('@/views/login/index.vue'),
+  //   meta: {
+  //     title: '登录',
+  //     hidden: true,
+  //     requiresAuth: false
+  //   }
+  // },
+  // {
+  //   path: '/404',
+  //   name: '404',
+  //   component: () => import('@/views/404.vue'),
+  //   meta: {
+  //     title: '页面不存在',
+  //     hidden: true,
+  //     requiresAuth: false
+  //   }
+  // },
+  // {
+  //   path: '/:pathMatch(.*)*',
+  //   redirect: '/404'
+  // }
 ]
 
 /**
@@ -404,7 +413,20 @@ router.beforeEach((to, from, next) => {
    * - 默认所有页面都需要登录
    */
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false)
-  const isLoggedIn = !!localStorage.getItem('user')  // 检查本地存储的用户信息
+  let isLoggedIn = !!localStorage.getItem('user')  // 检查本地存储的用户信息
+  
+  // 如果没有用户信息，自动设置默认测试用户（开发环境）
+  if (!isLoggedIn && process.env.NODE_ENV === 'development') {
+    const defaultUser = {
+      id: 1,
+      username: 'admin',
+      name: '管理员',
+      avatar: '',
+      roles: ['admin']
+    }
+    localStorage.setItem('user', JSON.stringify(defaultUser))
+    isLoggedIn = true
+  }
   
   if (requiresAuth && !isLoggedIn) {
     // 需要登录但未登录，重定向到登录页

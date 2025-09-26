@@ -69,7 +69,7 @@ async def create_system(system: SystemCreate):
         new_system = SystemService.create_system(system)
         return success_response(data=new_system, message="创建系统成功")
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"创建系统失败: {str(e)}")
 
@@ -84,7 +84,7 @@ async def update_system(system_id: int, system: SystemUpdate):
     except HTTPException:
         raise
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"更新系统失败: {str(e)}")
 

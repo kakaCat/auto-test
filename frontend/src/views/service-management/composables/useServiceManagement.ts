@@ -21,7 +21,7 @@ import type {
   PaginationConfig,
   TreeTableNode,
   SystemCategory
-} from '../types'
+} from '../types/index'
 
 import {
   defaultSearchForm,
@@ -30,7 +30,7 @@ import {
   defaultModuleForm
 } from '../data'
 
-// 扩展搜索表单接口
+// 其他导入
 interface ExtendedSearchFormData {
   name: string
   category: SystemCategory | undefined
@@ -39,6 +39,7 @@ interface ExtendedSearchFormData {
 
 export interface UseServiceManagementReturn {
   // 状态
+  systems: Ref<System[]>
   loading: Ref<boolean>
   expandedRows: Ref<string[]>
   selectedSystemId: Ref<string | null>
@@ -80,10 +81,10 @@ export interface UseServiceManagementReturn {
 }
 
 export const useServiceManagement = (): UseServiceManagementReturn => {
-  // Store
   const serviceStore = useServiceStore()
   
   // 状态管理
+  const systems = ref<System[]>([])
   const loading = ref(false)
   const expandedRows = ref<string[]>([])
   const selectedSystemId = ref<string | null>(null)
@@ -92,19 +93,19 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   // 对话框状态
   const systemDialogVisible = ref(false)
   const moduleDialogVisible = ref(false)
-  const systemDialogTitle = ref('新增管理系统')
-  const moduleDialogTitle = ref('新增模块')
+  const systemDialogTitle = ref('')
+  const moduleDialogTitle = ref('')
   
   // 表单数据
-  const searchForm = reactive<ExtendedSearchFormData>({
+  const searchForm = reactive({
     name: '',
     category: undefined,
     enabled: undefined
   })
   
-  const systemForm = reactive<SystemFormData>({ ...defaultSystemForm })
-  const moduleForm = reactive<ModuleFormData>({ ...defaultModuleForm })
-  const pagination = reactive<PaginationConfig>({ ...defaultPagination })
+  const systemForm = reactive(defaultSystemForm)
+  const moduleForm = reactive(defaultModuleForm)
+  const pagination = reactive(defaultPagination)
   
   // 防抖搜索
   const debouncedSearch = debounce(() => {
@@ -211,11 +212,11 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   }
   
   const resetSystemForm = (): void => {
-    Object.assign(systemForm, { ...defaultSystemForm })
+    Object.assign(systemForm, defaultSystemForm)
   }
   
   const resetModuleForm = (): void => {
-    Object.assign(moduleForm, { ...defaultModuleForm })
+    Object.assign(moduleForm, defaultModuleForm)
   }
   
   const saveSystem = async (): Promise<void> => {
@@ -495,6 +496,7 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   
   return {
     // 状态
+    systems,
     loading,
     expandedRows,
     selectedSystemId,

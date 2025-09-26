@@ -429,7 +429,7 @@ class {Domain}Converter:
 
 ## 📚 相关文档
 
-- [架构设计文档](../architecture/v4-simplified.md)
+- [架构设计文档](../architecture/v4_simplified.md)
 - [API文档](../api/api_documentation.md)
 - [快速开始指南](../quick_start.md)
 - [编码规范](./coding.md)

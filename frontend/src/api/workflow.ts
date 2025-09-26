@@ -190,20 +190,7 @@ export const workflowApi = {
     return request.post(`/api/workflows/v1/${workflowId}/copy`, data)
   },
 
-  /**
-   * 获取工作流统计数据 (后端未实现)
-   * @returns 统计数据
-   */
-  getStats(): Promise<ApiResponse> {
-    // TODO: 后端需要实现 GET /api/workflows/v1/stats 接口
-    console.warn('获取工作流统计数据接口未在后端实现')
-    return Promise.resolve({
-      success: true,
-      message: '模拟数据',
-      data: {},
-      timestamp: new Date().toISOString()
-    })
-  }
+
 }
 
 // 工作流模板管理 (注意：以下接口在后端未实现，仅作为前端接口定义)

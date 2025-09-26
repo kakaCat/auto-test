@@ -204,7 +204,7 @@ const loadLogs = async () => {
   loading.value = true
   try {
     const params = new URLSearchParams()
-    params.append('limit', filterForm.limit)
+    params.append('size', filterForm.limit)
     if (filterForm.level) {
       params.append('level', filterForm.level)
     }
@@ -216,7 +216,7 @@ const loadLogs = async () => {
       logs.value = result.data.logs
       // 更新统计数据
       logStats.value = result.data.stats
-      ElMessage.success(`加载成功，共${result.data.total}条日志`)
+      ElMessage.success(`加载成功，显示${result.data.logs.length}条日志，总计${result.data.total}条`)
     } else {
       ElMessage.error(result.message || '加载日志失败')
     }

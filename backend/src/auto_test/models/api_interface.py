@@ -15,15 +15,15 @@ class ApiInterfaceBase(BaseModel):
     method: str = Field(..., description="HTTP方法", pattern="^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)$")
     path: str = Field(..., description="接口路径")
     version: str = Field(default="v1", description="接口版本")
-    status: str = Field(default="active", description="接口状态", pattern="^(active|inactive|deprecated|testing)$")
+    status: str = Field(default="active", description="状态", pattern="^(active|inactive|deprecated|testing)$")
     request_format: str = Field(default="json", description="请求格式", pattern="^(json|form|xml)$")
     response_format: str = Field(default="json", description="响应格式", pattern="^(json|xml|text)$")
-    auth_required: bool = Field(default=True, description="是否需要认证")
+    auth_required: int = Field(default=1, description="是否需要认证(0:否, 1:是)")
     rate_limit: int = Field(default=1000, description="速率限制")
     timeout: int = Field(default=30, description="超时时间(秒)")
     tags: Optional[str] = Field(None, description="标签")
-    request_schema: Optional[str] = Field(None, description="请求Schema")
-    response_schema: Optional[str] = Field(None, description="响应Schema")
+    request_schema: Optional[str] = Field(None, description="请求模式")
+    response_schema: Optional[str] = Field(None, description="响应模式")
     example_request: Optional[str] = Field(None, description="请求示例")
     example_response: Optional[str] = Field(None, description="响应示例")
 
@@ -31,7 +31,7 @@ class ApiInterfaceBase(BaseModel):
 class ApiInterfaceCreate(ApiInterfaceBase):
     """创建API接口模型"""
     system_id: int = Field(..., description="所属系统ID")
-    module_id: Optional[int] = Field(None, description="所属模块ID")
+    module_id: int = Field(..., description="所属模块ID")
 
 
 class ApiInterfaceUpdate(BaseModel):
@@ -41,15 +41,16 @@ class ApiInterfaceUpdate(BaseModel):
     method: Optional[str] = Field(None, description="HTTP方法", pattern="^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)$")
     path: Optional[str] = Field(None, description="接口路径")
     version: Optional[str] = Field(None, description="接口版本")
-    status: Optional[str] = Field(None, description="接口状态", pattern="^(active|inactive|deprecated|testing)$")
+    status: Optional[str] = Field(None, description="状态", pattern="^(active|inactive|deprecated|testing)$")
+    enabled: Optional[bool] = Field(None, description="是否启用（兼容字段）")
     request_format: Optional[str] = Field(None, description="请求格式", pattern="^(json|form|xml)$")
     response_format: Optional[str] = Field(None, description="响应格式", pattern="^(json|xml|text)$")
-    auth_required: Optional[bool] = Field(None, description="是否需要认证")
+    auth_required: Optional[int] = Field(None, description="是否需要认证(0:否, 1:是)")
     rate_limit: Optional[int] = Field(None, description="速率限制")
     timeout: Optional[int] = Field(None, description="超时时间(秒)")
     tags: Optional[str] = Field(None, description="标签")
-    request_schema: Optional[str] = Field(None, description="请求Schema")
-    response_schema: Optional[str] = Field(None, description="响应Schema")
+    request_schema: Optional[str] = Field(None, description="请求模式")
+    response_schema: Optional[str] = Field(None, description="响应模式")
     example_request: Optional[str] = Field(None, description="请求示例")
     example_response: Optional[str] = Field(None, description="响应示例")
     system_id: Optional[int] = Field(None, description="所属系统ID")
@@ -65,6 +66,7 @@ class ApiInterface(ApiInterfaceBase):
     updated_at: datetime = Field(..., description="更新时间")
     system_name: Optional[str] = Field(None, description="系统名称")
     module_name: Optional[str] = Field(None, description="模块名称")
+    enabled: Optional[bool] = Field(None, description="是否启用（兼容字段）")
     
     class Config:
         from_attributes = True
@@ -104,8 +106,8 @@ class ApiInterfaceStats(BaseModel):
 
 class ApiInterfaceBatchRequest(BaseModel):
     """API接口批量操作请求模型"""
-    ids: List[int] = Field(..., description="接口ID列表")
-    action: str = Field(..., description="操作类型", pattern="^(activate|deactivate|deprecate|delete)$")
+    api_ids: List[int] = Field(..., description="接口ID列表")
+    status: str = Field(..., description="目标状态", pattern="^(active|inactive|deprecated|testing)$")
 
 
 class ApiInterfaceImportRequest(BaseModel):

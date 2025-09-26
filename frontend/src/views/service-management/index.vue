@@ -121,33 +121,6 @@
                 </el-descriptions-item>
               </el-descriptions>
             </el-card>
-
-            <!-- 系统统计信息 -->
-            <el-card class="stats-card" shadow="never">
-              <template #header>
-                <span class="card-title">统计信息</span>
-              </template>
-              <el-row :gutter="20">
-                <el-col :span="8">
-                  <div class="stat-item">
-                    <div class="stat-value">{{ selectedNode.modules?.length || 0 }}</div>
-                    <div class="stat-label">模块数量</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="stat-item">
-                    <div class="stat-value">{{ selectedNode.modules?.filter((m: any) => m.enabled).length || 0 }}</div>
-                    <div class="stat-label">启用模块</div>
-                  </div>
-                </el-col>
-                <el-col :span="8">
-                  <div class="stat-item">
-                    <div class="stat-value">{{ selectedNode.modules?.filter((m: any) => !m.enabled).length || 0 }}</div>
-                    <div class="stat-label">禁用模块</div>
-                  </div>
-                </el-col>
-              </el-row>
-            </el-card>
           </div>
         </div>
 
@@ -347,8 +320,8 @@ import {
 } from '@/utils/icons'
 
 // 导入类型定义
-import type { SystemCategory, System, Module } from './types'
-import { SystemCategoryLabels } from './types'
+import type { SystemCategory, System, Module } from './types/index'
+import { SystemCategoryLabels } from './types/index'
 
 // 导入API
 import { systemApi, moduleApi } from '@/api/service'
@@ -360,7 +333,7 @@ import {
   getSystemIcon,
   getModuleIcon,
   getCategoryTagType
-} from './data'
+} from './data/index'
 
 // 导入组合式函数
 import { useServiceManagement, useFormValidation } from './composables'
@@ -489,8 +462,18 @@ const handleModuleToggle = async (moduleId: number) => {
   try {
     const updatedModule = await handleModuleAction('toggle-' + moduleId)
     // 如果当前选中的是这个模块，更新selectedNode
-    if (selectedNode.value && selectedNode.value.id === moduleId && updatedModule) {
-      selectedNode.value = Object.assign({}, updatedModule, { isModule: true })
+    if (selectedNode.value && selectedNode.value.id === moduleId) {
+      if (updatedModule) {
+        // 使用后端返回的最新数据更新selectedNode
+        selectedNode.value = Object.assign({}, selectedNode.value, {
+          enabled: updatedModule.enabled,
+          status: updatedModule.status,
+          isModule: true
+        })
+      } else {
+        // 如果没有返回数据，手动切换状态
+        selectedNode.value.enabled = !selectedNode.value.enabled
+      }
     }
   } catch (error) {
     // 错误已在handleModuleAction中处理

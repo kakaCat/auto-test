@@ -8,7 +8,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 
 import type { SystemFormData, ModuleFormData } from '../types'
-import { systemFormRules, moduleFormRules, isValidUrl, isValidVersion } from '../data'
+import { systemFormRules, moduleFormRules, isValidUrl, isValidVersion } from '../data/index'
 
 export interface UseFormValidationReturn {
   systemFormRef: Ref<FormInstance | undefined>

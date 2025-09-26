@@ -31,7 +31,9 @@ docs/
 ├── README.md                    # 模块文档总览
 ├── api/                         # API相关文档
 ├── architecture/                # 架构设计文档
+├── examples/                    # 示例代码
 ├── guides/                      # 开发指南
+├── pages/                       # 页面/模块文档
 └── standards/                   # 编码规范
 ```
 
@@ -80,10 +82,13 @@ guides/
 - 名称要简洁明确
 
 ### 文件命名
-- 使用小写字母
-- 多个单词用下划线分隔
-- 避免使用大写字母和特殊字符
+- **一般文件**: 使用小写字母，多个单词用下划线分隔
+- **特殊文件例外**: 
+  - `README.md` - 项目约定俗成的大写格式
+  - `DOCUMENTATION_STANDARDS.md` - 重要标准文档可使用大写
+- 避免使用特殊字符（除下划线和连字符）
 - 文件名要能体现内容
+- **推荐格式**: `module_name.md`, `api_guide.md`, `quick_start.md`
 
 ### README文件
 - 每个文件夹都必须有 `README.md`

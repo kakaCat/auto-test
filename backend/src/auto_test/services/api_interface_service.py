@@ -153,8 +153,11 @@ class ApiInterfaceService:
             ApiInterfaceService._validate_api_interface_data(api_data.dict())
             
             # 检查路径和方法组合是否已存在
-            if ApiInterfaceService._is_api_path_method_exists(api_data.path, api_data.method, api_data.system_id):
-                raise ValueError(f"API接口路径 '{api_data.path}' 和方法 '{api_data.method}' 在该系统中已存在")
+            existing_api = ApiInterfaceService._get_existing_api_by_path_method(api_data.path, api_data.method, api_data.system_id)
+            if existing_api:
+                system_info = SystemDAO.get_by_id(api_data.system_id)
+                system_name = system_info.get('name', f'ID:{api_data.system_id}') if system_info else f'ID:{api_data.system_id}'
+                raise ValueError(f"API接口路径 '{api_data.path}' 和方法 '{api_data.method}' 在系统 \"{system_name}\" 中已存在（现有API: \"{existing_api.get('name', '未命名')}\" ID:{existing_api.get('id')}）。请修改路径或方法，或考虑更新现有API。")
             
             # 创建API接口
             api_id = ApiInterfaceDAO.create(api_data.dict())
@@ -190,14 +193,28 @@ class ApiInterfaceService:
             if update_dict:
                 ApiInterfaceService._validate_api_interface_data(update_dict, is_update=True)
                 
+                # 处理enabled和status字段的双向同步
+                if 'enabled' in update_dict:
+                    enabled = update_dict['enabled']
+                    if isinstance(enabled, bool):
+                        update_dict['status'] = 'active' if enabled else 'inactive'
+                    else:
+                        update_dict['status'] = 'active' if enabled == 1 else 'inactive'
+                elif 'status' in update_dict:
+                    status = update_dict['status']
+                    update_dict['enabled'] = 1 if status == 'active' else 0
+                
                 # 检查路径和方法组合是否冲突
                 if 'path' in update_dict or 'method' in update_dict:
                     new_path = update_dict.get('path', existing_api.get('path'))
                     new_method = update_dict.get('method', existing_api.get('method'))
                     system_id = update_dict.get('system_id', existing_api.get('system_id'))
                     
-                    if ApiInterfaceService._is_api_path_method_exists(new_path, new_method, system_id, exclude_id=api_id):
-                        raise ValueError(f"API接口路径 '{new_path}' 和方法 '{new_method}' 在该系统中已存在")
+                    conflicting_api = ApiInterfaceService._get_existing_api_by_path_method(new_path, new_method, system_id, exclude_id=api_id)
+                    if conflicting_api:
+                        system_info = SystemDAO.get_by_id(system_id)
+                        system_name = system_info.get('name', f'ID:{system_id}') if system_info else f'ID:{system_id}'
+                        raise ValueError(f"API接口路径 '{new_path}' 和方法 '{new_method}' 在系统 \"{system_name}\" 中已存在（冲突API: \"{conflicting_api.get('name', '未命名')}\" ID:{conflicting_api.get('id')}）。请修改路径或方法。")
             
             # 更新API接口
             success = ApiInterfaceDAO.update(api_id, update_dict)
@@ -407,8 +424,21 @@ class ApiInterfaceService:
         Returns:
             Dict[str, Any]: 应用业务规则后的数据
         """
-        # 添加状态标签
+        # 双向转换enabled和status字段以保持前后端兼容性
+        
+        # 如果有enabled字段，转换为status
+        if 'enabled' in api and api['enabled'] is not None:
+            enabled = api.get('enabled', 0)
+            if isinstance(enabled, bool):
+                api['status'] = 'active' if enabled else 'inactive'
+            else:
+                api['status'] = 'active' if enabled == 1 else 'inactive'
+        
+        # 如果有status字段，转换为enabled
         status = api.get('status', 'inactive')
+        api['enabled'] = status == 'active'
+        
+        # 添加状态标签
         api['status_label'] = {
             'active': '启用',
             'inactive': '禁用',
@@ -437,6 +467,28 @@ class ApiInterfaceService:
         else:
             api['tags_list'] = []
         
+        # 处理请求参数
+        request_params = api.get('request_params')
+        if request_params and isinstance(request_params, str):
+            try:
+                import json
+                api['request_schema'] = json.loads(request_params)
+            except:
+                api['request_schema'] = {}
+        else:
+            api['request_schema'] = request_params or {}
+        
+        # 处理响应示例
+        response_example = api.get('response_example')
+        if response_example and isinstance(response_example, str):
+            try:
+                import json
+                api['response_schema'] = json.loads(response_example)
+            except:
+                api['response_schema'] = {}
+        else:
+            api['response_schema'] = response_example or {}
+        
         # 添加完整URL
         path = api.get('path', '')
         if not path.startswith('/'):
@@ -456,7 +508,7 @@ class ApiInterfaceService:
         """
         # 验证必填字段（仅在创建时）
         if not is_update:
-            required_fields = ['name', 'method', 'path']
+            required_fields = ['name', 'method', 'path', 'system_id', 'module_id']
             for field in required_fields:
                 if not api_data.get(field):
                     raise ValueError(f"字段 '{field}' 不能为空")
@@ -480,15 +532,28 @@ class ApiInterfaceService:
                 raise ValueError(f"无效的状态: {api_data['status']}")
         
         # 验证系统ID和模块ID
-        if 'system_id' in api_data and api_data['system_id']:
-            system = SystemDAO.get_by_id(api_data['system_id'])
-            if not system:
-                raise ValueError(f"系统不存在: ID {api_data['system_id']}")
+        if 'system_id' in api_data:
+            if not api_data['system_id']:
+                if not is_update:
+                    raise ValueError("系统ID不能为空")
+            else:
+                system = SystemDAO.get_by_id(api_data['system_id'])
+                if not system:
+                    raise ValueError(f"系统不存在: ID {api_data['system_id']}")
         
-        if 'module_id' in api_data and api_data['module_id']:
-            module = ModuleDAO.get_by_id(api_data['module_id'])
-            if not module:
-                raise ValueError(f"模块不存在: ID {api_data['module_id']}")
+        if 'module_id' in api_data:
+            if not api_data['module_id']:
+                if not is_update:
+                    raise ValueError("模块ID不能为空")
+            else:
+                module = ModuleDAO.get_by_id(api_data['module_id'])
+                if not module:
+                    raise ValueError(f"模块不存在: ID {api_data['module_id']}")
+                
+                # 验证模块是否属于指定的系统
+                if 'system_id' in api_data and api_data['system_id']:
+                    if module.get('system_id') != api_data['system_id']:
+                        raise ValueError(f"模块 ID {api_data['module_id']} 不属于系统 ID {api_data['system_id']}")
     
     @staticmethod
     def _is_api_path_method_exists(path: str, method: str, system_id: int, exclude_id: Optional[int] = None) -> bool:
@@ -505,16 +570,30 @@ class ApiInterfaceService:
             bool: 是否已存在
         """
         try:
-            apis = ApiInterfaceDAO.get_by_system_id(system_id)
-            for api in apis:
-                if (api.get('path') == path and 
-                    api.get('method') == method and 
-                    (exclude_id is None or api.get('id') != exclude_id)):
-                    return True
-            return False
+            return ApiInterfaceDAO.check_path_method_exists(path, method, system_id, exclude_id)
         except Exception as e:
             logger.error(f"检查API路径方法是否存在时发生错误: {e}")
             return False
+
+    @staticmethod
+    def _get_existing_api_by_path_method(path: str, method: str, system_id: int, exclude_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
+        """
+        获取已存在的API接口详细信息
+        
+        Args:
+            path (str): API路径
+            method (str): HTTP方法
+            system_id (int): 系统ID
+            exclude_id (Optional[int]): 排除的API接口ID（用于更新时）
+            
+        Returns:
+            Optional[Dict[str, Any]]: 已存在的API接口信息，如果不存在则返回None
+        """
+        try:
+            return ApiInterfaceDAO.get_by_path_method(path, method, system_id, exclude_id)
+        except Exception as e:
+            logger.error(f"获取已存在API接口信息时发生错误: {e}")
+            return None
     
     @staticmethod
     def _calculate_health_score(stats: Dict[str, Any]) -> float:

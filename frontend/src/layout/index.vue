@@ -69,7 +69,7 @@
               <el-menu-item
                 v-for="child in route.children.filter(item => !item.meta?.hidden)"
                 :key="child.path"
-                :index="child.path.startsWith('/') ? child.path : `${route.path}/${child.path}`"
+                :index="child.path.startsWith('/') ? child.path : `${route.path}/${child.path}`.replace('//', '/')"
               >
                 <el-icon>
                   <component :is="child.meta?.icon || 'Document'" />
@@ -80,7 +80,7 @@
             
             <el-menu-item 
               v-else-if="!route.meta?.hidden"
-              :index="route.children?.[0]?.path || route.path"
+              :index="route.redirect || `${route.path}/${route.children?.[0]?.path || ''}`"
             >
               <el-icon>
                 <component :is="route.meta?.icon || 'Menu'" />
@@ -242,7 +242,9 @@ const menuRoutes = computed(() => {
   return router.getRoutes().filter(route => 
     route.path !== '/' && 
     !route.meta?.hidden && 
-    route.component?.name !== 'Layout'
+    route.meta?.title && 
+    route.children && 
+    route.children.length > 0
   )
 })
 

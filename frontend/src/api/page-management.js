@@ -141,6 +141,64 @@ export const pageApi = {
    */
   getExecutionTypes() {
     return request.get('/pages/v1/execution-types/list')
+  },
+
+  /**
+   * 批量更新页面状态
+   * @param {Array} pageIds - 页面ID列表
+   * @param {string} status - 目标状态
+   * @returns {Promise} 更新结果
+   */
+  batchUpdatePageStatus(pageIds, status) {
+    return request.post('/pages/v1/batch/status', { page_ids: pageIds, status })
+  },
+
+  /**
+   * 批量启用页面
+   * @param {Array} pageIds - 页面ID列表
+   * @returns {Promise} 启用结果
+   */
+  batchEnable(pageIds) {
+    return request.post('/pages/v1/batch/enable', { page_ids: pageIds })
+  },
+
+  /**
+   * 批量禁用页面
+   * @param {Array} pageIds - 页面ID列表
+   * @returns {Promise} 禁用结果
+   */
+  batchDisable(pageIds) {
+    return request.post('/pages/v1/batch/disable', { page_ids: pageIds })
+  },
+
+  /**
+   * 批量删除页面
+   * @param {Array} pageIds - 页面ID列表
+   * @returns {Promise} 删除结果
+   */
+  batchDeletePages(pageIds) {
+    return request.post('/pages/v1/batch/delete', { page_ids: pageIds })
+  },
+
+  /**
+   * 批量导出页面
+   * @param {Array} pageIds - 页面ID列表
+   * @param {string} format - 导出格式
+   * @returns {Promise} 导出结果
+   */
+  batchExport(pageIds, format = 'json') {
+    return request.post('/pages/v1/batch/export', { page_ids: pageIds, format }, { responseType: 'blob' })
+  },
+
+  /**
+   * 导入页面数据
+   * @param {FormData} formData - 包含文件的表单数据
+   * @returns {Promise} 导入结果
+   */
+  importPages(formData) {
+    return request.post('/pages/v1/import/data', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
   }
 }
 

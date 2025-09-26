@@ -8,7 +8,7 @@ export {
   workflowCategoryOptions,
   defaultSearchForm,
   defaultPagination,
-  defaultStats
+
 } from './formConfig'
 
 // 表格配置
@@ -29,8 +29,7 @@ export {
 export type {
   SelectOption,
   SearchForm,
-  PaginationConfig,
-  StatsData
+  PaginationConfig
 } from './formConfig'
 
 export type {

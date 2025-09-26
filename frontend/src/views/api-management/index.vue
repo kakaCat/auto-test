@@ -783,18 +783,20 @@ const saveApi = async (formData) => {
     
     // 显示详细错误信息
     let errorMessage = '保存失败'
-    if (error.response && error.response.data) {
+    
+    // 处理业务错误（success: false的情况）
+    if (error.message && error.message !== '请求失败') {
+      errorMessage = error.message
+    } else if (error.response && error.response.data) {
       if (typeof error.response.data === 'string') {
-        errorMessage = `保存失败: ${error.response.data}`
+        errorMessage = error.response.data
       } else if (error.response.data.message) {
-        errorMessage = `保存失败: ${error.response.data.message}`
+        errorMessage = error.response.data.message
       } else if (error.response.data.detail) {
-        errorMessage = `保存失败: ${JSON.stringify(error.response.data.detail)}`
+        errorMessage = JSON.stringify(error.response.data.detail)
       } else {
-        errorMessage = `保存失败: ${JSON.stringify(error.response.data)}`
+        errorMessage = JSON.stringify(error.response.data)
       }
-    } else if (error.message) {
-      errorMessage = `保存失败: ${error.message}`
     }
     
     ElMessage.error(errorMessage)

@@ -18,7 +18,7 @@ async def get_modules(system_id: int = Query(None, description="系统ID，可�
         modules = ModuleService.get_modules(system_id)
         return success_response(data=modules, message="获取模块列表成功")
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"获取模块列表失败: {str(e)}")
 
@@ -29,7 +29,7 @@ async def get_modules_by_system(system_id: int):
         modules = ModuleService.get_modules(system_id)
         return success_response(data=modules, message="获取模块列表成功")
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"获取模块列表失败: {str(e)}")
 
@@ -86,7 +86,7 @@ async def update_module(module_id: int, module: ModuleUpdate):
     except HTTPException:
         raise
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"更新模块失败: {str(e)}")
 

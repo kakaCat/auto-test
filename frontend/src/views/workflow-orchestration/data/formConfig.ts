@@ -22,13 +22,7 @@ export interface PaginationConfig {
   total: number
 }
 
-// 统计数据接口定义
-export interface StatsData {
-  total: number
-  running: number
-  nodes: number
-  executions: number
-}
+
 
 // 工作流状态选项
 export const workflowStatusOptions: SelectOption[] = [
@@ -60,12 +54,4 @@ export const defaultPagination: PaginationConfig = {
   page: 1,
   size: 20,
   total: 0
-}
-
-// 统计数据默认值
-export const defaultStats: StatsData = {
-  total: 0,
-  running: 0,
-  nodes: 0,
-  executions: 0
 }

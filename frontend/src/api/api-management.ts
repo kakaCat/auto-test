@@ -38,12 +38,24 @@ export interface ServiceData {
 }
 
 export interface ApiData {
-  system_id: string
+  system_id: number
+  module_id?: number
   name: string
-  description: string
-  url: string
-  enabled: boolean
-  tags: string[]
+  description?: string
+  method: string
+  path: string
+  version?: string
+  status?: string
+  request_format?: string
+  response_format?: string
+  auth_required?: number
+  rate_limit?: number
+  timeout?: number
+  tags?: string
+  request_schema?: string
+  response_schema?: string
+  example_request?: string
+  example_response?: string
 }
 
 export interface TestData {
@@ -129,7 +141,7 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createApi(data: ApiData): Promise<ApiResponse> {
-    return request.post('/api/interfaces', data)
+    return request.post('/api/api-interfaces/v1/', data, { skipErrorHandler: true })
   },
 
   /**

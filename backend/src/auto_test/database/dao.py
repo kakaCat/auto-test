@@ -5,6 +5,7 @@ Data Access Object - Simplified
 提供简化的数据库操作接口
 """
 
+import json
 import logging
 from typing import List, Dict, Any, Optional
 from .connection import get_db_cursor
@@ -332,10 +333,9 @@ class ApiInterfaceDAO:
             with get_db_cursor() as cursor:
                 cursor.execute("""
                     SELECT a.id, a.system_id, a.module_id, a.name, a.description, 
-                           a.method, a.path, a.version, a.status, a.request_format,
-                           a.response_format, a.auth_required, a.rate_limit, a.timeout,
-                           a.tags, a.request_schema, a.response_schema, 
-                           a.example_request, a.example_response,
+                           a.method, a.path, a.version, a.status,
+                           a.request_format, a.response_format, a.auth_required, a.rate_limit, a.timeout,
+                           a.tags, a.request_schema, a.response_schema, a.example_request, a.example_response,
                            a.created_at, a.updated_at,
                            s.name as system_name, m.name as module_name
                     FROM api_interfaces a
@@ -355,10 +355,9 @@ class ApiInterfaceDAO:
             with get_db_cursor() as cursor:
                 cursor.execute("""
                     SELECT a.id, a.system_id, a.module_id, a.name, a.description, 
-                           a.method, a.path, a.version, a.status, a.request_format,
-                           a.response_format, a.auth_required, a.rate_limit, a.timeout,
-                           a.tags, a.request_schema, a.response_schema, 
-                           a.example_request, a.example_response,
+                           a.method, a.path, a.version, a.status,
+                           a.request_format, a.response_format, a.auth_required, a.rate_limit, a.timeout,
+                           a.tags, a.request_schema, a.response_schema, a.example_request, a.example_response,
                            a.created_at, a.updated_at,
                            s.name as system_name, m.name as module_name
                     FROM api_interfaces a
@@ -378,13 +377,7 @@ class ApiInterfaceDAO:
         try:
             with get_db_cursor() as cursor:
                 cursor.execute("""
-                    SELECT a.id, a.system_id, a.module_id, a.name, a.description, 
-                           a.method, a.path, a.version, a.status, a.request_format,
-                           a.response_format, a.auth_required, a.rate_limit, a.timeout,
-                           a.tags, a.request_schema, a.response_schema, 
-                           a.example_request, a.example_response,
-                           a.created_at, a.updated_at,
-                           s.name as system_name, m.name as module_name
+                    SELECT a.*, s.name as system_name, m.name as module_name
                     FROM api_interfaces a
                     LEFT JOIN systems s ON a.system_id = s.id
                     LEFT JOIN modules m ON a.module_id = m.id
@@ -403,10 +396,9 @@ class ApiInterfaceDAO:
             with get_db_cursor() as cursor:
                 cursor.execute("""
                     SELECT a.id, a.system_id, a.module_id, a.name, a.description, 
-                           a.method, a.path, a.version, a.status, a.request_format,
-                           a.response_format, a.auth_required, a.rate_limit, a.timeout,
-                           a.tags, a.request_schema, a.response_schema, 
-                           a.example_request, a.example_response,
+                           a.method, a.path, a.version, a.status,
+                           a.request_format, a.response_format, a.auth_required, a.rate_limit, a.timeout,
+                           a.tags, a.request_schema, a.response_schema, a.example_request, a.example_response,
                            a.created_at, a.updated_at,
                            s.name as system_name, m.name as module_name
                     FROM api_interfaces a
@@ -425,12 +417,38 @@ class ApiInterfaceDAO:
         """创建API接口"""
         try:
             with get_db_cursor() as cursor:
+                # 处理状态字段
+                status = api_data.get('status', 'active')
+                if 'enabled' in api_data:
+                    # 将enabled字段转换为status字段
+                    status = 'active' if api_data['enabled'] else 'inactive'
+                
+                # 处理JSON字段
+                request_schema = api_data.get('request_schema') or api_data.get('request_params')
+                if request_schema and isinstance(request_schema, (dict, list)):
+                    request_schema = json.dumps(request_schema, ensure_ascii=False)
+                
+                response_schema = api_data.get('response_schema') or api_data.get('response_example')
+                if response_schema and isinstance(response_schema, (dict, list)):
+                    response_schema = json.dumps(response_schema, ensure_ascii=False)
+                
+                example_request = api_data.get('example_request')
+                if example_request and isinstance(example_request, (dict, list)):
+                    example_request = json.dumps(example_request, ensure_ascii=False)
+                
+                example_response = api_data.get('example_response')
+                if example_response and isinstance(example_response, (dict, list)):
+                    example_response = json.dumps(example_response, ensure_ascii=False)
+                
+                tags = api_data.get('tags')
+                if tags and isinstance(tags, list):
+                    tags = json.dumps(tags, ensure_ascii=False)
+                
                 cursor.execute("""
                     INSERT INTO api_interfaces (
                         system_id, module_id, name, description, method, path, version,
-                        status, request_format, response_format, auth_required, 
-                        rate_limit, timeout, tags, request_schema, response_schema,
-                        example_request, example_response
+                        status, request_format, response_format, auth_required, rate_limit, timeout,
+                        tags, request_schema, response_schema, example_request, example_response
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     api_data.get('system_id'),
@@ -440,17 +458,17 @@ class ApiInterfaceDAO:
                     api_data.get('method'),
                     api_data.get('path'),
                     api_data.get('version', 'v1'),
-                    api_data.get('status', 'active'),
+                    status,
                     api_data.get('request_format', 'json'),
                     api_data.get('response_format', 'json'),
-                    api_data.get('auth_required', True),
+                    api_data.get('auth_required', 1),
                     api_data.get('rate_limit', 1000),
                     api_data.get('timeout', 30),
-                    api_data.get('tags'),
-                    api_data.get('request_schema'),
-                    api_data.get('response_schema'),
-                    api_data.get('example_request'),
-                    api_data.get('example_response')
+                    tags,
+                    request_schema,
+                    response_schema,
+                    example_request,
+                    example_response
                 ))
                 return cursor.lastrowid
         except Exception as e:
@@ -467,7 +485,7 @@ class ApiInterfaceDAO:
                 update_values = []
                 
                 for field in ['system_id', 'module_id', 'name', 'description', 'method', 
-                             'path', 'version', 'status', 'request_format', 'response_format',
+                             'path', 'version', 'status', 'enabled', 'request_format', 'response_format',
                              'auth_required', 'rate_limit', 'timeout', 'tags', 
                              'request_schema', 'response_schema', 'example_request', 'example_response']:
                     if field in api_data:
@@ -624,6 +642,52 @@ class ApiInterfaceDAO:
                 return cursor.rowcount
         except Exception as e:
             logger.error(f"批量删除API接口失败: {e}")
+            raise
+    
+    @staticmethod
+    def check_path_method_exists(path: str, method: str, system_id: int, exclude_id: Optional[int] = None) -> bool:
+        """检查API路径和方法组合是否已存在"""
+        try:
+            with get_db_cursor() as cursor:
+                if exclude_id:
+                    cursor.execute("""
+                        SELECT COUNT(*) as count 
+                        FROM api_interfaces 
+                        WHERE path = ? AND method = ? AND system_id = ? AND id != ?
+                    """, (path, method, system_id, exclude_id))
+                else:
+                    cursor.execute("""
+                        SELECT COUNT(*) as count 
+                        FROM api_interfaces 
+                        WHERE path = ? AND method = ? AND system_id = ?
+                    """, (path, method, system_id))
+                result = cursor.fetchone()
+                return result['count'] > 0
+        except Exception as e:
+            logger.error(f"检查API路径方法是否存在失败: {e}")
+            raise
+
+    @staticmethod
+    def get_by_path_method(path: str, method: str, system_id: int, exclude_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
+        """获取指定路径和方法的API接口详细信息"""
+        try:
+            with get_db_cursor() as cursor:
+                if exclude_id:
+                    cursor.execute("""
+                        SELECT * FROM api_interfaces 
+                        WHERE path = ? AND method = ? AND system_id = ? AND id != ?
+                        LIMIT 1
+                    """, (path, method, system_id, exclude_id))
+                else:
+                    cursor.execute("""
+                        SELECT * FROM api_interfaces 
+                        WHERE path = ? AND method = ? AND system_id = ?
+                        LIMIT 1
+                    """, (path, method, system_id))
+                result = cursor.fetchone()
+                return dict(result) if result else None
+        except Exception as e:
+            logger.error(f"获取API路径方法详细信息失败: {e}")
             raise
 
 

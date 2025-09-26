@@ -4,11 +4,11 @@
 
 ## 文档分类
 
-### 模块指南 (modules/)
-- [AI 场景执行指南](./modules/ai_scenario_execution.md) - AI 场景执行模块的使用指南
-- [API 管理指南](./modules/api_management.md) - API 管理模块的使用指南
-- [场景管理指南](./modules/scenario_management.md) - 场景管理模块的使用指南
-- [工作流编排指南](./modules/workflow_orchestration.md) - 工作流编排模块的使用指南
+### 模块指南 (pages/)
+- [AI 场景执行指南](./pages/ai_scenario_execution.md) - AI 场景执行模块的使用指南
+- [API 管理指南](./pages/api_management.md) - API 管理模块的使用指南
+- [场景管理指南](./pages/scenario_management.md) - 场景管理模块的使用指南
+- [工作流编排指南](./pages/workflow_orchestration.md) - 工作流编排模块的使用指南
 
 ## 快速导航
 

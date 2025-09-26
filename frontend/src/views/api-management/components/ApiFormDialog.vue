@@ -486,39 +486,48 @@ const handleSave = async () => {
       }
     }
 
-    // 准备保存数据
-    
+    // 准备保存数据，严格按照后端ApiInterfaceCreate模型构建
     const saveData = {
-      ...localFormData,
-      // 字段映射：前端url字段映射为后端path字段
+      // 必需字段
+      name: localFormData.name,
+      method: localFormData.method,
       path: localFormData.url,
-      // 添加后端期望的默认字段
-      version: localFormData.version || '1.0.0',
-      order_index: localFormData.order_index || 0,
-      // 处理参数数据
-      request_params: localFormData.parameters ? 
-        localFormData.parameters.filter(param => param.name.trim()).reduce((acc, param) => {
+      system_id: parseInt(localFormData.system_id),
+      
+      // 可选字段
+      description: localFormData.description || null,
+      module_id: localFormData.module_id ? parseInt(localFormData.module_id) : null,
+      
+      // 后端默认字段
+      version: 'v1',
+      status: localFormData.enabled ? 'active' : 'inactive',
+      request_format: 'json',
+      response_format: 'json',
+      auth_required: 1,
+      rate_limit: 1000,
+      timeout: 30,
+      
+      // 处理标签 - 后端期望字符串
+      tags: localFormData.tags && localFormData.tags.length > 0 ? 
+        localFormData.tags.join(',') : null,
+      
+      // 处理请求参数 - 转换为JSON字符串
+      request_schema: localFormData.parameters && localFormData.parameters.length > 0 ? 
+        JSON.stringify(localFormData.parameters.filter(param => param.name.trim()).reduce((acc, param) => {
           acc[param.name] = {
             type: param.type || 'string',
             required: param.required || false,
             description: param.description || ''
           }
           return acc
-        }, {}) : {},
-      // 解析响应示例
-      response_example: localFormData.response_example ? 
-        (() => {
-          try {
-            return JSON.parse(localFormData.response_example)
-          } catch {
-            return localFormData.response_example
-          }
-        })() : null
+        }, {})) : null,
+      
+      // 处理响应示例 - 转换为JSON字符串
+      example_response: localFormData.response_example ? 
+        (typeof localFormData.response_example === 'string' ? 
+          localFormData.response_example : 
+          JSON.stringify(localFormData.response_example)) : null
     }
-    
-    // 删除前端专用字段，避免后端接收到不期望的字段
-    delete saveData.url
-    delete saveData.parameters
     
     emit('save', saveData)
   } catch (error) {

@@ -14,7 +14,12 @@ from ..models.page import (
     Page, PageCreate, PageUpdate, PageApi, PageApiCreate, PageApiCreateRequest, PageApiUpdate,
     PageQueryRequest, PageResponse, PageApiBatchRequest
 )
+from ..models.page_step import (
+    PageBasicInfo, PageLayout, PageApiConfig, PageInteraction, PageProgress,
+    PageStepSaveRequest, PageStepSaveResponse, PageCompleteRequest, PageCompleteResponse
+)
 from ..services.page_service import PageService
+from ..services.page_step_service import PageStepService
 from ..utils.response import success_response, error_response
 
 router = APIRouter(tags=["页面管理"])
@@ -51,7 +56,7 @@ async def create_page(page: PageCreate):
         new_page = PageService.create_page(page)
         return success_response(data=new_page, message="创建页面成功")
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"创建页面失败: {str(e)}")
 
@@ -67,7 +72,7 @@ async def update_page(page_id: int, page: PageUpdate):
     except HTTPException:
         raise
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"更新页面失败: {str(e)}")
 
@@ -155,7 +160,7 @@ async def add_page_api(page_id: int, page_api_request: PageApiCreateRequest):
         new_relation = PageService.add_page_api(page_api)
         return success_response(data=new_relation, message="添加页面API关联成功")
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"添加页面API关联失败: {str(e)}")
 
@@ -171,7 +176,7 @@ async def update_page_api(relation_id: int, page_api: PageApiUpdate):
     except HTTPException:
         raise
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"更新页面API关联失败: {str(e)}")
 
@@ -205,7 +210,7 @@ async def batch_manage_page_apis(page_id: int, batch_request: PageApiBatchReques
         
         return success_response(data=results, message="批量管理页面API关联成功")
     except ValueError as e:
-        return error_response(message=str(e), status_code=400)
+        return error_response(message=str(e), code=400)
     except Exception as e:
         return error_response(message=f"批量管理页面API关联失败: {str(e)}")
 
@@ -260,6 +265,68 @@ async def get_execution_types():
             {'value': 'parallel', 'label': '并行执行', 'description': '多个API同时执行'},
             {'value': 'serial', 'label': '串行执行', 'description': '按顺序依次执行'}
         ]
-        return success_response(data=types, message="获取执行类型列表成功")
+        return success_response(data=execution_types, message="获取执行类型列表成功")
     except Exception as e:
         return error_response(message=f"获取执行类型列表失败: {str(e)}")
+
+
+# ==================== 分步保存API ====================
+
+@router.post("/pages/v1/{page_id}/steps/basic", response_model=dict, summary="保存页面基本信息")
+async def save_page_basic_info(page_id: int, basic_info: PageBasicInfo):
+    """保存页面基本信息步骤"""
+    try:
+        result = PageStepService.save_basic_info(page_id, basic_info)
+        return success_response(data=result, message="保存基本信息成功")
+    except Exception as e:
+        return error_response(message=f"保存基本信息失败: {str(e)}")
+
+
+@router.post("/pages/v1/{page_id}/steps/layout", response_model=dict, summary="保存页面布局设计")
+async def save_page_layout(page_id: int, layout: PageLayout):
+    """保存页面布局设计步骤"""
+    try:
+        result = PageStepService.save_layout(page_id, layout)
+        return success_response(data=result, message="保存布局设计成功")
+    except Exception as e:
+        return error_response(message=f"保存布局设计失败: {str(e)}")
+
+
+@router.post("/pages/v1/{page_id}/steps/api", response_model=dict, summary="保存页面API配置")
+async def save_page_api_config(page_id: int, api_config: PageApiConfig):
+    """保存页面API配置步骤"""
+    try:
+        result = PageStepService.save_api_config(page_id, api_config)
+        return success_response(data=result, message="保存API配置成功")
+    except Exception as e:
+        return error_response(message=f"保存API配置失败: {str(e)}")
+
+
+@router.post("/pages/v1/{page_id}/steps/interaction", response_model=dict, summary="保存页面交互设置")
+async def save_page_interaction(page_id: int, interaction: PageInteraction):
+    """保存页面交互设置步骤"""
+    try:
+        result = PageStepService.save_interaction(page_id, interaction)
+        return success_response(data=result, message="保存交互设置成功")
+    except Exception as e:
+        return error_response(message=f"保存交互设置失败: {str(e)}")
+
+
+@router.get("/pages/v1/{page_id}/progress", response_model=dict, summary="获取页面配置进度")
+async def get_page_progress(page_id: int):
+    """获取页面配置进度"""
+    try:
+        progress = PageStepService.get_progress(page_id)
+        return success_response(data=progress, message="获取配置进度成功")
+    except Exception as e:
+        return error_response(message=f"获取配置进度失败: {str(e)}")
+
+
+@router.post("/pages/v1/{page_id}/complete", response_model=dict, summary="完成页面配置")
+async def complete_page_config(page_id: int, request: PageCompleteRequest):
+    """完成页面配置"""
+    try:
+        result = PageStepService.complete_page_config(page_id)
+        return success_response(data=result, message="完成页面配置成功")
+    except Exception as e:
+        return error_response(message=f"完成页面配置失败: {str(e)}")

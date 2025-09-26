@@ -47,10 +47,11 @@ export type {
   SelectOption,
   IconMap,
   TagTypeMap
-} from '../types'
+} from '../types/index'
 
+// 枚举导出
 export {
   SystemCategory,
   ModuleType,
   HttpMethod
-} from '../types'
+} from '../types/index'

@@ -328,13 +328,13 @@
       </div>
     </div>
 
-    <!-- 页面表单对话框 -->
-    <PageFormDialog
-      v-model:visible="pageDialogVisible"
-      :page="currentPage"
-      :mode="dialogMode"
-      :systems="systemList"
-      @success="handlePageSuccess"
+    <!-- 页面配置对话框 -->
+    <PageConfigDialog
+      v-model="pageDialogVisible"
+      :page-data="currentPage"
+      :is-edit="dialogMode === 'edit'"
+      @save="handlePageConfigSave"
+      @close="handlePageConfigClose"
     />
 
     <!-- 页面API关联表单对话框 -->
@@ -370,7 +370,7 @@ import {
 
 // 组件导入
 import SystemTree from '@/components/SystemTree.vue'
-import PageFormDialog from './components/PageFormDialog.vue'
+import PageConfigDialog from './components/PageConfigDialog.vue'
 import PageApiFormDialog from './components/PageApiFormDialog.vue'
 
 // API导入
@@ -525,14 +525,6 @@ const buildSystemTree = () => {
     
     const treeData = []
     
-    // 添加"全部"节点
-    treeData.push({
-      id: 'all',
-      label: '全部',
-      type: 'all',
-      children: []
-    })
-    
     // 构建系统树
     systems.forEach(system => {
       // 获取该系统下的模块
@@ -611,12 +603,6 @@ const handleSystemNodeClick = (data) => {
     selectedModuleId.value = data.id
     selectedPageId.value = null
     selectedPage.value = null
-  } else {
-    // 全部系统
-    selectedSystemId.value = ''
-    selectedModuleId.value = ''
-    selectedPageId.value = null
-    selectedPage.value = null
   }
   
   // 更新URL参数
@@ -651,6 +637,10 @@ const resetSearch = () => {
   searchForm.keyword = ''
   searchForm.pageType = ''
   searchForm.status = ''
+  selectedSystemId.value = ''
+  selectedModuleId.value = ''
+  selectedPageId.value = null
+  selectedPage.value = null
 }
 
 const refreshPages = () => {
@@ -783,6 +773,30 @@ const handlePageSuccess = () => {
   pageDialogVisible.value = false
   loadPageList()
   ElMessage.success(dialogMode.value === 'create' ? '创建页面成功' : '更新页面成功')
+}
+
+// 新的页面配置保存处理
+const handlePageConfigSave = async (configData) => {
+  try {
+    console.log('保存页面配置:', configData)
+    
+    // 这里应该调用实际的保存API
+    // 暂时模拟保存成功
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    pageDialogVisible.value = false
+    loadPageList()
+    ElMessage.success(dialogMode.value === 'create' ? '创建页面成功' : '更新页面成功')
+  } catch (error) {
+    console.error('保存页面配置失败:', error)
+    ElMessage.error('保存失败，请重试')
+  }
+}
+
+// 页面配置对话框关闭处理
+const handlePageConfigClose = () => {
+  pageDialogVisible.value = false
+  currentPage.value = null
 }
 
 const handlePageApiSuccess = () => {

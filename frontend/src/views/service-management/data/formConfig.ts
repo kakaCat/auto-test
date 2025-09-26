@@ -6,7 +6,7 @@ import {
   SystemCategory,
   ModuleType,
   HttpMethod
-} from '../types'
+} from '../types/index'
 
 import type {
   SelectOption,
@@ -15,7 +15,7 @@ import type {
   SystemFormData,
   ModuleFormData,
   FormRules
-} from '../types'
+} from '../types/index'
 
 // 系统分类选项
 export const systemCategoryOptions: SelectOption<SystemCategory>[] = [

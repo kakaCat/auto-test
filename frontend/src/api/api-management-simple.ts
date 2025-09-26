@@ -212,6 +212,8 @@ export const apiManagementApi = {
     if (response.success) {
       return {
         success: true,
+        message: response.message || '获取统计数据成功',
+        timestamp: response.timestamp || new Date().toISOString(),
         data: {
           api_stats: {
             total_apis: response.data.api_stats?.total_apis || 0,

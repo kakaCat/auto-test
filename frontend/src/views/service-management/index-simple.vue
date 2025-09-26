@@ -288,7 +288,19 @@ const handleSystemSubmit = async () => {
 const handleModuleSubmit = async () => {
   try {
     if (isEditingModule.value && moduleFormData.value.id) {
-      await apiManagementApi.updateApi(moduleFormData.value.id, moduleFormData.value)
+      if (!moduleFormData.value.system_id) {
+        ElMessage.error('请选择所属系统')
+        return
+      }
+      const updateData = {
+        system_id: moduleFormData.value.system_id,
+        name: moduleFormData.value.name,
+        description: moduleFormData.value.description,
+        url: moduleFormData.value.url,
+        enabled: moduleFormData.value.enabled,
+        tags: moduleFormData.value.tags || []
+      }
+      await apiManagementApi.updateApi(moduleFormData.value.id, updateData)
       ElMessage.success('模块更新成功')
     } else {
       if (!moduleFormData.value.system_id) {

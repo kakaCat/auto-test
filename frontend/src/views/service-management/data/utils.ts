@@ -8,8 +8,8 @@ import {
   Document, Lock, DataAnalysis, Service, Menu, Folder
 } from '@element-plus/icons-vue'
 
-import { SystemCategory } from '../types'
-import type { Module, IconMap, TagTypeMap } from '../types'
+import { SystemCategory } from '../types/index'
+import type { Module, IconMap, TagTypeMap } from '../types/index'
 
 // 系统图标映射
 const systemIconMap: IconMap = {
