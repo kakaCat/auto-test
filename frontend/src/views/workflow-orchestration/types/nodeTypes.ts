@@ -87,6 +87,9 @@ export interface ApiCallNodeConfig {
 export interface ApiCallNode extends BaseNode {
   type: NodeType.API_CALL
   config: ApiCallNodeConfig
+  // 支持多个输入输出端口
+  maxInputs?: number
+  maxOutputs?: number
 }
 
 // 数据转换节点配置
@@ -144,6 +147,9 @@ export interface Aggregation {
 export interface DataTransformNode extends BaseNode {
   type: NodeType.DATA_TRANSFORM
   config: DataTransformNodeConfig
+  // 支持多个输入输出端口
+  maxInputs?: number
+  maxOutputs?: number
 }
 
 // 条件分支节点配置
@@ -355,8 +361,8 @@ export const NODE_TEMPLATES: NodeTemplate[] = [
     },
     inputs: [
       {
-        id: 'parameters',
-        name: '请求参数',
+        id: 'input',
+        name: '输入数据',
         type: 'object',
         required: false,
         description: 'API请求参数'
@@ -364,16 +370,10 @@ export const NODE_TEMPLATES: NodeTemplate[] = [
     ],
     outputs: [
       {
-        id: 'response',
-        name: '响应数据',
+        id: 'output',
+        name: '输出数据',
         type: 'object',
         description: 'API响应结果'
-      },
-      {
-        id: 'status',
-        name: '状态码',
-        type: 'number',
-        description: 'HTTP状态码'
       }
     ],
     configSchema: {

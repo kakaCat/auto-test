@@ -25,6 +25,7 @@
 
     <!-- 输入端口 -->
     <Handle
+      id="input"
       type="target"
       :position="Position.Left"
       :style="{ top: '50%' }"
@@ -33,6 +34,7 @@
 
     <!-- 输出端口 -->
     <Handle
+      id="output"
       type="source"
       :position="Position.Right"
       :style="{ top: '50%' }"

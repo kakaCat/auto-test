@@ -235,7 +235,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Link, Edit, Delete, Search } from '@element-plus/icons-vue'
-import { pageApi } from '@/api/page-management.js'
+import { pageApi } from '@/api/page-management'
 import unifiedApi from '@/api/unified-api'
 
 // Props
@@ -466,7 +466,7 @@ const confirmAddApis = () => {
 // 加载可用API列表
 const loadAvailableApis = async () => {
   try {
-    const response = await unifiedApi.getApis()
+    const response = await unifiedApi.apiManagementApi.getApis()
     if (response.success) {
       availableApis.value = response.data
     }

@@ -1,2 +1,6 @@
 export { default as ApiFormDialog } from './ApiFormDialog.vue'
 export { default as ApiForm } from './ApiForm.vue'
+export { default as ParameterConfig } from './ParameterConfig.vue'
+export { default as ResponseConfig } from './ResponseConfig.vue'
+export { default as ApiTestDrawer } from './ApiTestDrawer.vue'
+export { default as KeyValueEditor } from './KeyValueEditor.vue'

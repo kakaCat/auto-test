@@ -16,7 +16,7 @@
 ### 系统架构上下文
 当前系统采用6层架构：
 ```
-第6层: 需求管理 (/requirement-management) [🚧规划中]
+第6层: 需求管理 (/requirement-management) [✅已实现]
 第5层: 用例场景管理 (/scenario-management) [✅已实现]
 第4层: 调用流程 (Call Flows)
 ├─ 4a. API调用流程 (/workflow-orchestration + /designer) [✅已实现]
@@ -25,6 +25,55 @@
 第2层: 系统管理 (/service-management) [✅已实现]
 第1层: 仪表板 (/dashboard) [✅已实现]
 ```
+
+## 07 文档写作方式（设计原则/规范/要求）
+
+为统一前端“用户指南”体例，所有 `docs/frontend/user-guides/*.md` 采用“07方式”（源自《07 - 工作流设计器》）。可执行规范如下：
+
+- 章节顺序（推荐）
+  - 架构定位 → 功能概述 → 界面布局 → 交互与操作 → 页面弹框与抽屉 → 状态与数据流 → 事件与契约 → 数据模型 → 自测清单 → 常见问题
+
+- 标题与编号
+  - 一级标题：`# {编号} - {模块名}`（示例：`# 04 - API管理`）
+  - 小节层级≤3，动宾式命名
+
+- 架构定位
+  - 6层架构ASCII图；说明 依赖下层/服务上层/核心作用
+
+- 功能概述
+  - 条目化能力清单，任务导向
+
+- 界面布局
+  - ASCII布局图 + 主要区域职责与交互要点
+
+- 交互与操作
+  - 常用操作分组（工具栏/编辑/视图/执行），可配示意
+
+- 页面弹框与抽屉
+  - 触发入口、字段与校验、禁用/加载、事件契约；位置在“交互与操作”之后
+  - 归属规则：页面内触发的所有弹框/抽屉一律归属本页面文档，不单独成文；若为跨页复用的通用弹框，需在本页完整描述，同时在 `docs/frontend/shared-components.md` 登记并建立双向引用。
+  - 例外说明：若弹框/抽屉具备独立路由（可直接访问），可在组件/路由文档扩展细节，但本页必须保留概述与跳转链接。
+  - 落地要求：为每个弹框提供（1）触发入口（2）字段与校验（3）禁用/加载与提交逻辑（4）事件与契约（5）自测清单；在首次出现的操作步骤处加入“参见【页面弹框与抽屉】”交叉链接。
+
+- 状态与数据流
+  - 关键数据对象、来源、触发与刷新；字段归一化约定（如 `tags: string[] ⇆ string`）
+
+- 事件与契约
+  - 回调签名、入出参、错误语义（message/code/fieldErrors）与可观测性埋点
+
+- 快捷操作与辅助
+  - 网格/对齐/快捷键/响应式/空态与错误页
+
+- 自测清单
+  - 覆盖主干流程、边界条件、异常兜底、权限与可达性
+
+- 文风与格式
+  - 任务导向、图文并茂、Emoji强调、术语统一；代码/路径/命令用反引号
+
+- 术语一致性
+  - 系统/模块/API/用例/流程等采用固定译名，站内一致
+
+参考实现：`/docs/frontend/user-guides/07-workflow-designer.md`
 
 ## 文档结构标准
 
@@ -49,11 +98,41 @@ docs/frontend/
 ## 页面文档标准
 
 ### 文档命名规范
-- **格式**: `[页面功能名].md`
+- **格式**: `[编号]-[页面功能名].md`
+- **编号规则**: 按照系统菜单顺序使用两位数字编号（01-09）
 - **示例**: 
-  - `api-management.md` → API管理页面 (`/api-management`)
-  - `workflow-designer.md` → 工作流设计器页面 (`/designer`)
-  - `requirement-management.md` → 需求管理页面 (`/requirement-management`)
+  - `01-system-overview.md` → 系统概览文档
+  - `02-getting-started.md` → 快速入门指南
+  - `03-system-management.md` → 系统管理页面 (`/service-management`)
+  - `04-api-management.md` → API管理页面 (`/api-management`)
+  - `05-page-management.md` → 页面管理页面 (`/page-management`)
+  - `06-page-call-flow.md` → 页面调用流程页面 (`/page-call-flow`)
+  - `07-workflow-designer.md` → 工作流设计器页面 (`/designer`)
+  - `08-scenario-management.md` → 用例场景管理页面 (`/scenario-management`)
+  - `09-requirement-management.md` → 需求管理页面 (`/requirement-management`)
+
+### 文档编号对应关系
+文档编号严格按照前端菜单顺序排列，确保文档排序与用户界面导航一致：
+
+```
+编号 | 文档名称                    | 对应页面路径              | 菜单位置
+-----|----------------------------|--------------------------|----------
+01   | system-overview.md         | 系统概览（非页面）        | 文档首页
+02   | getting-started.md         | 快速入门（非页面）        | 文档导航
+03   | system-management.md       | /service-management      | 系统管理
+04   | api-management.md          | /api-management          | API管理
+05   | page-management.md         | /page-management         | 页面管理
+06   | page-call-flow.md          | /page-call-flow          | 页面调用流程
+07   | workflow-designer.md       | /workflow-orchestration  | API调用流程
+08   | scenario-management.md     | /scenario-management     | 用例场景管理
+09   | requirement-management.md  | /requirement-management  | 需求管理
+```
+
+**编号规范说明**：
+- 编号使用两位数字格式（01-09），便于排序和扩展
+- 编号顺序严格按照前端路由配置中的菜单顺序
+- 系统概览和快速入门作为特殊文档，排在功能页面之前
+- 新增页面时，应在对应菜单位置插入相应编号
 
 ### 文档结构模板
 

@@ -30,7 +30,7 @@ export class SystemService {
    * 收集系统列表数据
    */
   static async collectSystemListData(params: SystemListParams = {}): Promise<ApiResponse> {
-    const response = await request.get('/systems/v1/', { params });
+    const response = await request.get('/api/systems/v1/', { params });
     if (response.data?.data) {
       response.data.data = SystemConverter.transformListFromBackend(response.data.data);
     }
@@ -41,7 +41,7 @@ export class SystemService {
    * 收集系统详情数据
    */
   static async collectSystemDetailData(systemId: string): Promise<ApiResponse> {
-    const response = await request.get(`/systems/v1/${systemId}`);
+    const response = await request.get(`/api/systems/v1/${systemId}`);
     if (response.data?.data) {
       response.data.data = SystemConverter.transformFromBackend(response.data.data);
     }
@@ -53,7 +53,7 @@ export class SystemService {
    */
   static async createSystemData(systemData: SystemData): Promise<ApiResponse> {
     const backendData = SystemConverter.transformToBackend(systemData);
-    return await request.post('/systems/v1/', backendData);
+    return await request.post('/api/systems/v1/', backendData);
   }
 
   /**
@@ -61,34 +61,34 @@ export class SystemService {
    */
   static async updateSystemData(systemId: string, systemData: SystemData): Promise<ApiResponse> {
     const backendData = SystemConverter.transformToBackend(systemData);
-    return await request.put(`/systems/v1/${systemId}`, backendData);
+    return await request.put(`/api/systems/v1/${systemId}`, backendData);
   }
 
   /**
    * 删除系统数据
    */
   static async deleteSystemData(systemId: string): Promise<ApiResponse> {
-    return await request.delete(`/systems/v1/${systemId}`);
+    return await request.delete(`/api/systems/v1/${systemId}`);
   }
 
   /**
    * 更新系统状态
    */
   static async updateSystemStatus(systemId: string, enabled: boolean): Promise<ApiResponse> {
-    return await request.patch(`/systems/${systemId}/status`, { enabled });
+    return await request.patch(`/api/systems/${systemId}/status`, { enabled });
   }
 
   /**
    * 搜索系统数据
    */
   static async searchSystemData(keyword: string): Promise<ApiResponse> {
-    return await request.get('/systems/v1/search', { params: { keyword } });
+    return await request.get('/api/systems/v1/search', { params: { keyword } });
   }
 
   /**
    * 按分类收集系统数据
    */
   static async collectSystemsByCategory(category: string): Promise<ApiResponse> {
-    return await request.get('/systems/v1/', { params: { category } });
+    return await request.get('/api/systems/v1/', { params: { category } });
   }
 }

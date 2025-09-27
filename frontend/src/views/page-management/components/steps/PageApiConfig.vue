@@ -307,7 +307,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { PageApiConfig, ApiConfigItem } from '../../types/page-config'
-import { systemApi, moduleApi } from '@/api/service'
+import { systemApi, moduleApi } from '@/api/unified-api'
 
 const props = defineProps<{
   modelValue: PageApiConfig

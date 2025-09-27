@@ -198,3 +198,128 @@ curl "http://localhost:8000/api/logs/v1?size=2"
 - 建立完善的测试覆盖机制
 
 **关键教训**: 看似相关的问题可能有完全不同的根本原因，需要通过系统性的分析来准确定位问题源头。
+
+---
+
+# 案例：API管理页面点击即报错（ElLoading 未定义）
+
+## 现象描述
+- 进入“API管理”页面后，执行“测试API”、“批量启用/禁用/删除/测试”等操作时，页面立即报错并中断交互。
+- 控制台错误信息显示 `ElLoading is not defined` 或类似未定义引用错误。
+
+## 影响范围
+- 页面：`/api-management`
+- 文件：`/frontend/src/views/api-management/index.vue`
+- 受影响操作：单个 API 测试、批量启用、批量禁用、批量删除、批量测试（均使用了全局加载遮罩）。
+
+## 关键报错
+```
+ReferenceError: ElLoading is not defined
+    at testApi (.../frontend/src/views/api-management/index.vue)
+```
+
+## 根因分析
+- 在 `index.vue` 中多处调用了 `ElLoading.service(...)` 用于显示加载遮罩；
+- 但脚本仅导入了 `ElMessage`、`ElMessageBox`，未导入 `ElLoading`；
+- 运行时引用 `ElLoading` 导致未定义错误，触发点击即报错。
+
+代码片段（修复前的导入）：
+```ts
+import { ElMessage, ElMessageBox } from 'element-plus'
+```
+
+## 复现步骤
+1. 打开“API管理”页面；
+2. 在 API 列表中点击“测试”或执行“批量启用/禁用/删除/测试”；
+3. 控制台立即抛出 `ElLoading is not defined`，交互中断。
+
+## 修复方案
+- 在 `index.vue` 中补充导入 `ElLoading`：
+
+修复后的导入：
+```ts
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
+```
+
+## 验证清单
+- 进入“API管理”页面不报错；
+- 执行“测试API”、“批量启用/禁用/删除/测试”时能正常显示加载遮罩并关闭；
+- 无 `ElLoading is not defined` 或相似未定义异常；
+- 原有请求拦截器错误信息显示与统一 logger（`/frontend/src/utils/logger.ts`）兼容。
+
+## 预防与改进
+- 统一使用组件库服务时，采用显式导入（`import { ElLoading } from 'element-plus'`）；
+- 在评审中加入“服务类（Message、MessageBox、Loading）导入检查”项；
+- 建议对“API管理”模块将 `console.*` 逐步替换为统一 `logger.*`，避免重复和生产噪声；
+- 可补充页面级单测：对使用 `ElLoading.service` 的方法做最小打桩验证。
+
+## 关联改动清单
+- 修改：`/frontend/src/views/api-management/index.vue`（补充 `ElLoading` 导入）
+- 相关：`/frontend/src/utils/logger.ts`（统一日志工具，已落地）
+
+---
+
+# 案例：ApiFormDialog 递归更新与 ElCollapseItem 循环（已修复）
+
+## 现象描述
+- 点击“新增API”后，控制台出现 `Maximum recursive updates exceeded`。
+- 首次报错组件为 `<ApiFormDialog>`，修复后又在 `<ElCollapseItem>` 中出现。
+- 开发阶段同时出现 Vite 模板编译错误：`Element is missing end tag.`（元素缺少结束标签）。
+
+## 影响范围
+- 页面：`/api-management`
+- 文件：
+  - `/frontend/src/views/api-management/index.vue`
+  - `/frontend/src/views/api-management/components/ApiFormDialog.vue`
+
+## 关键报错
+```
+Maximum recursive updates exceeded in component <ApiFormDialog>
+Maximum recursive updates exceeded in component <ElCollapseItem>
+Internal server error: Element is missing end tag. (vite:vue)
+```
+
+## 根因分析
+1) 对话框显示逻辑导致的父子循环：
+- `index.vue` 的 `showAddApiDialog` 采用了 `false -> nextTick -> reset -> nextTick -> true` 的模式来“刷新”子组件。
+- 该模式频繁切换 `dialogVisible` 并触发 `props` 更新，联动子组件的 `watch`/`computed`，在某些场景下形成递归更新链。
+
+2) 折叠面板的双向绑定回路：
+- `ApiFormDialog.vue` 的 `<el-collapse v-model="activeCollapse" @change="handleCollapseChange">` 与 `scrollToSection()` 中对 `activeCollapse` 的手动 `push` 共同作用，形成“程序更新 -> 组件回写 -> 程序再更新”的循环。
+- 结果是在 `<ElCollapseItem>` 内产生递归更新错误。
+
+3) 模板结构破损：
+- 在一次修复过程中，模板闭合标签缺失（例如 `</el-form>`、`</div>`、`</el-dialog>`），导致 Vite 解析失败并报 "Element is missing end tag."。
+
+## 修复方案
+1) 简化对话框打开逻辑：
+- `index.vue` 中移除不必要的 `nextTick` 和来回切换的 `dialogVisible`，改为“重置表单后直接打开对话框”。
+- `resetForm` 采用逐字段赋值的方式（包括 `parameters`、`response_example`），避免替换整个对象引起的深层次响应式连锁。
+
+2) 折叠面板改为单向绑定：
+- 将 `v-model="activeCollapse"` 改为 `:model-value="activeCollapse"`。
+- 在 `@change="handleCollapseChange"` 中手动同步：`activeCollapse.value = activeNames`，并保存到本地存储。
+- `scrollToSection()` 仅在目标 `section` 不在数组内时才 `push`，避免无意义的重复更新。
+
+3) 修复模板闭合标签并恢复缺失面板：
+- 补齐 `</el-collapse>`、`</el-form>`、`</div>`、`</el-dialog>` 等闭合标签。
+- 恢复“标签管理”和“测试配置”两个 `<el-collapse-item>` 面板及对话框页脚（取消/保存按钮）。
+
+## 验证清单
+- 重新启动前端开发服务器，页面正常渲染，无模板编译错误。
+- 点击“新增API”弹窗可正常打开，无递归更新报错。
+- 折叠面板切换与导航跳转（`scrollToSection`）行为正常，无循环更新。
+
+## 预防与改进
+- 避免通过反复切换对话框可见性来“刷新”子组件；首选稳定的 `props` + 逐字段赋值。
+- UI 组件的状态管理遵循单一数据源：若存在程序化更新与组件事件回写，不使用双向绑定，改为单向绑定并在事件中显式同步。
+- `watch` 中只赋必要字段，避免整体对象替换造成广泛依赖重算。
+- 在评审清单中加入模板结构检查；CI 中增加一次 `vite build` 以早期发现 SFC 模板错误。
+- 为关键交互添加最小 E2E/单元测试：打开弹窗、折叠切换、控制台无错误。
+
+## 关联改动清单
+- 修改：`/frontend/src/views/api-management/index.vue`（简化 `showAddApiDialog`，优化 `resetForm`）
+- 修改：`/frontend/src/views/api-management/components/ApiFormDialog.vue`（折叠面板单向绑定、`handleCollapseChange` 显式同步、补齐模板闭合标签、恢复标签/测试面板、添加页脚）
+
+## 结论
+本次问题由对话框显示模式与折叠面板的双向绑定共同引发的递归更新，加之一次修复中的模板结构破损而加重。通过收敛状态来源和改为单向数据流，并修复模板结构，问题已彻底解决。

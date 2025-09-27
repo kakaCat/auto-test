@@ -305,7 +305,7 @@ class ApiHandler {
       }
     }
 
-    const requestFn = () => request.get<T>(url, params)
+    const requestFn = () => request.get<T>(url, params, { skipErrorHandler: true })
     const result = await this.execute(requestFn, config)
 
     // 设置缓存
@@ -332,7 +332,7 @@ class ApiHandler {
       ...options 
     }
     
-    const requestFn = () => request.post<T>(url, data)
+    const requestFn = () => request.post<T>(url, data, { skipErrorHandler: true })
     const result = await this.execute(requestFn, config)
     return (result as any).data || result
   }
@@ -352,7 +352,7 @@ class ApiHandler {
       ...options 
     }
     
-    const requestFn = () => request.put<T>(url, data)
+    const requestFn = () => request.put<T>(url, data, { skipErrorHandler: true })
     const result = await this.execute(requestFn, config)
     return (result as any).data || result
   }
@@ -372,7 +372,7 @@ class ApiHandler {
       ...options 
     }
     
-    const requestFn = () => request.patch<T>(url, data)
+    const requestFn = () => request.patch<T>(url, data, { skipErrorHandler: true })
     const result = await this.execute(requestFn, config)
     return (result as any).data || result
   }
@@ -391,7 +391,7 @@ class ApiHandler {
       ...options 
     }
     
-    const requestFn = () => request.delete<T>(url)
+    const requestFn = () => request.delete<T>(url, { skipErrorHandler: true })
     const result = await this.execute(requestFn, config)
     return (result as any).data || result
   }

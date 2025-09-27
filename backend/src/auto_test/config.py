@@ -29,6 +29,22 @@ class Config:
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     
+    # AI配置
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    DEFAULT_LLM_MODEL: str = os.getenv("DEFAULT_LLM_MODEL", "gpt-3.5-turbo")
+    LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.1"))
+    
+    # MCP配置
+    MCP_TOOLS_ENABLED: bool = os.getenv("MCP_TOOLS_ENABLED", "true").lower() == "true"
+    MCP_SERVER_HOST: str = os.getenv("MCP_SERVER_HOST", "localhost")
+    MCP_SERVER_PORT: int = int(os.getenv("MCP_SERVER_PORT", "8003"))
+    
+    # 执行配置
+    MAX_CONCURRENT_EXECUTIONS: int = int(os.getenv("MAX_CONCURRENT_EXECUTIONS", "5"))
+    EXECUTION_TIMEOUT: int = int(os.getenv("EXECUTION_TIMEOUT", "300"))
+    ENABLE_EXECUTION_LOGGING: bool = os.getenv("ENABLE_EXECUTION_LOGGING", "true").lower() == "true"
+    
     # CORS配置
     CORS_ORIGINS: List[str] = field(default_factory=lambda: ["*"])
     CORS_METHODS: List[str] = field(default_factory=lambda: ["*"])

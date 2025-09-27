@@ -16,6 +16,7 @@
 
     <!-- 输入端口 -->
     <Handle
+      id="input"
       type="target"
       :position="Position.Left"
       :style="{ top: '50%' }"

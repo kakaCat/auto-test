@@ -169,7 +169,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { pageApi as pageApiService } from '@/api/page-management.js'
+import { pageApi as pageApiService } from '@/api/page-management'
 
 // Props
 const props = defineProps({

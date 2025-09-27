@@ -2,18 +2,48 @@
   <el-dialog
     :model-value="modelValue"
     :title="title"
-    width="800px"
-    :before-close="handleClose"
-    @update:model-value="$emit('update:modelValue', $event)"
+    width="80%"
+    top="5vh"
+    :close-on-click-modal="false"
+    :destroy-on-close="true"
+    @update:modelValue="handleClose"
+    class="api-form-dialog"
   >
-    <el-form
-      ref="formRef"
-      :model="localFormData"
-      :rules="rules"
-      label-width="120px"
-      label-position="left"
-    >
-      <el-row :gutter="20">
+    <div class="dialog-content">
+      <!-- 导航菜单 -->
+      <div class="navigation-menu">
+        <el-button text :type="getSectionButtonType('basic')" @click="scrollToSection('basic')">基本信息</el-button>
+        <el-button text :type="getSectionButtonType('params')" @click="scrollToSection('params')">请求参数</el-button>
+        <el-button text :type="getSectionButtonType('response')" @click="scrollToSection('response')">响应配置</el-button>
+        <el-button text :type="getSectionButtonType('tags')" @click="scrollToSection('tags')">标签与认证</el-button>
+        <el-button text :type="getSectionButtonType('test')" @click="scrollToSection('test')">测试配置</el-button>
+        <div class="progress-container">
+          <el-progress :percentage="formProgress" :stroke-width="10" striped />
+          <span>完成度</span>
+        </div>
+      </div>
+
+      <!-- 表单内容 -->
+      <el-form
+        ref="formRef"
+        :model="localFormData"
+        :rules="rules"
+        label-position="top"
+        class="api-form-content"
+      >
+        <el-collapse :model-value="activeCollapse" @change="handleCollapseChange">
+          <!-- 基本信息 -->
+          <el-collapse-item name="basic" ref="basicSection">
+            <template #title>
+             <div class="panel-title">
+               <el-icon><InfoFilled /></el-icon>
+               <span>基本信息</span>
+               <el-tag v-if="basicInfoComplete" type="success" size="small">已完成</el-tag>
+               <el-tag v-else type="warning" size="small">{{ basicInfoProgress }}/5</el-tag>
+             </div>
+           </template>
+           
+           <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="API名称" prop="name">
             <el-input
@@ -103,82 +133,87 @@
         />
       </el-form-item>
 
-      <el-form-item label="状态">
-        <el-switch
-          v-model="localFormData.enabled"
-          active-text="启用"
-          inactive-text="禁用"
-        />
-      </el-form-item>
-
-      <!-- 请求参数配置 -->
-      <el-form-item label="请求参数">
-        <div class="params-section">
-          <div class="params-header">
-            <el-button
-              type="primary"
-              size="small"
-              @click="addParameter"
-            >
-              <el-icon><Plus /></el-icon>
-              添加参数
-            </el-button>
-          </div>
-          
-          <div v-if="localFormData.parameters && localFormData.parameters.length > 0" class="params-list">
-            <div
-              v-for="(param, index) in localFormData.parameters"
-              :key="index"
-              class="param-row"
-            >
-              <el-input
-                v-model="param.name"
-                placeholder="参数名"
-                style="width: 150px"
-              />
-              <el-select
-                v-model="param.type"
-                placeholder="类型"
-                style="width: 100px"
-              >
-                <el-option label="string" value="string" />
-                <el-option label="number" value="number" />
-                <el-option label="boolean" value="boolean" />
-                <el-option label="object" value="object" />
-                <el-option label="array" value="array" />
-              </el-select>
-              <el-switch
-                v-model="param.required"
-                active-text="必填"
-                inactive-text="可选"
-                size="small"
-              />
-              <el-input
-                v-model="param.description"
-                placeholder="参数描述"
-                style="flex: 1"
-              />
-              <el-button
-                type="danger"
-                size="small"
-                @click="removeParameter(index)"
-              >
-                <el-icon><Delete /></el-icon>
-              </el-button>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="状态">
+            <el-switch
+              v-model="localFormData.enabled"
+              active-text="启用"
+              inactive-text="禁用"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="需要登录">
+            <el-switch
+              v-model="localFormData.requireAuth"
+              active-text="需要认证"
+              inactive-text="公开访问"
+            />
+            <div class="auth-hint">
+              <el-text size="small" type="info">
+                {{ localFormData.requireAuth ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
+              </el-text>
             </div>
-          </div>
-        </div>
-      </el-form-item>
+          </el-form-item>
+        </el-col>
+       </el-row>
+     </el-collapse-item>
 
-      <!-- 响应示例 -->
-      <el-form-item label="响应示例">
-        <el-input
+     <!-- 请求参数面板 -->
+     <el-collapse-item name="params" ref="paramsSection">
+       <template #title>
+         <div class="panel-title">
+           <el-icon><Setting /></el-icon>
+           <span>请求参数</span>
+           <el-tag v-if="localFormData.parameters.length > 0" type="success" size="small">
+             {{ localFormData.parameters.length }} 个参数
+           </el-tag>
+           <el-tag v-else type="info" size="small">暂无参数</el-tag>
+         </div>
+       </template>
+
+       <!-- 请求参数配置 (增强版) -->
+      <el-form-item label="请求参数">
+        <ParameterConfig
+          v-model="localFormData.parameters"
+          @change="handleParametersChange"
+        />
+       </el-form-item>
+     </el-collapse-item>
+
+     <!-- 响应配置面板 -->
+     <el-collapse-item name="response" ref="responseSection">
+       <template #title>
+         <div class="panel-title">
+           <el-icon><DataAnalysis /></el-icon>
+           <span>响应配置</span>
+           <el-tag v-if="localFormData.response_example" type="success" size="small">已配置</el-tag>
+           <el-tag v-else type="info" size="small">未配置</el-tag>
+         </div>
+       </template>
+
+       <!-- 响应配置 (增强版) -->
+      <el-form-item label="响应配置">
+        <ResponseConfig
           v-model="localFormData.response_example"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入响应示例（JSON格式）"
+          @change="handleResponseChange"
         />
       </el-form-item>
+    </el-collapse-item>
+
+    <!-- 标签管理面板 -->
+    <el-collapse-item name="tags" ref="tagsSection">
+      <template #title>
+        <div class="panel-title">
+          <el-icon><PriceTag /></el-icon>
+          <span>标签管理</span>
+          <el-tag v-if="localFormData.tags.length > 0" type="success" size="small">
+            {{ localFormData.tags.length }} 个标签
+          </el-tag>
+          <el-tag v-else type="info" size="small">无标签</el-tag>
+        </div>
+      </template>
 
       <!-- 标签 -->
       <el-form-item label="标签">
@@ -198,27 +233,93 @@
           />
         </el-select>
       </el-form-item>
-    </el-form>
+    </el-collapse-item>
 
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="handleSave" :loading="saving">
-          {{ saving ? '保存中...' : '保存' }}
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+    <!-- 测试配置面板 -->
+    <el-collapse-item name="test" ref="testSection">
+      <template #title>
+        <div class="panel-title">
+          <el-icon><Aim /></el-icon>
+          <span>测试配置</span>
+          <el-tag v-if="localFormData.enableTest" type="success" size="small">
+            <el-icon><VideoPlay /></el-icon>
+            已启用
+          </el-tag>
+          <el-tag v-else type="info" size="small">未启用</el-tag>
+        </div>
+      </template>
+
+      <!-- 测试配置 -->
+      <el-form-item label="测试配置">
+        <div class="test-config">
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-checkbox v-model="localFormData.enableTest">
+                <el-icon><Aim /></el-icon>
+                启用测试
+              </el-checkbox>
+            </el-col>
+            <el-col :span="8">
+              <el-select
+                v-model="localFormData.testEnvironment"
+                placeholder="测试环境"
+                :disabled="!localFormData.enableTest"
+                style="width: 100%"
+              >
+                <el-option label="开发环境" value="development" />
+                <el-option label="测试环境" value="testing" />
+                <el-option label="预发布环境" value="staging" />
+              </el-select>
+            </el-col>
+            <el-col :span="8">
+              <el-button
+                type="success"
+                :disabled="!localFormData.enableTest"
+                @click="handleImmediateTest"
+              >
+                <el-icon><VideoPlay /></el-icon>
+                立即测试
+              </el-button>
+            </el-col>
+          </el-row>
+          <div v-if="localFormData.enableTest" class="test-hint">
+            <el-text size="small" type="info">
+              保存API后将自动生成测试用例模板并跳转到测试界面
+            </el-text>
+          </div>
+        </div>
+      </el-form-item>
+    </el-collapse-item>
+
+  </el-collapse>
+</el-form>
+</div>
+
+<template #footer>
+  <div class="dialog-footer">
+    <el-button @click="handleClose">取消</el-button>
+    <el-button type="primary" @click="handleSubmit" :loading="saving">
+      {{ saving ? '保存中...' : '保存' }}
+    </el-button>
+  </div>
+</template>
+</el-dialog>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Delete } from '@element-plus/icons-vue'
+import { 
+  Plus, Delete, Aim, VideoPlay, 
+  InfoFilled, Setting, DataAnalysis, PriceTag 
+} from '@element-plus/icons-vue'
 import unifiedApi from '@/api/unified-api'
+import ParameterConfig from './ParameterConfig.vue'
+import ResponseConfig from './ResponseConfig.vue'
+import { debounce } from 'lodash-es'
 
-// 直接使用统一API
-const apiProxy = unifiedApi
+// 直接使用统一API的 API 管理入口
+const apiProxy = unifiedApi.apiManagementApi
 
 // Props
 const props = defineProps({
@@ -247,6 +348,20 @@ const emit = defineEmits(['update:modelValue', 'save', 'cancel'])
 const formRef = ref()
 const saving = ref(false)
 const moduleList = ref([])
+const activeCollapse = ref(['basic']) // 默认展开基本信息面板
+const activeSection = ref('basic') // 当前激活的导航区域
+
+// 工具方法：将可能的字符串/数组/空值统一为字符串数组
+const toStringArray = (val) => {
+  if (Array.isArray(val)) return val
+  if (typeof val === 'string') {
+    return val
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+  }
+  return []
+}
 
 // 本地表单数据
 const localFormData = reactive({
@@ -258,9 +373,12 @@ const localFormData = reactive({
   system_id: '',
   module_id: '',
   enabled: true,
+  requireAuth: true, // 新增：是否需要登录认证，默认需要
   parameters: [],
   response_example: '',
-  tags: []
+  tags: [],
+  enableTest: false, // 新增：是否启用测试
+  testEnvironment: 'development' // 新增：测试环境
 })
 
 // HTTP方法选项
@@ -281,7 +399,7 @@ const predefinedTags = [
 
 // 基础URL
 const baseUrl = computed(() => {
-  return 'http://localhost:8000'
+  return 'http://localhost:8002'
 })
 
 // 可用模块
@@ -289,6 +407,63 @@ const availableModules = computed(() => {
   if (!localFormData.system_id) return []
   return moduleList.value.filter(module => module.system_id === localFormData.system_id)
 })
+
+// 基本信息完成度
+const basicInfoProgress = computed(() => {
+  let count = 0
+  if (localFormData.name) count++
+  if (localFormData.method) count++
+  if (localFormData.url) count++
+  if (localFormData.system_id) count++
+  if (localFormData.module_id) count++
+  return count
+})
+
+const basicInfoComplete = computed(() => basicInfoProgress.value === 5)
+
+// 表单整体完成度 - 使用防抖避免频繁计算
+const rawFormProgress = computed(() => {
+  // 使用浅拷贝避免响应式追踪过深
+  const params = [...localFormData.parameters]
+  const hasResponse = !!localFormData.response_example
+  const tags = [...localFormData.tags]
+  const enableTest = localFormData.enableTest
+  
+  let total = 0
+  let completed = 0
+  
+  // 基本信息 (权重: 50%)
+  total += 50
+  completed += (basicInfoProgress.value / 5) * 50
+  
+  // 请求参数 (权重: 20%)
+  total += 20
+  if (params.length > 0) {
+    completed += 20
+  }
+  
+  // 响应配置 (权重: 20%)
+  total += 20
+  if (hasResponse) {
+    completed += 20
+  }
+  
+  // 标签和测试 (权重: 10%)
+  total += 10
+  if (tags.length > 0 || enableTest) {
+    completed += 10
+  }
+  
+  return Math.round((completed / total) * 100)
+})
+
+// 防抖的进度值
+const formProgress = ref(rawFormProgress.value)
+
+// 监听原始进度变化，使用防抖更新
+watch(rawFormProgress, debounce((newProgress) => {
+  formProgress.value = newProgress
+}, 100))
 
 // 表单验证规则
 const rules = {
@@ -315,30 +490,29 @@ const rules = {
 watch(() => props.formData, (newData) => {
   if (newData && Object.keys(newData).length > 0) {
     const oldSystemId = localFormData.system_id
-    Object.assign(localFormData, {
-      id: newData.id || '',
-      name: newData.name || '',
-      description: newData.description || '',
-      url: newData.path || newData.url || '', // 后端path字段映射为前端url字段
-      method: newData.method || 'GET',
-      system_id: newData.system_id || '',
-      module_id: newData.module_id || '',
-      enabled: newData.enabled !== undefined ? newData.enabled : true,
-      parameters: newData.parameters || [],
-      response_example: newData.response_example || '',
-      tags: newData.tags || []
-    })
+    
+    // 逐个赋值，避免Object.assign触发递归更新
+    localFormData.id = newData.id || ''
+    localFormData.name = newData.name || ''
+    localFormData.description = newData.description || ''
+    localFormData.url = newData.path || newData.url || '' // 后端path字段映射为前端url字段
+    localFormData.method = newData.method || 'GET'
+    localFormData.system_id = newData.system_id || ''
+    localFormData.module_id = newData.module_id || ''
+    localFormData.enabled = newData.enabled !== undefined ? newData.enabled : true
+    localFormData.requireAuth = newData.auth_required !== undefined ? Boolean(newData.auth_required) : true // 新增：认证字段映射
+    localFormData.parameters = newData.parameters || []
+    localFormData.response_example = newData.response_example || ''
+    localFormData.tags = toStringArray(newData.tags)
+    localFormData.enableTest = newData.enableTest || false // 新增：测试配置映射
+    localFormData.testEnvironment = newData.testEnvironment || 'development'
     
     // 如果系统ID发生变化，重新加载模块列表
     if (localFormData.system_id && localFormData.system_id !== oldSystemId) {
       loadModuleList(localFormData.system_id)
     }
-  } else {
-    // 使用nextTick确保组件已挂载后再重置表单
-    nextTick(() => {
-      resetForm()
-    })
   }
+  // 移除else分支中的resetForm调用，避免递归更新
 }, { immediate: true, deep: true })
 
 // 监听弹框显示状态
@@ -386,38 +560,53 @@ const handleSystemChange = () => {
   }
 }
 
-const addParameter = () => {
-  localFormData.parameters.push({
-    name: '',
-    type: 'string',
-    required: false,
-    description: ''
-  })
+const handleParametersChange = (parameters) => {
+  // 参数变化时的处理逻辑
+  console.log('Parameters changed:', parameters)
 }
 
-const removeParameter = (index) => {
-  localFormData.parameters.splice(index, 1)
+const handleResponseChange = (response) => {
+  // 响应变化时的处理逻辑
+  console.log('Response changed:', response)
+}
+
+const handleImmediateTest = () => {
+  ElMessage.info('立即测试功能将在保存API后可用')
+}
+
+const handleCollapseChange = (activeNames) => {
+  activeCollapse.value = activeNames
+  // 保存折叠状态到本地存储
+  localStorage.setItem('api-form-collapse-state', JSON.stringify(activeNames))
+}
+
+const getSectionButtonType = (section) => {
+  return activeSection.value === section ? 'primary' : ''
+}
+
+const scrollToSection = (section) => {
+  activeSection.value = section
+  
+  // 确保对应面板展开
+  if (!activeCollapse.value.includes(section)) {
+    activeCollapse.value.push(section)
+  }
+  
+  // 滚动到对应区域
+  nextTick(() => {
+    const sectionRef = `${section}Section`
+    if (formRef.value && formRef.value.$refs && formRef.value.$refs[sectionRef]) {
+      formRef.value.$refs[sectionRef].$el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
+  })
 }
 
 const resetForm = () => {
   try {
-    // 安全重置表单数据
-    Object.assign(localFormData, {
-      id: '',
-      name: '',
-      description: '',
-      url: '',
-      method: 'GET',
-      system_id: '',
-      module_id: '',
-      enabled: true,
-      parameters: [],
-      response_example: '',
-      tags: []
-    })
-  } catch (error) {
-    console.warn('重置表单数据失败:', error)
-    // 逐个赋值作为备选方案
+    // 逐个赋值重置表单数据，避免Object.assign触发递归更新
     localFormData.id = ''
     localFormData.name = ''
     localFormData.description = ''
@@ -426,9 +615,14 @@ const resetForm = () => {
     localFormData.system_id = ''
     localFormData.module_id = ''
     localFormData.enabled = true
+    localFormData.requireAuth = true
     localFormData.parameters = []
     localFormData.response_example = ''
     localFormData.tags = []
+    localFormData.enableTest = false
+    localFormData.testEnvironment = 'development'
+  } catch (error) {
+    console.warn('重置表单数据失败:', error)
   }
   
   // 使用nextTick确保DOM更新完成后再清除验证
@@ -448,8 +642,9 @@ const resetForm = () => {
 }
 
 const handleClose = () => {
+  // 只触发 update:modelValue 事件来关闭对话框
+  // 避免同时触发 cancel 事件导致递归更新
   emit('update:modelValue', false)
-  emit('cancel')
 }
 
 const handleSave = async () => {
@@ -503,13 +698,15 @@ const handleSave = async () => {
       status: localFormData.enabled ? 'active' : 'inactive',
       request_format: 'json',
       response_format: 'json',
-      auth_required: 1,
+      auth_required: localFormData.requireAuth ? 1 : 0, // 根据前端字段设置认证要求
       rate_limit: 1000,
       timeout: 30,
       
-      // 处理标签 - 后端期望字符串
-      tags: localFormData.tags && localFormData.tags.length > 0 ? 
-        localFormData.tags.join(',') : null,
+      // 处理标签 - 后端期望字符串（兼容字符串/数组/空值）
+      tags: (() => {
+        const arr = toStringArray(localFormData.tags)
+        return arr.length > 0 ? arr.join(',') : null
+      })(),
       
       // 处理请求参数 - 转换为JSON字符串
       request_schema: localFormData.parameters && localFormData.parameters.length > 0 ? 
@@ -551,6 +748,16 @@ defineExpose({
 onMounted(() => {
   // 初始加载所有模块列表
   loadModuleList()
+  
+  // 恢复折叠状态
+  const savedState = localStorage.getItem('api-form-collapse-state')
+  if (savedState) {
+    try {
+      activeCollapse.value = JSON.parse(savedState)
+    } catch {
+      activeCollapse.value = ['basic']
+    }
+  }
 })
 </script>
 
@@ -682,5 +889,125 @@ onMounted(() => {
 
 :deep(.el-form-item) {
   margin-bottom: 24px;
+}
+
+.auth-hint {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border-left: 3px solid #409eff;
+}
+
+.auth-hint .el-text {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.test-config {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+}
+
+.test-hint {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #ecfdf5;
+  border-radius: 6px;
+  border-left: 3px solid #10b981;
+}
+
+.test-hint .el-text {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.progress-indicator {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+}
+
+.progress-text {
+  display: block;
+  text-align: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.quick-navigation {
+  margin-bottom: 20px;
+  text-align: center;
+  padding: 12px;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #f0f2f5;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.panel-title .el-icon {
+  color: #409eff;
+}
+
+.panel-title .el-tag {
+  margin-left: auto;
+}
+
+:deep(.el-collapse) {
+  border: none;
+}
+
+:deep(.el-collapse-item) {
+  margin-bottom: 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+:deep(.el-collapse-item:hover) {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+:deep(.el-collapse-item__header) {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 1px solid #e4e7ed;
+  padding: 16px 20px;
+  font-weight: 600;
+  color: #303133;
+}
+
+:deep(.el-collapse-item__content) {
+  padding: 24px;
+  background: #fafbfc;
+}
+
+:deep(.el-collapse-item__arrow) {
+  color: #409eff;
+  font-weight: bold;
+}
+
+:deep(.el-progress-bar__outer) {
+  border-radius: 10px;
+}
+
+:deep(.el-progress-bar__inner) {
+  border-radius: 10px;
 }
 </style>

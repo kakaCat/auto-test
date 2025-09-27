@@ -297,6 +297,47 @@ const routes = [
   //     }
   //   ]
   // },
+  {
+    path: '/ai-orchestration',
+    component: Layout,
+    redirect: '/ai-orchestration/index',
+    meta: {
+      title: 'AI编排',
+      icon: 'MagicStick'
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'AiOrchestration',
+        component: () => import('@/views/ai-orchestration/index.vue'),
+        meta: {
+          title: 'AI API编排',
+          icon: 'MagicStick',
+          description: '通过自然语言描述，让AI自动编排和执行API测试'
+        }
+      }
+    ]
+  },
+  {
+    path: '/requirement-management',
+    component: Layout,
+    redirect: '/requirement-management/list',
+    meta: {
+      title: '需求管理',
+      icon: 'Document'
+    },
+    children: [
+      {
+        path: 'list',
+        name: 'RequirementList',
+        component: () => import('@/views/requirement-management/index.vue'),
+        meta: {
+          title: '需求列表',
+          icon: 'List'
+        }
+      }
+    ]
+  },
 
   // {
   //   path: '/login',

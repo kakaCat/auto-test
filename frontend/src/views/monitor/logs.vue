@@ -209,7 +209,7 @@ const loadLogs = async () => {
       params.append('level', filterForm.level)
     }
     
-    const response = await fetch(`http://localhost:8000/api/logs/v1?${params}`)
+    const response = await fetch(`http://localhost:8002/api/logs/v1?${params}`)
     const result = await response.json()
     
     if (result.success) {

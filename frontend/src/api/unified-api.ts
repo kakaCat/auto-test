@@ -27,7 +27,7 @@ import { request } from '@/utils/request'
 import { ApiResponse } from '@/types/api'
 
 // 统一API基础配置
-const UNIFIED_API_BASE = import.meta.env.VITE_UNIFIED_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const UNIFIED_API_BASE = import.meta.env.VITE_UNIFIED_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002'
 
 // 查询参数接口
 interface SystemListParams {
@@ -584,7 +584,7 @@ export const unifiedApiManagementApi = {
    * @returns API列表数据
    */
   getApis(params: ApiListParams = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/api-interfaces/v1/', params)
+    return unifiedRequest.get('/api/api-interfaces/v1/', params, { skipErrorHandler: true })
   },
 
   /**
@@ -593,7 +593,7 @@ export const unifiedApiManagementApi = {
    * @returns API详情数据
    */
   getApiDetail(apiId: string): Promise<ApiResponse> {
-    return unifiedRequest.get(`/api/api-interfaces/v1/${apiId}`)
+    return unifiedRequest.get(`/api/api-interfaces/v1/${apiId}`, {}, { skipErrorHandler: true })
   },
 
   /**
@@ -602,7 +602,7 @@ export const unifiedApiManagementApi = {
    * @returns 创建结果
    */
   createApi(data: ApiData): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/api-interfaces/v1/', data)
+    return unifiedRequest.post('/api/api-interfaces/v1/', data, { skipErrorHandler: true })
   },
 
   /**
@@ -612,7 +612,7 @@ export const unifiedApiManagementApi = {
    * @returns 更新结果
    */
   updateApi(apiId: string, data: Partial<ApiData>): Promise<ApiResponse> {
-    return unifiedRequest.put(`/api/api-interfaces/v1/${apiId}`, data)
+    return unifiedRequest.put(`/api/api-interfaces/v1/${apiId}`, data, { skipErrorHandler: true })
   },
 
   /**
@@ -621,7 +621,7 @@ export const unifiedApiManagementApi = {
    * @returns 删除结果
    */
   deleteApi(apiId: string): Promise<ApiResponse> {
-    return unifiedRequest.delete(`/api/api-interfaces/v1/${apiId}`)
+    return unifiedRequest.delete(`/api/api-interfaces/v1/${apiId}`, { skipErrorHandler: true })
   },
 
   /**
@@ -631,7 +631,7 @@ export const unifiedApiManagementApi = {
    * @returns 测试结果
    */
   testApi(apiId: string, testData: TestData = {}): Promise<ApiResponse> {
-    return unifiedRequest.post(`/api/api-interfaces/v1/${apiId}/test`, testData)
+    return unifiedRequest.post(`/api/api-interfaces/v1/${apiId}/test`, testData, { skipErrorHandler: true })
   },
 
   /**
@@ -641,7 +641,7 @@ export const unifiedApiManagementApi = {
    * @returns 批量测试结果
    */
   batchTestApis(apiIds: string[], testConfig: TestConfig = {}): Promise<ApiResponse> {
-    return unifiedRequest.post('/api/api-interfaces/v1/batch-test', { api_ids: apiIds, ...testConfig })
+    return unifiedRequest.post('/api/api-interfaces/v1/batch-test', { api_ids: apiIds, ...testConfig }, { skipErrorHandler: true })
   },
 
   /**
@@ -649,7 +649,7 @@ export const unifiedApiManagementApi = {
    * @returns API统计数据
    */
   getApiStatistics(): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/api-interfaces/v1/stats/summary')
+    return unifiedRequest.get('/api/api-interfaces/v1/stats/summary', {}, { skipErrorHandler: true })
   },
 
   /**
@@ -661,7 +661,8 @@ export const unifiedApiManagementApi = {
     return unifiedRequest.post('/api/api-interfaces/v1/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
-      }
+      },
+      skipErrorHandler: true
     })
   },
 
@@ -671,65 +672,11 @@ export const unifiedApiManagementApi = {
    * @returns 导出结果
    */
   exportApis(params: Record<string, any> = {}): Promise<ApiResponse> {
-    return unifiedRequest.get('/api/api-interfaces/v1/export', params)
+    return unifiedRequest.get('/api/api-interfaces/v1/export', params, { skipErrorHandler: true })
   }
 }
 
-/**
- * 兼容性适配器 (Compatibility Adapter)
- * 
- * 提供与旧版API完全兼容的接口映射
- */
-export const compatibilityAdapter = {
-  // 系统API兼容映射
-  systemApi: {
-    getList: unifiedSystemApi.getList,
-    getEnabledList: unifiedSystemApi.getEnabledList,
-    getEnabledListByCategory: unifiedSystemApi.getEnabledListByCategory,
-    getDetail: unifiedSystemApi.getDetail,
-    create: unifiedSystemApi.create,
-    update: unifiedSystemApi.update,
-    delete: unifiedSystemApi.delete,
-    toggleEnabled: unifiedSystemApi.toggleEnabled,
-    batchOperation: unifiedSystemApi.batchOperation,
-    getStatistics: unifiedSystemApi.getStatistics
-  },
-
-  // 模块API兼容映射
-  moduleApi: {
-    getList: unifiedModuleApi.getList,
-    getEnabledList: unifiedModuleApi.getEnabledList,
-    getBySystem: unifiedModuleApi.getBySystem,
-    getEnabledBySystem: unifiedModuleApi.getEnabledBySystem,
-    getDetail: unifiedModuleApi.getDetail,
-    create: unifiedModuleApi.create,
-    update: unifiedModuleApi.update,
-    delete: unifiedModuleApi.delete,
-    toggleEnabled: unifiedModuleApi.toggleEnabled,
-    batchOperation: unifiedModuleApi.batchOperation,
-    moveToSystem: unifiedModuleApi.moveToSystem,
-    getUsageStatistics: unifiedModuleApi.getUsageStatistics
-  },
-
-  // 分类API兼容映射
-  categoryApi: {
-    getSystemCategories: unifiedCategoryApi.getSystemCategories,
-    getModuleTags: unifiedCategoryApi.getModuleTags,
-    createTag: unifiedCategoryApi.createTag,
-    updateTag: unifiedCategoryApi.updateTag,
-    deleteTag: unifiedCategoryApi.deleteTag
-  },
-
-  // 监控API兼容映射
-  monitorApi: {
-    getHealthStatus: unifiedMonitorApi.getHealthStatus,
-    getOverview: unifiedMonitorApi.getOverview,
-    getMetrics: unifiedMonitorApi.getMetrics
-  },
-
-  // API管理兼容映射
-  apiManagementApi: unifiedApiManagementApi
-}
+// 兼容层已移除：不再提供旧接口映射，统一使用新域API
 
 /**
  * 默认导出 - 统一API模块
@@ -740,22 +687,7 @@ export default {
   category: unifiedCategoryApi,
   log: unifiedLogApi,
   monitor: unifiedMonitorApi,
-  apiManagementApi: unifiedApiManagementApi,
-  compatibility: compatibilityAdapter,
-  // 兼容性接口 - 直接暴露API管理方法到根级别
-  getModuleList: unifiedApiManagementApi.getModuleList,
-  getServiceList: unifiedApiManagementApi.getServiceList,
-  getApis: unifiedApiManagementApi.getApis,
-  getApiDetail: unifiedApiManagementApi.getApiDetail,
-  createApi: unifiedApiManagementApi.createApi,
-  updateApi: unifiedApiManagementApi.updateApi,
-  deleteApi: unifiedApiManagementApi.deleteApi,
-  testApi: unifiedApiManagementApi.testApi,
-  batchTestApis: unifiedApiManagementApi.batchTestApis,
-  getApiStatistics: unifiedApiManagementApi.getApiStatistics,
-  importApis: unifiedApiManagementApi.importApis,
-  exportApis: unifiedApiManagementApi.exportApis,
-  getStats: unifiedApiManagementApi.getStats
+  apiManagementApi: unifiedApiManagementApi
 }
 
 /**

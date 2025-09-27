@@ -323,8 +323,8 @@ import {
 import type { SystemCategory, System, Module } from './types/index'
 import { SystemCategoryLabels } from './types/index'
 
-// 导入API
-import { systemApi, moduleApi } from '@/api/service'
+// 导入API（统一入口）
+import { systemApi, moduleApi } from '@/api/unified-api'
 
 // 导入数据配置
 import {

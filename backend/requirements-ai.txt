@@ -1,0 +1,39 @@
+# AI编排模块专用依赖
+# AI Orchestration Module Dependencies
+
+# MCP Protocol support
+mcp>=0.1.0
+
+# Enhanced AI capabilities
+openai>=1.0.0
+anthropic>=0.3.0
+
+# WebSocket support for real-time monitoring
+websockets>=11.0.0
+
+# Enhanced async support
+asyncio-mqtt>=0.11.0
+
+# JSON schema validation
+jsonschema>=4.17.0
+
+# UUID generation
+uuid>=1.30
+
+# Time utilities
+python-dateutil>=2.8.0
+
+# Enhanced HTTP client
+httpx>=0.24.0
+
+# Retry mechanisms
+tenacity>=8.2.0
+
+# Configuration validation
+pydantic-extra-types>=2.0.0
+
+# Monitoring and metrics
+prometheus-client>=0.17.0
+
+# Caching
+redis>=4.5.0

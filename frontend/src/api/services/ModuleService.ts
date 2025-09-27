@@ -32,7 +32,7 @@ export class ModuleService {
    * 收集模块列表数据
    */
   static async collectModuleListData(params: ModuleListParams = {}): Promise<ApiResponse> {
-    const response = await request.get('/modules/v1/', { params });
+    const response = await request.get('/api/modules/v1/', { params });
     if (response.data?.data) {
       response.data.data = ModuleConverter.transformListFromBackend(response.data.data);
     }
@@ -43,7 +43,7 @@ export class ModuleService {
    * 按系统收集模块数据
    */
   static async collectModulesBySystem(systemId: string, params: ModuleListParams = {}): Promise<ApiResponse> {
-    const response = await request.get('/modules/v1/', { 
+    const response = await request.get('/api/modules/v1/', { 
       params: { ...params, system_id: systemId } 
     });
     if (response.data?.data) {
@@ -56,7 +56,7 @@ export class ModuleService {
    * 收集模块详情数据
    */
   static async collectModuleDetailData(moduleId: string): Promise<ApiResponse> {
-    const response = await request.get(`/modules/v1/${moduleId}`);
+    const response = await request.get(`/api/modules/v1/${moduleId}`);
     if (response.data?.data) {
       response.data.data = ModuleConverter.transformFromBackend(response.data.data);
     }
@@ -68,7 +68,7 @@ export class ModuleService {
    */
   static async createModuleData(moduleData: ModuleData): Promise<ApiResponse> {
     const backendData = ModuleConverter.transformToBackend(moduleData);
-    return await request.post('/modules/v1/', backendData);
+    return await request.post('/api/modules/v1/', backendData);
   }
 
   /**
@@ -76,21 +76,21 @@ export class ModuleService {
    */
   static async updateModuleData(moduleId: string, moduleData: ModuleData): Promise<ApiResponse> {
     const backendData = ModuleConverter.transformToBackend(moduleData);
-    return await request.put(`/modules/v1/${moduleId}`, backendData);
+    return await request.put(`/api/modules/v1/${moduleId}`, backendData);
   }
 
   /**
    * 删除模块数据
    */
   static async deleteModuleData(moduleId: string): Promise<ApiResponse> {
-    return await request.delete(`/modules/v1/${moduleId}`);
+    return await request.delete(`/api/modules/v1/${moduleId}`);
   }
 
   /**
    * 更新模块状态
    */
   static async updateModuleStatus(moduleId: string, enabled: boolean): Promise<ApiResponse> {
-    return await request.patch(`/modules/${moduleId}/status`, { enabled });
+    return await request.patch(`/api/modules/${moduleId}/status`, { enabled });
   }
 
   /**
@@ -101,13 +101,13 @@ export class ModuleService {
     if (systemId) {
       params.system_id = systemId;
     }
-    return await request.get('/modules/v1/search', { params });
+    return await request.get('/api/modules/v1/search', { params });
   }
 
   /**
    * 按标签收集模块数据
    */
   static async collectModulesByTags(tags: string[]): Promise<ApiResponse> {
-    return await request.get('/modules/v1/', { params: { tags: tags.join(',') } });
+    return await request.get('/api/modules/v1/', { params: { tags: tags.join(',') } });
   }
 }

@@ -16,6 +16,7 @@
 
     <!-- 输出端口 -->
     <Handle
+      id="output"
       type="source"
       :position="Position.Right"
       :style="{ top: '50%' }"

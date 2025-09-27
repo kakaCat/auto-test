@@ -299,7 +299,7 @@
       :form-data="form"
       :system-list="systemList"
       @save="saveApi"
-      @cancel="resetForm"
+      @cancel="handleDialogCancel"
     />
   </div>
 </template>
@@ -307,7 +307,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { 
   DocumentAdd, Upload, Download, Search, Refresh, ArrowDown, ArrowRight,
   View, Edit, VideoPlay, Delete, Check, Close, Monitor, Document,
@@ -318,7 +318,10 @@ import ApiFormDialog from './components/ApiFormDialog.vue'
 import SystemTree from '@/components/SystemTree.vue'
 
 // 直接使用统一API
-const apiProxy = unifiedApi
+const apiProxy = unifiedApi.apiManagementApi
+// 补充分域代理，避免将 system/module 误挂到 apiManagementApi 下
+const systemApi = unifiedApi.system
+const moduleApi = unifiedApi.module
 
 // 路由实例
 const route = useRoute()
@@ -415,7 +418,7 @@ const filteredApiList = computed(() => {
 const loadSystemList = async (retryCount = 0) => {
   try {
     // 使用新的按分类获取启用系统接口
-    const response = await apiProxy.system.getEnabledListByCategory('backend')
+    const response = await systemApi.getEnabledListByCategory('backend')
     if (response && response.success) {
       // 确保response.data是数组
       const data = response.data
@@ -459,7 +462,7 @@ const loadSystemList = async (retryCount = 0) => {
 const loadModuleList = async (retryCount = 0) => {
   try {
     // 使用新的启用模块接口
-    const response = await apiProxy.module.getEnabledList()
+    const response = await moduleApi.getEnabledList()
     if (response && response.success) {
       // 确保response.data是数组
       const data = response.data
@@ -487,7 +490,7 @@ const loadModuleList = async (retryCount = 0) => {
 
 const buildSystemTree = async () => {
   try {
-    const response = await apiProxy.system.getEnabledListByCategory('backend')
+    const response = await systemApi.getEnabledListByCategory('backend')
     if (response.success && response.data) {
       const systems = Array.isArray(response.data) ? response.data : []
       const modules = Array.isArray(moduleList.value) ? moduleList.value : []
@@ -684,21 +687,13 @@ const getMethodType = (method) => {
   return types[method] || 'info'
 }
 
-const showAddApiDialog = async () => {
+const showAddApiDialog = () => {
   dialogTitle.value = '新增API'
   resetForm(true) // 保留选中的系统和模块信息
-  
-  // 使用nextTick确保DOM更新完成后再显示对话框
-  await nextTick()
   dialogVisible.value = true
 }
 
-const viewApi = (api) => {
-  // 查看API详情
-  console.log('查看API:', api)
-}
-
-const editApi = (api) => {
+const showEditApiDialog = async (api) => {
   dialogTitle.value = '编辑API'
   Object.assign(form, api)
   dialogVisible.value = true
@@ -806,6 +801,11 @@ const saveApi = async (formData) => {
       apiFormDialogRef.value.resetSavingState()
     }
   }
+}
+
+// 处理对话框取消事件
+const handleDialogCancel = () => {
+  dialogVisible.value = false
 }
 
 const resetForm = (preserveSelection = false) => {

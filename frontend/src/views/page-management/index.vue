@@ -374,11 +374,14 @@ import PageConfigDialog from './components/PageConfigDialog.vue'
 import PageApiFormDialog from './components/PageApiFormDialog.vue'
 
 // API导入
-import { pageApi, pageUtils } from '@/api/page-management.js'
+import { pageApi, pageUtils } from '@/api/page-management'
 import unifiedApi from '@/api/unified-api'
 
 // 直接使用统一API
-const apiProxy = unifiedApi
+const apiProxy = unifiedApi.apiManagementApi
+// 补充分域代理，防止通过 apiManagementApi 访问 system/module 方法
+const systemApi = unifiedApi.system
+const moduleApi = unifiedApi.module
 
 // 路由实例
 const route = useRoute()
@@ -489,7 +492,7 @@ onMounted(async () => {
 const loadSystemList = async () => {
   try {
     // 使用新的按分类获取启用系统接口
-    const response = await apiProxy.system.getEnabledListByCategory('frontend')
+    const response = await systemApi.getEnabledListByCategory('frontend')
     if (response.success) {
       systemList.value = response.data || []
     } else {
@@ -505,7 +508,7 @@ const loadSystemList = async () => {
 const loadModuleList = async () => {
   try {
     // 使用新的启用模块接口
-    const response = await apiProxy.module.getEnabledList()
+    const response = await moduleApi.getEnabledList()
     if (response.success) {
       moduleList.value = response.data || []
     } else {
@@ -581,7 +584,7 @@ const loadPageList = async () => {
 
 const loadAvailableApis = async () => {
   try {
-    const response = await unifiedApi.getApis()
+    const response = await unifiedApi.apiManagementApi.getApis()
     if (response.success) {
       availableApis.value = response.data
     } else {

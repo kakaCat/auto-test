@@ -1,30 +1,105 @@
 <template>
-  <div class="condition-node" :class="{ selected: data.selected, running: data.status === 'running' }">
-    <div class="node-header">
+  <div class="condition-node" :class="{ selected: data.selected, running: data.status === 'running', expanded: isExpanded }">
+    <div class="node-header" @click="toggleExpanded">
       <el-icon class="node-icon"><Share /></el-icon>
       <span class="node-title">{{ data.label || '条件分支' }}</span>
-      <div class="node-status">
-        <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
-        <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
-        <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+      <div class="node-controls">
+        <el-icon class="expand-icon" :class="{ rotated: isExpanded }"><ArrowDown /></el-icon>
+        <div class="node-status">
+          <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
+          <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
+          <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+        </div>
       </div>
     </div>
     
-    <div class="node-body">
-      <div class="config-display">
-        <div v-if="data.config && data.config.logicalOperator" class="config-item">
-          <span class="label">逻辑:</span>
-          <span class="value">{{ data.config.logicalOperator }}</span>
+    <!-- 折叠状态下的简要信息 -->
+    <div v-if="!isExpanded" class="node-summary">
+      <div v-if="data.config?.logicalOperator" class="summary-item">
+        <span class="label">逻辑:</span>
+        <span class="value">{{ data.config.logicalOperator }}</span>
+      </div>
+      <div v-if="data.config?.conditions?.length" class="summary-item">
+        <span class="label">条件:</span>
+        <span class="value">{{ data.config.conditions.length }} 个</span>
+      </div>
+    </div>
+
+    <!-- 展开状态下的完整配置界面 -->
+    <div v-if="isExpanded" class="node-config">
+      <!-- 逻辑操作符选择 -->
+      <div class="config-section">
+        <label class="config-label">逻辑操作符:</label>
+        <el-select v-model="logicalOperator" size="small" style="width: 100%" @change="updateNodeConfig">
+          <el-option label="AND (所有条件都满足)" value="AND" />
+          <el-option label="OR (任一条件满足)" value="OR" />
+        </el-select>
+      </div>
+
+      <!-- 条件列表 -->
+      <div class="config-section">
+        <div class="section-header">
+          <label class="config-label">条件列表:</label>
+          <el-button size="small" type="primary" @click="addCondition">
+            <el-icon><Plus /></el-icon>
+            添加条件
+          </el-button>
         </div>
-        <div v-if="data.config && data.config.conditions && data.config.conditions.length" class="config-item">
-          <span class="label">条件:</span>
-          <span class="value">{{ data.config.conditions.length }} 个</span>
+        
+        <div v-if="conditions.length === 0" class="empty-conditions">
+          <el-text type="info">暂无条件，点击上方按钮添加</el-text>
+        </div>
+
+        <div v-for="(condition, index) in conditions" :key="index" class="condition-item">
+          <div class="condition-header">
+            <span class="condition-index">条件 {{ index + 1 }}</span>
+            <el-button size="small" type="danger" text @click="removeCondition(index)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </div>
+          
+          <div class="condition-config">
+            <div class="config-row">
+              <label class="config-label">字段:</label>
+              <el-input 
+                v-model="condition.field" 
+                size="small" 
+                placeholder="如: response.data.status"
+                @input="updateNodeConfig"
+              />
+            </div>
+            
+            <div class="config-row">
+              <label class="config-label">操作符:</label>
+              <el-select v-model="condition.operator" size="small" @change="updateNodeConfig">
+                <el-option label="等于 (==)" value="==" />
+                <el-option label="不等于 (!=)" value="!=" />
+                <el-option label="大于 (>)" value=">" />
+                <el-option label="大于等于 (>=)" value=">=" />
+                <el-option label="小于 (<)" value="<" />
+                <el-option label="小于等于 (<=)" value="<=" />
+                <el-option label="包含 (contains)" value="contains" />
+                <el-option label="不包含 (not contains)" value="not_contains" />
+              </el-select>
+            </div>
+            
+            <div class="config-row">
+              <label class="config-label">值:</label>
+              <el-input 
+                v-model="condition.value" 
+                size="small" 
+                placeholder="比较值"
+                @input="updateNodeConfig"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 输入端口 -->
     <Handle
+      id="input"
       type="target"
       :position="Position.Left"
       :style="{ top: '50%' }"
@@ -51,21 +126,88 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
-import { Share, Loading, Check, Close } from '@element-plus/icons-vue'
+import { Share, Loading, Check, Close, ArrowDown, Plus, Delete } from '@element-plus/icons-vue'
 
-defineProps(['data'])
+interface Condition {
+  field: string
+  operator: string
+  value: string
+}
+
+const props = defineProps<{
+  data: {
+    id: string
+    label?: string
+    selected?: boolean
+    status?: 'idle' | 'running' | 'success' | 'error'
+    config?: {
+      logicalOperator?: string
+      conditions?: Condition[]
+    }
+  }
+}>()
+
+const emit = defineEmits<{
+  updateNode: [nodeId: string, updates: any]
+}>()
+
+// 响应式数据
+const isExpanded = ref(false)
+const logicalOperator = ref(props.data.config?.logicalOperator || 'AND')
+const conditions = ref<Condition[]>(props.data.config?.conditions || [])
+
+// 方法
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value
+}
+
+const addCondition = () => {
+  conditions.value.push({
+    field: '',
+    operator: '==',
+    value: ''
+  })
+  updateNodeConfig()
+}
+
+const removeCondition = (index: number) => {
+  conditions.value.splice(index, 1)
+  updateNodeConfig()
+}
+
+const updateNodeConfig = () => {
+  emit('updateNode', props.data.id, {
+    config: {
+      logicalOperator: logicalOperator.value,
+      conditions: conditions.value
+    }
+  })
+}
+
+// 监听props变化
+watch(() => props.data.config, (newConfig) => {
+  if (newConfig) {
+    logicalOperator.value = newConfig.logicalOperator || 'AND'
+    conditions.value = newConfig.conditions || []
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>
 .condition-node {
-  min-width: 200px;
   background: white;
-  border: 2px solid #e4e7ed;
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
+  min-width: 200px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+}
+
+.condition-node.expanded {
+  min-width: 400px;
 }
 
 .condition-node:hover {
@@ -74,52 +216,139 @@ defineProps(['data'])
 }
 
 .condition-node.selected {
-  border-color: #f56c6c;
-  box-shadow: 0 0 0 2px rgba(245, 108, 108, 0.2);
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 .condition-node.running {
+  border-color: #e6a23c;
+  animation: nodeRunning 2s infinite;
+}
+
+.condition-node.success {
+  border-color: #67c23a;
+}
+
+.condition-node.error {
   border-color: #f56c6c;
-  animation: nodeRunning 2s ease-in-out infinite;
 }
 
 .node-header {
   display: flex;
   align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #e4e7ed;
-  background: #fef0f0;
+  padding: 12px 16px;
+  background: #f8f9fa;
   border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
 }
 
 .node-icon {
-  font-size: 16px;
   margin-right: 8px;
-  color: #f56c6c;
+  color: #409eff;
 }
 
 .node-title {
   flex: 1;
-  font-size: 14px;
   font-weight: 500;
   color: #303133;
 }
 
+.node-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
 .node-status {
-  font-size: 16px;
+  margin-left: 8px;
 }
 
-.node-body {
-  padding: 10px;
+.node-summary {
+  padding: 12px 16px;
+  color: #606266;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.config-display {
-  font-size: 12px;
-}
-
-.config-item {
+.summary-item {
   display: flex;
   margin-bottom: 4px;
+}
+
+.node-config {
+  padding: 16px;
+  background: #fafafa;
+}
+
+.config-section {
+  margin-bottom: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.config-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #303133;
+  font-size: 14px;
+}
+
+.empty-conditions {
+  text-align: center;
+  padding: 20px;
+  color: #909399;
+}
+
+.condition-item {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.condition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.condition-index {
+  font-weight: 500;
+  color: #303133;
+}
+
+.condition-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.config-row .config-label {
+  margin-bottom: 4px;
+  font-size: 12px;
 }
 
 .label {

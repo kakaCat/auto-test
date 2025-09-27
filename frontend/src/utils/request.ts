@@ -23,6 +23,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, Ca
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import type { ApiResponse, DownloadParams } from '@/types'
+import { logger } from '@/utils/logger'
 
 /**
  * 请求配置选项
@@ -56,8 +57,20 @@ export interface RequestMethods {
  * - timeout: 请求超时时间（30秒）
  * - headers: 默认请求头，设置JSON内容类型
  */
+// API 基础路径：仅当配置提供时生效；默认不设置任何基础路径
+const API_BASE_URL: string | undefined = ((): string | undefined => {
+  const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL
+  const val = (typeof envBase === 'string' && envBase.trim().length > 0) ? envBase.trim() : undefined
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production' && !val) {
+    // 开发期提示：未配置 baseURL，端点应书写完整路径（含 '/api' 或绝对地址）
+    // eslint-disable-next-line no-console
+    console.warn('[request] baseURL 未配置，端点需包含 \'/api\' 或完整域名路径')
+  }
+  return val
+})()
+
 const service: AxiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -118,7 +131,10 @@ service.interceptors.request.use(
     const appStore = useAppStore()
     // 关闭加载状态
     appStore.setLoading(false)
-    console.error('Request error:', error)
+    // 当调用方希望自行处理错误时，避免重复记录日志/提示
+    if (!((error.config as RequestConfig)?.skipErrorHandler)) {
+      logger.error('Request error:', error)
+    }
     return Promise.reject(error)
   }
 )
@@ -184,7 +200,10 @@ service.interceptors.response.use(
       appStore.setLoading(false)
     }
     
-    console.error('Response error:', error)
+    // 当调用方希望自行处理错误时，避免重复记录日志/提示
+    if (!((error.config as RequestConfig)?.skipErrorHandler)) {
+      logger.error('Response error:', error)
+    }
     
     let message = '网络错误'
     
@@ -240,7 +259,7 @@ service.interceptors.response.use(
     }
     
     // 显示错误提示
-    if (!(error.config as RequestConfig)?.skipErrorHandler) {
+    if (!((error.config as RequestConfig)?.skipErrorHandler)) {
       ElMessage.error(message)
     }
     return Promise.reject(error)
@@ -262,6 +281,52 @@ function generateRequestId(): string {
 }
 
 /**
+ * URL规范化与重复前缀防护
+ * - 解析 baseURL 的 pathname（兼容绝对/相对）
+ * - 在传入 url 与 basePath 重叠时剥除重复段，避免 /api/api
+ */
+function getBasePath(baseUrl: string | undefined): string {
+  if (!baseUrl) return ''
+  try {
+    const u = new URL(baseUrl, window.location.origin)
+    return u.pathname.replace(/\/+$/, '') || ''
+  } catch {
+    return String(baseUrl)
+      .replace(/^[a-zA-Z]+:\/\/[\w.-]+(?::\d+)?/, '')
+      .replace(/\/+$/, '')
+  }
+}
+
+function normalizeUrl(input: string, basePath: string): { path: string; fixed: boolean } {
+  let url = String(input || '')
+  let fixed = false
+  // 统一前导斜杠
+  url = '/' + url.trim().replace(/^\/+/, '')
+  if (basePath && basePath !== '/') {
+    const bp = basePath.startsWith('/') ? basePath : '/' + basePath
+    if (url === bp || url === bp + '/') {
+      url = '/'
+      fixed = true
+    } else if (url.startsWith(bp + '/')) {
+      url = url.slice(bp.length) || '/'
+      fixed = true
+    }
+  }
+  // 折叠多余斜杠
+  url = url.replace(/\/{2,}/g, '/')
+  return { path: url, fixed }
+}
+
+function normalizeAndWarn(url: string): string {
+  const basePath = getBasePath((service.defaults as any).baseURL as string | undefined)
+  const { path, fixed } = normalizeUrl(url, basePath)
+  if (fixed && typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    logger.warn(`[request] 重复基础路径已移除: basePath="${basePath}", url="${url}" -> "${path}"`)
+  }
+  return path
+}
+
+/**
  * 封装常用请求方法
  * 提供简化的API调用接口
  * 
@@ -280,9 +345,9 @@ export const request: RequestMethods = {
    * @param {any} params - 查询参数
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
-   */
+  */
   get<T = any>(url: string, params: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.get(url, { params, ...config })
+    return service.get(normalizeAndWarn(url), { params, ...config })
   },
   
   /**
@@ -293,9 +358,9 @@ export const request: RequestMethods = {
    * @param {any} data - 请求体数据
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
-   */
+  */
   post<T = any>(url: string, data: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.post(url, data, config)
+    return service.post(normalizeAndWarn(url), data, config)
   },
   
   /**
@@ -306,9 +371,9 @@ export const request: RequestMethods = {
    * @param {any} data - 请求体数据
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
-   */
+  */
   put<T = any>(url: string, data: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.put(url, data, config)
+    return service.put(normalizeAndWarn(url), data, config)
   },
   
   /**
@@ -318,9 +383,9 @@ export const request: RequestMethods = {
    * @param {string} url - 请求URL
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
-   */
+  */
   delete<T = any>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.delete(url, config)
+    return service.delete(normalizeAndWarn(url), config)
   },
   
   /**
@@ -331,9 +396,9 @@ export const request: RequestMethods = {
    * @param {any} data - 请求体数据
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
-   */
+  */
   patch<T = any>(url: string, data: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.patch(url, data, config)
+    return service.patch(normalizeAndWarn(url), data, config)
   },
   
   /**
@@ -344,9 +409,9 @@ export const request: RequestMethods = {
    * @param {FormData} formData - 包含文件的FormData对象
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 上传Promise
-   */
+  */
   upload<T = any>(url: string, formData: FormData, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.post(url, formData, {
+    return service.post(normalizeAndWarn(url), formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -368,9 +433,9 @@ export const request: RequestMethods = {
    * @param {DownloadParams} params - 查询参数
    * @param {string} filename - 指定文件名（可选）
    * @returns {Promise} 下载Promise
-   */
+  */
   download(url: string, params: DownloadParams = {}, filename: string = ''): Promise<void> {
-    return service.get(url, {
+    return service.get(normalizeAndWarn(url), {
       params,
       responseType: 'blob'
     }).then((response: AxiosResponse) => {

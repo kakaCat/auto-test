@@ -104,10 +104,11 @@
             class="node-category"
           >
             <div class="category-header">
-              <h4>{{ category.title }}</h4>
-              <el-tooltip :content="category.description" placement="right">
-                <el-icon class="category-info"><InfoFilled /></el-icon>
-              </el-tooltip>
+              <h4>{{ category.title }}
+                <el-tooltip :content="category.description" placement="right">
+                  <el-icon class="category-info"><InfoFilled /></el-icon>
+                </el-tooltip>
+              </h4>
             </div>
             <div class="node-list">
               <el-tooltip
@@ -207,289 +208,7 @@
         </VueFlow>
       </div>
 
-      <!-- 属性面板 -->
-      <div class="property-panel">
-        <div class="panel-header">
-          <h3>属性配置</h3>
-        </div>
-        
-        <div class="property-content">
-          <div v-if="selectedNode" class="property-section">
-            <h4>节点属性</h4>
-            <el-form label-width="80px">
-              <el-form-item label="节点ID">
-                <el-input v-model="selectedNode.id" disabled />
-              </el-form-item>
-              <el-form-item label="节点名称">
-                <el-input v-model="selectedNode.data.label" />
-              </el-form-item>
-              <el-form-item label="节点类型">
-                <el-input v-model="selectedNode.type" disabled />
-              </el-form-item>
-            </el-form>
-            
-            <!-- API调用节点配置 -->
-            <div v-if="selectedNode.type === 'api-call'" class="config-section">
-              <h4>API调用流程配置</h4>
-              <el-form label-width="100px">
-                <!-- 配置模式选择 -->
-                <el-form-item label="配置模式">
-                  <el-radio-group v-model="selectedNode.data.config.configMode" @change="onConfigModeChange">
-                    <el-radio value="workflow">工作流模式</el-radio>
-                    <el-radio value="system">系统模式</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-                
-                <!-- 工作流模式配置 -->
-                <template v-if="selectedNode.data.config.configMode === 'workflow'">
-                  <el-form-item label="工作流">
-                    <el-select 
-                      v-model="selectedNode.data.config.workflowId" 
-                      placeholder="选择工作流"
-                      :loading="loadingStates.workflows"
-                      @change="onWorkflowChange"
-                      filterable
-                    >
-                      <el-option
-                        v-for="workflow in workflowOptions"
-                        :key="workflow.value"
-                        :label="workflow.label"
-                        :value="workflow.value"
-                      >
-                        <div style="display: flex; justify-content: space-between;">
-                          <span>{{ workflow.label }}</span>
-                          <span style="color: #8492a6; font-size: 12px;">{{ workflow.description }}</span>
-                        </div>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                  
-                  <el-form-item label="API接口" v-if="selectedNode.data.config.workflowId">
-                    <el-select 
-                      v-model="selectedNode.data.config.apiFlowId" 
-                      placeholder="选择API接口"
-                      :loading="loadingStates.apiFlows"
-                      @change="onApiFlowChange"
-                      filterable
-                    >
-                      <el-option
-                        v-for="apiFlow in apiFlowOptions"
-                        :key="apiFlow.value"
-                        :label="apiFlow.label"
-                        :value="apiFlow.value"
-                      >
-                        <div style="display: flex; justify-content: space-between;">
-                          <span>{{ apiFlow.label }}</span>
-                          <span style="color: #8492a6; font-size: 12px;">{{ apiFlow.method }} {{ apiFlow.path }}</span>
-                        </div>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </template>
-                
-                <!-- 系统模式配置（原有逻辑） -->
-                <template v-else>
-                  <el-form-item label="系统">
-                    <el-select 
-                      v-model="selectedNode.data.config.systemId" 
-                      placeholder="选择系统"
-                      :loading="loadingStates.systems"
-                      @change="onSystemChange"
-                    >
-                      <el-option
-                        v-for="system in systemOptions"
-                        :key="system.value"
-                        :label="system.label"
-                        :value="system.value"
-                      />
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="模块">
-                    <el-select 
-                      v-model="selectedNode.data.config.moduleId" 
-                      placeholder="选择模块"
-                      :disabled="!selectedNode.data.config.systemId"
-                      :loading="loadingStates.modules"
-                      @change="onModuleChange"
-                    >
-                      <el-option
-                        v-for="module in moduleOptions"
-                        :key="module.value"
-                        :label="module.label"
-                        :value="module.value"
-                      />
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="API">
-                    <el-select 
-                      v-model="selectedNode.data.config.apiId" 
-                      placeholder="选择API"
-                      :disabled="!selectedNode.data.config.moduleId"
-                      :loading="loadingStates.apis"
-                      @change="onApiChange"
-                    >
-                      <el-option
-                        v-for="api in apiOptions"
-                        :key="api.value"
-                        :label="api.label"
-                        :value="api.value"
-                      />
-                    </el-select>
-                  </el-form-item>
-                </template>
-                
-                <!-- 通用配置信息显示 -->
-                <template v-if="selectedNode.data.config.apiId || selectedNode.data.config.apiFlowId">
-                  <el-divider content-position="left">接口信息</el-divider>
-                  <el-form-item label="请求方法">
-                    <el-input 
-                      v-model="selectedNode.data.config.method" 
-                      disabled 
-                      placeholder="根据选择的API自动填充"
-                    />
-                  </el-form-item>
-                  <el-form-item label="请求路径">
-                    <el-input 
-                      v-model="selectedNode.data.config.path" 
-                      disabled 
-                      placeholder="根据选择的API自动填充"
-                    />
-                  </el-form-item>
-                  <el-form-item label="响应格式">
-                    <el-input 
-                      v-model="selectedNode.data.config.responseFormat" 
-                      disabled 
-                      placeholder="根据选择的API自动填充"
-                    />
-                  </el-form-item>
-                </template>
-                
-                <!-- 参数配置 -->
-                <template v-if="selectedNode.data.config.apiId || selectedNode.data.config.apiFlowId">
-                  <el-divider content-position="left">参数配置</el-divider>
-                  <el-form-item label="请求参数">
-                    <el-input
-                      v-model="selectedNode.data.config.requestParamsJson"
-                      type="textarea"
-                      :rows="4"
-                      placeholder="请输入JSON格式的请求参数"
-                      @blur="validateJsonParams"
-                    />
-                    <div style="margin-top: 5px; font-size: 12px; color: #909399;">
-                      支持变量引用，如：{"id": "${nodeId}", "name": "${nodeName}"}
-                    </div>
-                  </el-form-item>
-                  <el-form-item label="请求头">
-                    <el-input
-                      v-model="selectedNode.data.config.headersJson"
-                      type="textarea"
-                      :rows="3"
-                      placeholder="请输入JSON格式的请求头"
-                      @blur="validateJsonHeaders"
-                    />
-                  </el-form-item>
-                </template>
-                
-                <!-- 执行配置 -->
-                <template v-if="selectedNode.data.config.apiId || selectedNode.data.config.apiFlowId">
-                  <el-divider content-position="left">执行配置</el-divider>
-                  <el-form-item label="超时时间">
-                    <el-input-number 
-                      v-model="selectedNode.data.config.timeout" 
-                      :min="1000" 
-                      :max="300000" 
-                      :step="1000"
-                      style="width: 100%"
-                    />
-                    <div style="margin-top: 5px; font-size: 12px; color: #909399;">
-                      单位：毫秒，范围：1000-300000
-                    </div>
-                  </el-form-item>
-                  <el-form-item label="重试次数">
-                    <el-input-number 
-                      v-model="selectedNode.data.config.retryCount" 
-                      :min="0" 
-                      :max="5" 
-                      style="width: 100%"
-                    />
-                  </el-form-item>
-                  <el-form-item label="错误处理">
-                    <el-select v-model="selectedNode.data.config.errorHandling" placeholder="选择错误处理方式">
-                      <el-option label="停止执行" value="stop" />
-                      <el-option label="继续执行" value="continue" />
-                      <el-option label="重试后停止" value="retry_stop" />
-                    </el-select>
-                  </el-form-item>
-                </template>
-              </el-form>
-            </div>
-            
-            <!-- 数据转换节点配置 -->
-            <div v-if="selectedNode.type === 'data-transform'" class="config-section">
-              <h4>转换配置</h4>
-              <el-form label-width="80px">
-                <el-form-item label="转换类型">
-                  <el-select v-model="selectedNode.data.config.transformType" placeholder="选择类型">
-                    <el-option label="字段映射" value="mapping" />
-                    <el-option label="格式转换" value="format" />
-                    <el-option label="数据过滤" value="filter" />
-                  </el-select>
-                </el-form-item>
-              </el-form>
-            </div>
-            
-            <!-- 条件分支节点配置 -->
-            <div v-if="selectedNode.type === 'condition'" class="config-section">
-              <h4>条件配置</h4>
-              <el-form label-width="80px">
-                <el-form-item label="逻辑操作">
-                  <el-select v-model="selectedNode.data.config.logicalOperator" placeholder="选择操作">
-                    <el-option label="AND" value="AND" />
-                    <el-option label="OR" value="OR" />
-                  </el-select>
-                </el-form-item>
-              </el-form>
-            </div>
-            
-            <!-- 并行执行节点配置 -->
-            <div v-if="selectedNode.type === 'parallel'" class="config-section">
-              <h4>并行配置</h4>
-              <el-form label-width="80px">
-                <el-form-item label="最大并发">
-                  <el-input-number v-model="selectedNode.data.config.maxConcurrency" :min="1" :max="10" />
-                </el-form-item>
-                <el-form-item label="等待策略">
-                  <el-switch 
-                    v-model="selectedNode.data.config.waitForAll"
-                    active-text="等待全部"
-                    inactive-text="等待任一"
-                  />
-                </el-form-item>
-              </el-form>
-            </div>
-          </div>
-          
-          <div v-else-if="selectedEdge" class="property-section">
-            <h4>连接属性</h4>
-            <el-form label-width="80px">
-              <el-form-item label="连接ID">
-                <el-input v-model="selectedEdge.id" disabled />
-              </el-form-item>
-              <el-form-item label="源节点">
-                <el-input v-model="selectedEdge.source" disabled />
-              </el-form-item>
-              <el-form-item label="目标节点">
-                <el-input v-model="selectedEdge.target" disabled />
-              </el-form-item>
-            </el-form>
-          </div>
-          
-          <div v-else class="empty-state">
-            <el-icon><Select /></el-icon>
-            <p>请选择节点或连接以查看属性</p>
-          </div>
-        </div>
-      </div>
+
     </div>
     
     <!-- 执行进度面板 -->
@@ -555,6 +274,9 @@ import ParallelNode from './components/nodes/ParallelNode.vue'
 // 导入执行引擎
 import { WorkflowExecutionEngine, ExecutionStatus } from './utils/executionEngine'
 
+// 导入工具函数
+// import { isValidConnection } from './utils/nodeUtils' // 已移除，使用简化的验证逻辑
+
 // 导入API
 import { unifiedSystemApi, unifiedModuleApi, unifiedApiManagementApi } from '@/api/unified-api'
 
@@ -579,14 +301,11 @@ const showProgress = ref<boolean>(false)
 const systemOptions = ref<any[]>([])
 const moduleOptions = ref<any[]>([])
 const apiOptions = ref<any[]>([])
-const workflowOptions = ref<any[]>([])
-const apiFlowOptions = ref<any[]>([])
+
 const loadingStates = ref({
   systems: false,
   modules: false,
-  apis: false,
-  workflows: false,
-  apiFlows: false
+  apis: false
 })
 
 // 节点分类
@@ -831,133 +550,12 @@ const loadApis = async (systemId: string, moduleId: string) => {
   }
 }
 
-// 加载工作流列表
-const loadWorkflows = async () => {
-  try {
-    loadingStates.value.workflows = true
-    // 这里应该调用工作流API，暂时使用模拟数据
-    const mockWorkflows = [
-      { id: 'wf1', name: '用户注册流程', description: '完整的用户注册验证流程' },
-      { id: 'wf2', name: '订单处理流程', description: '从下单到发货的完整流程' },
-      { id: 'wf3', name: '支付验证流程', description: '支付安全验证流程' }
-    ]
-    workflowOptions.value = mockWorkflows.map((workflow: any) => ({
-      label: workflow.name,
-      value: workflow.id,
-      ...workflow
-    }))
-  } catch (error) {
-    console.error('加载工作流列表失败:', error)
-    ElMessage.error('加载工作流列表失败')
-  } finally {
-    loadingStates.value.workflows = false
-  }
-}
 
-// 加载API流程列表
-const loadApiFlows = async (workflowId: string) => {
-  if (!workflowId) {
-    apiFlowOptions.value = []
-    return
-  }
-  
-  try {
-    loadingStates.value.apiFlows = true
-    // 这里应该根据工作流ID调用API流程接口，暂时使用模拟数据
-    const mockApiFlows = [
-      { 
-        id: 'af1', 
-        name: '用户验证接口', 
-        description: '验证用户身份信息',
-        method: 'POST',
-        url: '/api/user/validate',
-        requestSchema: {
-          type: 'object',
-          properties: {
-            username: { type: 'string', description: '用户名' },
-            password: { type: 'string', description: '密码' }
-          },
-          required: ['username', 'password']
-        },
-        responseSchema: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean' },
-            token: { type: 'string' },
-            user: { type: 'object' }
-          }
-        }
-      },
-      { 
-        id: 'af2', 
-        name: '发送验证码接口', 
-        description: '发送手机验证码',
-        method: 'POST',
-        url: '/api/sms/send',
-        requestSchema: {
-          type: 'object',
-          properties: {
-            phone: { type: 'string', description: '手机号' },
-            type: { type: 'string', description: '验证码类型' }
-          },
-          required: ['phone', 'type']
-        },
-        responseSchema: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean' },
-            message: { type: 'string' }
-          }
-        }
-      }
-    ]
-    apiFlowOptions.value = mockApiFlows.map((apiFlow: any) => ({
-      label: `${apiFlow.name} (${apiFlow.method})`,
-      value: apiFlow.id,
-      ...apiFlow
-    }))
-  } catch (error) {
-    console.error('加载API流程列表失败:', error)
-    ElMessage.error('加载API流程列表失败')
-  } finally {
-    loadingStates.value.apiFlows = false
-  }
-}
 
-// 生成API流程参数模板
-const generateApiFlowParameterTemplate = (apiFlow: any) => {
-  if (!apiFlow || !selectedNode.value) return
-  
-  try {
-    // 设置基本信息
-    selectedNode.value.data.config.method = apiFlow.method
-    selectedNode.value.data.config.url = apiFlow.url
-    selectedNode.value.data.config.apiName = apiFlow.name
-    
-    // 生成请求参数模板
-    if (apiFlow.requestSchema) {
-      const requestParams = generateParametersFromSchema(apiFlow.requestSchema)
-      selectedNode.value.data.config.requestParams = JSON.stringify(requestParams, null, 2)
-    }
-    
-    // 生成响应模板
-    if (apiFlow.responseSchema) {
-      const responseTemplate = generateParametersFromSchema(apiFlow.responseSchema)
-      selectedNode.value.data.config.responseTemplate = JSON.stringify(responseTemplate, null, 2)
-    }
-    
-    // 设置默认请求头
-    selectedNode.value.data.config.requestHeaders = JSON.stringify({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    }, null, 2)
-    
-    ElMessage.success('API流程参数模板已生成')
-  } catch (error) {
-    console.error('生成API流程参数模板失败:', error)
-    ElMessage.error('生成API流程参数模板失败')
-  }
-}
+
+
+
+
 
 // 方法定义
 const saveWorkflow = () => {
@@ -1158,19 +756,49 @@ const loadTestWorkflow = () => {
       id: 'e1',
       source: 'start-1',
       target: 'api-1',
-      type: 'default'
+      sourceHandle: null,
+      targetHandle: 'input',
+      type: 'default',
+      animated: true,
+      style: { stroke: '#409eff', strokeWidth: 2 },
+      markerEnd: {
+        type: 'arrowclosed',
+        width: 20,
+        height: 20,
+        color: '#409eff'
+      }
     },
     {
       id: 'e2',
       source: 'api-1',
       target: 'transform-1',
-      type: 'default'
+      sourceHandle: 'output',
+      targetHandle: 'input',
+      type: 'default',
+      animated: true,
+      style: { stroke: '#409eff', strokeWidth: 2 },
+      markerEnd: {
+        type: 'arrowclosed',
+        width: 20,
+        height: 20,
+        color: '#409eff'
+      }
     },
     {
       id: 'e3',
       source: 'transform-1',
       target: 'end-1',
-      type: 'default'
+      sourceHandle: 'output',
+      targetHandle: null,
+      type: 'default',
+      animated: true,
+      style: { stroke: '#409eff', strokeWidth: 2 },
+      markerEnd: {
+        type: 'arrowclosed',
+        width: 20,
+        height: 20,
+        color: '#409eff'
+      }
     }
   ]
   
@@ -1235,19 +863,88 @@ const onEdgeClick = (event: any) => {
 
 // 连接处理
 const onConnect = (params: any) => {
+  // 查找源节点和目标节点
+  const sourceNode = nodes.value.find(node => node.id === params.source)
+  const targetNode = nodes.value.find(node => node.id === params.target)
+  
+  if (!sourceNode || !targetNode) {
+    ElMessage.error('连接失败：找不到节点')
+    return
+  }
+  
+  // 简化的连接验证逻辑
+  // 1. 不能连接到自己
+  if (params.source === params.target) {
+    ElMessage.error('连接失败：不能连接到自己')
+    return
+  }
+  
+  // 2. 检查是否已经存在相同的连接
+  const existingConnection = edges.value.find(edge => 
+    edge.source === params.source && 
+    edge.target === params.target &&
+    edge.sourceHandle === params.sourceHandle &&
+    edge.targetHandle === params.targetHandle
+  )
+  
+  if (existingConnection) {
+    ElMessage.error('连接失败：连接已存在')
+    return
+  }
+  
+  // 3. 检查是否会形成循环（简化版本）
+  if (wouldCreateCycle(params.source, params.target, edges.value)) {
+    ElMessage.error('连接失败：不能形成循环连接')
+    return
+  }
+  
   const newEdge = {
     id: `edge_${Date.now()}`,
     source: params.source,
     target: params.target,
-    sourceHandle: params.sourceHandle,
-    targetHandle: params.targetHandle,
+    sourceHandle: params.sourceHandle || 'output',
+    targetHandle: params.targetHandle || 'input',
     type: 'default',
     animated: true,
-    style: { stroke: '#409eff', strokeWidth: 2 }
+    style: { stroke: '#409eff', strokeWidth: 2 },
+    markerEnd: {
+      type: 'arrowclosed',
+      width: 20,
+      height: 20,
+      color: '#409eff'
+    }
   }
   
   edges.value.push(newEdge)
   ElMessage.success('节点连接成功')
+}
+
+// 简化的循环检测函数
+const wouldCreateCycle = (fromNodeId: string, toNodeId: string, existingEdges: any[]): boolean => {
+  const visited = new Set<string>()
+  const stack = [toNodeId]
+
+  while (stack.length > 0) {
+    const currentNodeId = stack.pop()!
+    
+    if (currentNodeId === fromNodeId) {
+      return true
+    }
+
+    if (visited.has(currentNodeId)) {
+      continue
+    }
+
+    visited.add(currentNodeId)
+
+    // 找到所有从当前节点出发的连接
+    const outgoingConnections = existingEdges.filter(edge => edge.source === currentNodeId)
+    for (const edge of outgoingConnections) {
+      stack.push(edge.target)
+    }
+  }
+
+  return false
 }
 
 // 删除连接
@@ -1311,72 +1008,11 @@ const onApiChange = (apiId: string) => {
   }
 }
 
-// 处理配置模式变化
-const onConfigModeChange = (mode: string) => {
-  if (selectedNode.value) {
-    // 清空所有配置
-    selectedNode.value.data.config = {
-      ...selectedNode.value.data.config,
-      configMode: mode,
-      systemId: '',
-      moduleId: '',
-      apiId: '',
-      workflowId: '',
-      apiFlowId: '',
-      method: '',
-      path: '',
-      responseFormat: ''
-    }
-    
-    // 清空选项
-    moduleOptions.value = []
-    apiOptions.value = []
-    apiFlowOptions.value = []
-    
-    // 根据模式加载数据
-    if (mode === 'workflow') {
-      loadWorkflows()
-    } else {
-      loadSystems()
-    }
-  }
-}
 
-// 处理工作流选择变化
-const onWorkflowChange = (workflowId: string) => {
-  if (selectedNode.value) {
-    // 清空API流程选择
-    selectedNode.value.data.config.apiFlowId = ''
-    selectedNode.value.data.config.method = ''
-    selectedNode.value.data.config.path = ''
-    selectedNode.value.data.config.responseFormat = ''
-    
-    // 清空API流程选项
-    apiFlowOptions.value = []
-    
-    // 加载API流程列表
-    if (workflowId) {
-      loadApiFlows(workflowId)
-    }
-  }
-}
 
-// 处理API流程选择变化
-const onApiFlowChange = (apiFlowId: string) => {
-  if (selectedNode.value && apiFlowId) {
-    // 根据选择的API流程设置配置
-    const selectedApiFlow = apiFlowOptions.value.find(flow => flow.value === apiFlowId)
-    if (selectedApiFlow) {
-      selectedNode.value.data.config.method = selectedApiFlow.method || 'GET'
-      selectedNode.value.data.config.path = selectedApiFlow.path || ''
-      selectedNode.value.data.config.responseFormat = selectedApiFlow.responseFormat || 'JSON'
-      selectedNode.value.data.config.apiName = selectedApiFlow.name || selectedApiFlow.label || ''
-      
-      // 自动生成参数模板
-      generateApiFlowParameterTemplate(selectedApiFlow)
-    }
-  }
-}
+
+
+
 
 // 验证JSON参数
 const validateJsonParams = (event: any) => {
@@ -1520,6 +1156,27 @@ const generateValueFromProperty = (property: any): any => {
   }
 }
 
+// 处理节点更新
+const handleUpdateNode = (nodeId: string, updates: any) => {
+  const nodeIndex = nodes.value.findIndex(node => node.id === nodeId)
+  if (nodeIndex !== -1) {
+    const node = nodes.value[nodeIndex]
+    // 更新节点数据
+    nodes.value[nodeIndex] = {
+      ...node,
+      data: {
+        ...node.data,
+        ...updates
+      }
+    }
+    
+    // 如果选中的节点被更新，同步更新selectedNode
+    if (selectedNode.value && selectedNode.value.id === nodeId) {
+      selectedNode.value = nodes.value[nodeIndex]
+    }
+  }
+}
+
 // 生命周期
 onMounted(() => {
   // 加载系统列表
@@ -1615,7 +1272,7 @@ onMounted(() => {
 }
 
 .node-panel {
-  width: 280px;
+  width: 200px;
   background: white;
   border-right: 1px solid #e4e7ed;
   overflow-y: auto;
@@ -1642,9 +1299,6 @@ onMounted(() => {
 }
 
 .category-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 8px;
 }
 
@@ -1653,11 +1307,15 @@ onMounted(() => {
   font-size: 14px;
   color: #606266;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .category-info {
   color: #909399;
   cursor: help;
+  font-size: 12px;
 }
 
 .category-info:hover {
@@ -1667,19 +1325,30 @@ onMounted(() => {
 .node-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  padding: 0 6px;
+  align-items: flex-start;
 }
 
 .node-item {
   position: relative;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  padding: 10px 12px;
+  justify-content: flex-start;
+  padding: 8px 12px;
   background: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 6px;
   border-left: 3px solid transparent;
   cursor: grab;
   transition: all 0.2s;
+  width: fit-content;
+  min-width: 100px;
+  max-width: 180px;
+  height: auto;
+  min-height: 40px;
+  margin: 0;
+  align-self: flex-start;
 }
 
 .node-item:hover {
@@ -1694,19 +1363,31 @@ onMounted(() => {
 
 .node-content {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
+  text-align: left;
   flex: 1;
+  width: 100%;
+  gap: 8px;
 }
 
 .node-content .node-icon {
-  margin-right: 8px;
   font-size: 16px;
+  color: #409eff;
+  flex-shrink: 0;
 }
 
 .node-content .node-label {
   font-size: 13px;
   color: #303133;
   font-weight: 500;
+  line-height: 1.2;
+  word-wrap: break-word;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .node-indicator {
@@ -1743,27 +1424,7 @@ onMounted(() => {
   height: 100%;
 }
 
-.property-panel {
-  width: 300px;
-  background: white;
-  border-left: 1px solid #e4e7ed;
-  overflow-y: auto;
-}
 
-.property-content {
-  padding: 15px;
-}
-
-.property-section {
-  margin-bottom: 20px;
-}
-
-.property-section h4 {
-  margin: 0 0 15px 0;
-  font-size: 14px;
-  color: #303133;
-  font-weight: 500;
-}
 
 .config-section {
   margin-top: 20px;
@@ -1797,6 +1458,24 @@ onMounted(() => {
 /* VueFlow 样式覆盖 */
 :deep(.vue-flow__background) {
   background-color: #fafafa;
+}
+
+/* 箭头标记样式 */
+:deep(.vue-flow__edge-path) {
+  stroke: #409eff;
+  stroke-width: 2;
+}
+
+:deep(.vue-flow__arrowhead) {
+  fill: #409eff;
+}
+
+:deep(.vue-flow__edge.selected .vue-flow__edge-path) {
+  stroke: #67c23a;
+}
+
+:deep(.vue-flow__edge.selected .vue-flow__arrowhead) {
+  fill: #67c23a;
 }
 
 :deep(.vue-flow__node) {
