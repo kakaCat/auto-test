@@ -81,7 +81,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async getList(
     params: BaseListParams = {}, 
     options: ApiHandlerOptions = {}
-  ): Promise<{data: T[], total: number}> {
+  ): Promise<import('@/types').ApiResponse<{data: T[], total: number}>> {
     return this.apiHandler.get(this.baseUrl, params, {
       cache: true,
       loadingText: '加载列表中...',
@@ -95,7 +95,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async getDetail(
     id: number, 
     options: ApiHandlerOptions = {}
-  ): Promise<T> {
+  ): Promise<import('@/types').ApiResponse<T>> {
     return this.apiHandler.get(`${this.baseUrl}/${id}`, {}, {
       cache: true,
       cacheTime: 60000,
@@ -110,7 +110,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async create(
     data: Partial<T>, 
     options: ApiHandlerOptions = {}
-  ): Promise<T> {
+  ): Promise<import('@/types').ApiResponse<T>> {
     return this.apiHandler.post(this.baseUrl, data, {
       successMessage: '创建成功',
       loadingText: '创建中...',
@@ -125,7 +125,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     id: number, 
     data: Partial<T>, 
     options: ApiHandlerOptions = {}
-  ): Promise<T> {
+  ): Promise<import('@/types').ApiResponse<T>> {
     return this.apiHandler.put(`${this.baseUrl}/${id}`, data, {
       successMessage: '更新成功',
       loadingText: '更新中...',
@@ -139,7 +139,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async delete(
     id: number, 
     options: ApiHandlerOptions = {}
-  ): Promise<void> {
+  ): Promise<import('@/types').ApiResponse<void>> {
     return this.apiHandler.delete(`${this.baseUrl}/${id}`, {
       successMessage: '删除成功',
       loadingText: '删除中...',
@@ -154,7 +154,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     id: number, 
     enabled: boolean, 
     options: ApiHandlerOptions = {}
-  ): Promise<T> {
+  ): Promise<import('@/types').ApiResponse<T>> {
     return this.apiHandler.patch(`${this.baseUrl}/${id}/toggle`, { enabled }, {
       successMessage: `${enabled ? '启用' : '禁用'}成功`,
       loadingText: '状态切换中...',
@@ -169,7 +169,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async batchOperation(
     params: BatchOperationParams, 
     options: ApiHandlerOptions = {}
-  ): Promise<{successful: number, failed: number}> {
+  ): Promise<import('@/types').ApiResponse<{successful: number, failed: number}>> {
     return this.apiHandler.post(`${this.baseUrl}/batch`, params, {
       successMessage: '批量操作成功',
       loadingText: '批量操作中...',
@@ -182,7 +182,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
    */
   async getEnabledList(
     options: ApiHandlerOptions = {}
-  ): Promise<T[]> {
+  ): Promise<import('@/types').ApiResponse<T[]>> {
     return this.apiHandler.get(`${this.baseUrl}/enabled`, {}, {
       cache: true,
       cacheTime: 300000,
@@ -196,7 +196,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
    */
   async getStatistics(
     options: ApiHandlerOptions = {}
-  ): Promise<BaseStatistics> {
+  ): Promise<import('@/types').ApiResponse<BaseStatistics>> {
     return this.apiHandler.get(`${this.baseUrl}/statistics`, {}, {
       cache: true,
       cacheTime: 60000,
@@ -211,7 +211,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async search(
     keyword: string, 
     options: ApiHandlerOptions = {}
-  ): Promise<T[]> {
+  ): Promise<import('@/types').ApiResponse<T[]>> {
     return this.apiHandler.get(`${this.baseUrl}/search`, { keyword }, {
       cache: true,
       cacheTime: 30000,
@@ -237,7 +237,7 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async import(
     file: File, 
     options: ApiHandlerOptions = {}
-  ): Promise<any> {
+  ): Promise<import('@/types').ApiResponse<any>> {
     const formData = new FormData()
     formData.append('file', file)
     

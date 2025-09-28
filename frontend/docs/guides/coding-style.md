@@ -17,14 +17,14 @@
                         │      │        │                         │
                         └──────┴────────┴──────────┬──────────────┘
                                                    ▼
-                                   unifiedRequest（封装 request 工具）
+                                   apiHandler（封装 request 工具，统一重试/缓存/Loading）
                                                    ▼
                                  /api/... 后端 RESTful 接口（V2）
 ```
 
 核心认识
 - 所有 API 调用都从 `unified-api` 出发；具体域经由分入口暴露，如 `apiManagementApi`、`system`、`module` 等。
-- `unified-api` 是“薄聚合器”，仅做命名聚合与少量适配，真正调用经 `unifiedRequest` 统一下沉至 `request` 工具。
+- `unified-api` 是“薄聚合器”，仅做命名聚合与少量适配，真正调用经 `apiHandler` 统一下沉至 `request` 工具。
 - 严禁直接在根对象上使用已废弃直通方法（如 `unifiedApi.getApis()`）。
 
 API 管理域调用路径（最常用）
@@ -35,9 +35,30 @@ API 管理域调用路径（最常用）
    │
    └─ unifiedApi.apiManagementApi.getApis(params)
                       │
-                      └─ unifiedRequest.get('/api/api-interfaces/v1/', params)
+                      └─ apiHandler.get('/api/api-interfaces/v1/', params)
                                              │
                                              └─ Backend API (V2)
+
+## 统一响应模型与用法（ApiResponse）
+
+所有 API 调用返回 `ApiResponse<T>`，不再抛出异常：
+
+```ts
+import { apiHandler } from '@/utils/apiHandler'
+
+const result = await apiHandler.get('/api/systems/v1/', { page: 1, size: 10 })
+if (result.success) {
+  // 使用数据
+  console.log(result.data)
+} else {
+  // 统一错误结构，配合内置提示
+  console.warn(result.error?.message)
+}
+```
+
+注意事项
+- 页面与组件按 `result.success/result.data/result.error` 消费结果，避免 `try/catch`。
+- 领域 API 与 Service 层禁止直接调用 `request.*`，统一经 `apiHandler` 或 `BaseApi`。
 ```
 
 目录导览（与调用约束强关联）

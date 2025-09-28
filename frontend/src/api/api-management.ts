@@ -1,5 +1,5 @@
-import { request } from '@/utils/request'
-import { ApiResponse } from '@/types/api'
+import { apiHandler } from '@/utils/apiHandler'
+import type { ApiResponse } from '@/types'
 
 /**
  * API管理相关接口
@@ -58,6 +58,8 @@ export interface ApiData {
   example_response?: string
 }
 
+// 草稿正确性校验请求体
+
 export interface TestData {
   [key: string]: any
 }
@@ -96,7 +98,7 @@ export const apiManagementApi = {
    * @returns 服务列表数据
    */
   getServiceList(params: ServiceListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/systems/v1/', params)
+    return apiHandler.get('/api/systems/v1/', params)
   },
 
   /**
@@ -105,7 +107,7 @@ export const apiManagementApi = {
    * @returns 模块列表数据
    */
   getModuleList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/modules/v1/', params)
+    return apiHandler.get('/api/modules/v1/', params)
   },
 
   /**
@@ -114,7 +116,7 @@ export const apiManagementApi = {
    * @returns API详情数据
    */
   getApiDetail(apiId: string): Promise<ApiResponse> {
-    return request.get(`/api/interfaces/${apiId}`)
+    return apiHandler.get(`/api/interfaces/${apiId}`)
   },
 
   /**
@@ -123,7 +125,7 @@ export const apiManagementApi = {
    * @returns API列表数据
    */
   getApis(params: ApiListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/interfaces', params)
+    return apiHandler.get('/api/interfaces', params)
   },
 
   /**
@@ -132,7 +134,7 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createService(data: ServiceData): Promise<ApiResponse> {
-    return request.post('/api/systems/v1/', data)
+    return apiHandler.post('/api/systems/v1/', data)
   },
 
   /**
@@ -141,7 +143,7 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createApi(data: ApiData): Promise<ApiResponse> {
-    return request.post('/api/api-interfaces/v1/', data, { skipErrorHandler: true })
+    return apiHandler.post('/api/api-interfaces/v1/', data)
   },
 
   /**
@@ -151,7 +153,7 @@ export const apiManagementApi = {
    * @returns 更新结果
    */
   updateService(systemId: string, data: Partial<ServiceData>): Promise<ApiResponse> {
-    return request.put(`/api/systems/v1/${systemId}`, data)
+    return apiHandler.put(`/api/systems/v1/${systemId}`, data)
   },
 
   /**
@@ -161,7 +163,7 @@ export const apiManagementApi = {
    * @returns 更新结果
    */
   updateApi(apiId: string, data: Partial<ApiData>): Promise<ApiResponse> {
-    return request.put(`/api/interfaces/${apiId}`, data)
+    return apiHandler.put(`/api/interfaces/${apiId}`, data)
   },
 
   /**
@@ -170,7 +172,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteService(systemId: string): Promise<ApiResponse> {
-    return request.delete(`/api/systems/v1/${systemId}`)
+    return apiHandler.delete(`/api/systems/v1/${systemId}`)
   },
 
   /**
@@ -179,7 +181,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteApi(apiId: string): Promise<ApiResponse> {
-    return request.delete(`/api/interfaces/${apiId}`)
+    return apiHandler.delete(`/api/interfaces/${apiId}`)
   },
 
   /**
@@ -189,8 +191,9 @@ export const apiManagementApi = {
    * @returns 测试结果
    */
   testApi(apiId: string, testData: TestData = {}): Promise<ApiResponse> {
-    return request.post(`/api/interfaces/${apiId}/test`, testData)
+    return apiHandler.post(`/api/interfaces/${apiId}/test`, testData)
   },
+
 
   /**
    * 批量测试API
@@ -199,7 +202,7 @@ export const apiManagementApi = {
    * @returns 批量测试结果
    */
   batchTestApis(apiIds: string[], testConfig: TestConfig = {}): Promise<ApiResponse> {
-    return request.post('/api/interfaces/batch-test', { api_ids: apiIds, ...testConfig })
+    return apiHandler.post('/api/interfaces/batch-test', { api_ids: apiIds, ...testConfig })
   },
 
   /**
@@ -207,7 +210,7 @@ export const apiManagementApi = {
    * @returns API统计数据
    */
   getApiStatistics(): Promise<ApiResponse<ApiStatistics>> {
-    return request.get('/api/interfaces/stats/summary')
+    return apiHandler.get('/api/interfaces/stats/summary')
   },
 
   /**
@@ -216,18 +219,16 @@ export const apiManagementApi = {
    */
   getStats(): Promise<ApiResponse<StatsData>> {
     return Promise.all([
-      request.get('/api/workflows/v1/stats'),
-      request.get('/api/scenarios/v1/stats')
-    ]).then(([workflowResponse, scenarioResponse]) => {
+      apiHandler.get('/api/workflows/v1/stats'),
+      apiHandler.get('/api/scenarios/v1/stats')
+    ]).then(([workflowRes, scenarioRes]) => {
       return {
-        success: true,
+        success: workflowRes.success && scenarioRes.success,
         message: '获取统计数据成功',
         data: {
-          workflow_stats: workflowResponse.data,
-          scenario_stats: scenarioResponse.data,
-          api_stats: {
-            total_apis: 0 // 暂时使用默认值
-          },
+          workflow_stats: (workflowRes.data as any) || { total_workflows: 0 },
+          scenario_stats: (scenarioRes.data as any) || { total_scenarios: 0 },
+          api_stats: { total_apis: 0 },
           recent_activity: []
         },
         timestamp: new Date().toISOString()

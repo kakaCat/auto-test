@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-09-28 15:21:05",
+  "summary": {
+    "basic_api_rate": "80.0%",
+    "ai_orchestration": false,
+    "data_integrity": true,
+    "overall_health": false
+  },
+  "details": {
+    "basic_apis": {
+      "total": 5,
+      "passed": 4,
+      "details": [
+        {
+          "test": "系统列表",
+          "endpoint": "/api/systems/v1/",
+          "success": true,
+          "response_time": 61.07
+        },
+        {
+          "test": "模块列表",
+          "endpoint": "/api/modules/v1/",
+          "success": true,
+          "response_time": 4.01
+        },
+        {
+          "test": "API接口列表",
+          "endpoint": "/api/api-interfaces/v1/",
+          "success": true,
+          "response_time": 8.13
+        },
+        {
+          "test": "页面列表",
+          "endpoint": "/api/pages/v1/",
+          "success": true,
+          "response_time": 5.16
+        },
+        {
+          "test": "健康检查",
+          "endpoint": "/health",
+          "success": false,
+          "response_time": 1.16
+        }
+      ]
+    },
+    "ai_orchestration": {
+      "tools": false,
+      "executions": false,
+      "plans": false,
+      "overall": false
+    },
+    "data_integrity": {
+      "tables_found": 11,
+      "tables_expected": 11,
+      "missing_tables": [],
+      "data_counts": {
+        "systems": 4,
+        "modules": 13,
+        "api_interfaces": 15,
+        "pages": 6,
+        "page_apis": 17,
+        "ai_executions": 0,
+        "mcp_tool_configs": 3,
+        "api_orchestration_plans": 0,
+        "execution_steps": 0,
+        "execution_logs": 0,
+        "execution_metrics": 0
+      },
+      "success": true
+    }
+  }
+}

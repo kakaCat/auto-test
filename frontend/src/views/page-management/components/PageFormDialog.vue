@@ -6,6 +6,12 @@
     width="600px"
     :close-on-click-modal="false"
   >
+    <el-steps :active="currentStep" finish-status="success" align-center style="margin-bottom: 16px;">
+      <el-step title="基本信息" />
+      <el-step title="API接口" />
+      <el-step title="布局设计" />
+      <el-step title="交互设计" />
+    </el-steps>
     <el-form
       ref="formRef"
       :model="form"
@@ -13,6 +19,7 @@
       label-width="100px"
       @submit.prevent
     >
+      <template v-if="currentStep === 1">
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="所属系统" prop="system_id">
@@ -103,8 +110,10 @@
           <el-radio label="draft">草稿</el-radio>
         </el-radio-group>
       </el-form-item>
+      </template>
 
       <!-- API管理区域 -->
+      <template v-if="currentStep === 2">
       <el-divider content-position="left">
         <span style="font-weight: 600; color: var(--el-color-primary);">API调用配置</span>
       </el-divider>
@@ -164,13 +173,24 @@
           </el-empty>
         </div>
       </div>
+      </template>
+
+      <template v-if="currentStep === 3">
+        <el-empty description="布局设计占位（后续接入可视化编辑器）" :image-size="80" />
+      </template>
+
+      <template v-if="currentStep === 4">
+        <el-empty description="交互设计占位（后续接入交互配置）" :image-size="80" />
+      </template>
     </el-form>
 
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting">
-          {{ mode === 'create' ? '创建' : '更新' }}
+        <el-button v-if="currentStep > 1" @click="prevStep">上一步</el-button>
+        <el-button v-if="currentStep < 4" type="primary" @click="nextStep">下一步</el-button>
+        <el-button v-else type="primary" @click="handleSubmit" :loading="submitting">
+          {{ mode === 'create' ? '完成创建' : '完成更新' }}
         </el-button>
       </div>
     </template>
@@ -264,6 +284,7 @@ const emit = defineEmits(['update:visible', 'success'])
 // 响应式数据
 const formRef = ref()
 const submitting = ref(false)
+const currentStep = ref(1)
 
 // 模块和API相关数据
 const moduleList = ref([])
@@ -316,16 +337,16 @@ const availableModules = computed(() => {
 // 根据搜索关键词筛选可用API
 const filteredAvailableApis = computed(() => {
   let apis = availableApis.value
-  
+
   if (apiSearchKeyword.value.trim()) {
     const keyword = apiSearchKeyword.value.toLowerCase().trim()
-    apis = apis.filter(api => 
-      api.name.toLowerCase().includes(keyword) ||
-      api.path.toLowerCase().includes(keyword) ||
-      api.method.toLowerCase().includes(keyword)
+    apis = apis.filter(api =>
+      (api.name || '').toLowerCase().includes(keyword) ||
+      ((api.url || api.path || '')).toLowerCase().includes(keyword) ||
+      (api.method || '').toLowerCase().includes(keyword)
     )
   }
-  
+
   return apis
 })
 
@@ -364,6 +385,15 @@ watch(
   },
   { immediate: true }
 )
+
+// 系统/模块变化时刷新可用API
+watch(() => form.system_id, () => {
+  form.module_id = null
+  loadAvailableApis()
+})
+watch(() => form.module_id, () => {
+  loadAvailableApis()
+})
 
 // 方法
 const resetForm = () => {
@@ -449,7 +479,7 @@ const confirmAddApis = () => {
         id: api.id,
         name: api.name,
         method: api.method,
-        path: api.path,
+        path: api.url || api.path,
         system_name: api.system_name,
         module_name: api.module_name,
         relation_type: 'serial', // 默认串行调用
@@ -463,12 +493,20 @@ const confirmAddApis = () => {
   apiSearchKeyword.value = ''
 }
 
-// 加载可用API列表
+// 加载可用API列表（按系统/模块过滤，并统一映射path→url）
 const loadAvailableApis = async () => {
   try {
-    const response = await unifiedApi.apiManagementApi.getApis()
+    const params = {}
+    if (form.system_id) params.system_id = form.system_id
+    if (form.module_id) params.module_id = form.module_id
+
+    const response = await unifiedApi.apiManagementApi.getApis(params)
     if (response.success) {
-      availableApis.value = response.data
+      const data = Array.isArray(response.data) ? response.data : (response.data?.items ?? [])
+      availableApis.value = data.map(api => ({
+        ...api,
+        url: api.url ?? api.path ?? ''
+      }))
     }
   } catch (error) {
     console.error('加载API列表失败:', error)
@@ -520,6 +558,20 @@ const handleSubmit = async () => {
   } finally {
     submitting.value = false
   }
+}
+
+// 步骤切换
+const nextStep = async () => {
+  if (currentStep.value === 1) {
+    await formRef.value.validateField(['system_id', 'name'])
+    // 进入API步骤前刷新可用API
+    await loadAvailableApis()
+  }
+  currentStep.value = Math.min(currentStep.value + 1, 4)
+}
+
+const prevStep = () => {
+  currentStep.value = Math.max(currentStep.value - 1, 1)
 }
 </script>
 

@@ -189,6 +189,11 @@ const props = defineProps({
   showDisabled: {
     type: Boolean,
     default: true
+  },
+  // 类别过滤（可选）：仅展示指定类别的系统及其子节点
+  categories: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -210,28 +215,47 @@ const treeProps = computed(() => ({
 
 // 树形数据
 const treeData = computed(() => {
-  if (props.showDisabled) {
-    return props.data
-  }
-  
-  // 递归过滤禁用的节点
-  const filterDisabled = (nodes) => {
+  // 基础数据：根据 showDisabled 过滤禁用节点
+  const baseData = (() => {
+    if (props.showDisabled) {
+      return props.data
+    }
+    const filterDisabled = (nodes) => {
+      return nodes.filter(node => {
+        if (node.enabled === false) {
+          return false
+        }
+        if (node[props.childrenKey] && node[props.childrenKey].length > 0) {
+          node[props.childrenKey] = filterDisabled(node[props.childrenKey])
+        }
+        return true
+      })
+    }
+    return filterDisabled([...props.data])
+  })()
+
+  // 类别过滤：当传入 categories 时，仅保留匹配类别的系统节点
+  const applyCategoryFilter = (nodes) => {
+    // 若未配置类别或为空，则不做过滤
+    if (!Array.isArray(props.categories) || props.categories.length === 0) {
+      return nodes
+    }
+    const allowed = new Set(props.categories)
     return nodes.filter(node => {
-      // 如果节点被禁用，则过滤掉
-      if (node.enabled === false) {
-        return false
+      // 仅过滤系统层级，模块等子节点随系统保留
+      if (node && typeof node === 'object') {
+        if (node.category && allowed.has(node.category)) {
+          return true
+        }
+        // 若节点无类别字段（如模块），保留由其父系统决定；此处默认保留
+        // 但为了安全，只有当父系统在上层被保留时，模块才会存在
+        return !node.category
       }
-      
-      // 如果有子节点，递归过滤子节点
-      if (node[props.childrenKey] && node[props.childrenKey].length > 0) {
-        node[props.childrenKey] = filterDisabled(node[props.childrenKey])
-      }
-      
-      return true
+      return false
     })
   }
-  
-  return filterDisabled([...props.data])
+
+  return applyCategoryFilter(baseData)
 })
 
 // 监听数据变化，强制重新渲染树组件

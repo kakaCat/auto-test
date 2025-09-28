@@ -57,14 +57,18 @@ export interface RequestMethods {
  * - timeout: 请求超时时间（30秒）
  * - headers: 默认请求头，设置JSON内容类型
  */
-// API 基础路径：仅当配置提供时生效；默认不设置任何基础路径
-const API_BASE_URL: string | undefined = ((): string | undefined => {
-  const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL
-  const val = (typeof envBase === 'string' && envBase.trim().length > 0) ? envBase.trim() : undefined
-  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production' && !val) {
-    // 开发期提示：未配置 baseURL，端点应书写完整路径（含 '/api' 或绝对地址）
-    // eslint-disable-next-line no-console
-    console.warn('[request] baseURL 未配置，端点需包含 \'/api\' 或完整域名路径')
+// API 基础路径：采用统一端点变量，未配置时回退到本地8000
+const API_BASE_URL: string = ((): string => {
+  const envBase = (import.meta as any)?.env?.VITE_UNIFIED_API_BASE_URL
+  const val = (typeof envBase === 'string' && envBase.trim().length > 0)
+    ? envBase.trim()
+    : 'http://127.0.0.1:8000'
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    if (!envBase || envBase.trim().length === 0) {
+      // 开发期提示：使用默认统一端点
+      // eslint-disable-next-line no-console
+      console.warn('[request] 使用默认统一端点 http://127.0.0.1:8000（VITE_UNIFIED_API_BASE_URL 未配置）')
+    }
   }
   return val
 })()
@@ -172,19 +176,28 @@ service.interceptors.response.use(
       return response
     }
     
-    /**
-     * 业务状态码检查
-     * 检查API返回的业务状态，处理业务层面的错误
-     */
-    if (data.success === false) {
-      if (!(response.config as RequestConfig).skipErrorHandler) {
-        ElMessage.error(data.message || '请求失败')
+    // 统一响应结构与错误处理：不抛异常，返回标准ApiResponse
+    const now = new Date().toISOString()
+    if (data && typeof data === 'object' && 'success' in data) {
+      const apiResp: ApiResponse<any> = {
+        success: Boolean((data as any).success),
+        message: (data as any).message || '',
+        data: (data as any).data,
+        error: (data as any).error,
+        timestamp: (data as any).timestamp || now
       }
-      return Promise.reject(new Error(data.message || '请求失败'))
+      if (apiResp.success === false && !(response.config as RequestConfig).skipErrorHandler) {
+        ElMessage.error(apiResp.message || '请求失败')
+      }
+      return apiResp
     }
-    
-    // 返回业务数据
-    return data
+    const wrapped: ApiResponse<any> = {
+      success: true,
+      message: '',
+      data,
+      timestamp: now
+    }
+    return wrapped
   },
   /**
    * 响应错误处理
@@ -206,6 +219,9 @@ service.interceptors.response.use(
     }
     
     let message = '网络错误'
+    const now = new Date().toISOString()
+    let code: number | string | undefined
+    let details: any
     
     /**
      * HTTP响应错误处理
@@ -213,6 +229,8 @@ service.interceptors.response.use(
      */
     if (error.response) {
       const { status, data } = error.response
+      code = status
+      details = data
       
       switch (status) {
       case 400:
@@ -220,13 +238,8 @@ service.interceptors.response.use(
         break
       case 401:
         message = '未授权，请重新登录'
-        /**
-         * 认证失效处理
-         * 清除本地认证信息并重定向到登录页
-         */
         localStorage.removeItem('token')
         localStorage.removeItem('userInfo')
-        // 清除用户信息
         window.location.href = '/login'
         break
       case 403:
@@ -251,18 +264,27 @@ service.interceptors.response.use(
         message = (data as any)?.message || `连接错误${status}`
       }
     } else if (error.code === 'ECONNABORTED') {
-      // 请求超时错误
       message = '请求超时'
     } else if (error.message) {
-      // 其他网络错误
       message = error.message
     }
     
-    // 显示错误提示
     if (!((error.config as RequestConfig)?.skipErrorHandler)) {
       ElMessage.error(message)
     }
-    return Promise.reject(error)
+    
+    const apiResp: ApiResponse<any> = {
+      success: false,
+      message,
+      error: {
+        code,
+        message,
+        details,
+        timestamp: now
+      },
+      timestamp: now
+    }
+    return Promise.resolve(apiResp)
   }
 )
 

@@ -40,7 +40,7 @@
 
 import { ElMessage, ElLoading } from 'element-plus'
 import { request } from './request'
-import type { ApiHandlerOptions, CacheData } from '@/types'
+import type { ApiHandlerOptions, CacheData, ApiResponse } from '@/types'
 
 /**
  * 批量操作结果
@@ -213,7 +213,7 @@ class ApiHandler {
    * @param {ApiHandlerOptions} options - 请求选项
    * @returns {Promise} 请求结果
    */
-  async execute<T = any>(requestFn: () => Promise<T>, options: ApiHandlerOptions = {}): Promise<T> {
+  async execute<T = any>(requestFn: () => Promise<ApiResponse<T>>, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     const config = { ...DEFAULT_OPTIONS, ...options }
     
     try {
@@ -223,29 +223,39 @@ class ApiHandler {
       }
 
       // 执行请求
-      const result = await this.executeWithRetry(requestFn, config)
+      let result = await this.executeWithRetry<T>(requestFn, config)
       
       // 数据转换
-      const transformedResult = config.transform 
-        ? config.transform(result) 
-        : result
+      if (config.transform) {
+        const transformedData = config.transform(result?.data)
+        result = { ...result, data: transformedData }
+      }
 
       // 显示成功消息
-      if (config.showSuccess && config.successMessage) {
+      if (config.showSuccess && config.successMessage && result?.success) {
         ElMessage.success(config.successMessage)
       }
 
-      return transformedResult
-
-    } catch (error) {
-      // 错误处理
-      if (config.showError) {
-        const errorMessage = config.errorMessage || 
-                           (error as Error).message || 
-                           '操作失败'
+      // 错误提示（不抛异常）
+      if (config.showError && !result?.success) {
+        const errorMessage = config.errorMessage || result?.message || '操作失败'
         ElMessage.error(errorMessage)
       }
-      throw error
+
+      return result
+
+    } catch (error) {
+      const message = (error as Error)?.message || '请求执行失败'
+      if (config.showError) {
+        ElMessage.error(config.errorMessage || message)
+      }
+      const now = new Date().toISOString()
+      return {
+        success: false,
+        message,
+        error: { message, details: error, timestamp: now },
+        timestamp: now
+      }
     } finally {
       // 关闭加载状态
       if (config.showLoading) {
@@ -260,30 +270,25 @@ class ApiHandler {
    * @param {ApiHandlerOptions} config - 配置选项
    * @returns {Promise} 请求结果
    */
-  async executeWithRetry<T>(requestFn: () => Promise<T>, config: ApiHandlerOptions): Promise<T> {
-    let lastError: Error | null = null
+  async executeWithRetry<T>(requestFn: () => Promise<ApiResponse<T>>, config: ApiHandlerOptions): Promise<ApiResponse<T>> {
+    let result: ApiResponse<T> | null = null
     
     for (let attempt = 0; attempt <= (config.retryCount || 0); attempt++) {
-      try {
-        return await requestFn()
-      } catch (error) {
-        lastError = error as Error
-        
-        // 如果是最后一次尝试，直接抛出错误
-        if (attempt === (config.retryCount || 0)) {
-          break
-        }
-        
-        // 等待重试延迟
-        if ((config.retryDelay || 0) > 0) {
-          await new Promise(resolve => setTimeout(resolve, config.retryDelay))
-        }
-        
-        console.warn(`请求失败，正在重试... (${attempt + 1}/${(config.retryCount || 0) + 1})`)
+      result = await requestFn()
+      if (result.success) {
+        return result
       }
+      // 到达最后一次尝试或无重试配置，则返回失败结果
+      if (attempt === (config.retryCount || 0)) {
+        break
+      }
+      // 等待重试延迟
+      if ((config.retryDelay || 0) > 0) {
+        await new Promise(resolve => setTimeout(resolve, config.retryDelay))
+      }
+      console.warn(`请求失败，正在重试... (${attempt + 1}/${(config.retryCount || 0) + 1})`)
     }
-    
-    throw lastError
+    return result as ApiResponse<T>
   }
 
   /**
@@ -293,7 +298,7 @@ class ApiHandler {
    * @param {ApiHandlerOptions} options - 请求选项
    * @returns {Promise} 请求结果
    */
-  async get<T = any>(url: string, params: Record<string, any> = {}, options: ApiHandlerOptions = {}): Promise<T> {
+  async get<T = any>(url: string, params: Record<string, any> = {}, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     const config = { ...DEFAULT_OPTIONS, ...options }
     
     // 检查缓存
@@ -306,7 +311,7 @@ class ApiHandler {
     }
 
     const requestFn = () => request.get<T>(url, params, { skipErrorHandler: true })
-    const result = await this.execute(requestFn, config)
+    const result = await this.execute<T>(requestFn, config)
 
     // 设置缓存
     if (config.cache) {
@@ -314,7 +319,7 @@ class ApiHandler {
       requestCache.set(cacheKey, result, config.cacheTime || 300000)
     }
 
-    return (result as any).data || result
+    return result
   }
 
   /**
@@ -324,7 +329,7 @@ class ApiHandler {
    * @param {ApiHandlerOptions} options - 请求选项
    * @returns {Promise} 请求结果
    */
-  async post<T = any>(url: string, data: any = {}, options: ApiHandlerOptions = {}): Promise<T> {
+  async post<T = any>(url: string, data: any = {}, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     const config: ApiHandlerOptions = { 
       ...DEFAULT_OPTIONS, 
       showSuccess: true,
@@ -333,8 +338,8 @@ class ApiHandler {
     }
     
     const requestFn = () => request.post<T>(url, data, { skipErrorHandler: true })
-    const result = await this.execute(requestFn, config)
-    return (result as any).data || result
+    const result = await this.execute<T>(requestFn, config)
+    return result
   }
 
   /**
@@ -344,7 +349,7 @@ class ApiHandler {
    * @param {ApiHandlerOptions} options - 请求选项
    * @returns {Promise} 请求结果
    */
-  async put<T = any>(url: string, data: any = {}, options: ApiHandlerOptions = {}): Promise<T> {
+  async put<T = any>(url: string, data: any = {}, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     const config: ApiHandlerOptions = { 
       ...DEFAULT_OPTIONS, 
       showSuccess: true,
@@ -353,8 +358,8 @@ class ApiHandler {
     }
     
     const requestFn = () => request.put<T>(url, data, { skipErrorHandler: true })
-    const result = await this.execute(requestFn, config)
-    return (result as any).data || result
+    const result = await this.execute<T>(requestFn, config)
+    return result
   }
 
   /**
@@ -364,17 +369,17 @@ class ApiHandler {
    * @param {ApiHandlerOptions} options - 请求选项
    * @returns {Promise} 请求结果
    */
-  async patch<T = any>(url: string, data: any = {}, options: ApiHandlerOptions = {}): Promise<T> {
+  async patch<T = any>(url: string, data: any = {}, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     const config: ApiHandlerOptions = { 
       ...DEFAULT_OPTIONS, 
       showSuccess: true,
-      successMessage: '更新成功',
+      successMessage: '操作成功',
       ...options 
     }
     
     const requestFn = () => request.patch<T>(url, data, { skipErrorHandler: true })
-    const result = await this.execute(requestFn, config)
-    return (result as any).data || result
+    const result = await this.execute<T>(requestFn, config)
+    return result
   }
 
   /**
@@ -383,7 +388,7 @@ class ApiHandler {
    * @param {ApiHandlerOptions} options - 请求选项
    * @returns {Promise} 请求结果
    */
-  async delete<T = any>(url: string, options: ApiHandlerOptions = {}): Promise<T> {
+  async delete<T = any>(url: string, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     const config: ApiHandlerOptions = { 
       ...DEFAULT_OPTIONS, 
       showSuccess: true,
@@ -392,8 +397,8 @@ class ApiHandler {
     }
     
     const requestFn = () => request.delete<T>(url, { skipErrorHandler: true })
-    const result = await this.execute(requestFn, config)
-    return (result as any).data || result
+    const result = await this.execute<T>(requestFn, config)
+    return result
   }
 
   /**
@@ -498,12 +503,12 @@ const apiHandler = new ApiHandler()
  * 常用操作的便捷方法接口
  */
 export interface ApiUtils {
-  getList<T = any>(url: string, params?: Record<string, any>, options?: ApiHandlerOptions): Promise<T>
-  getDetail<T = any>(url: string, options?: ApiHandlerOptions): Promise<T>
-  create<T = any>(url: string, data: any, options?: ApiHandlerOptions): Promise<T>
-  update<T = any>(url: string, data: any, options?: ApiHandlerOptions): Promise<T>
-  remove<T = any>(url: string, options?: ApiHandlerOptions): Promise<T>
-  toggleStatus<T = any>(url: string, enabled: boolean, options?: ApiHandlerOptions): Promise<T>
+  getList<T = any>(url: string, params?: Record<string, any>, options?: ApiHandlerOptions): Promise<ApiResponse<T>>
+  getDetail<T = any>(url: string, options?: ApiHandlerOptions): Promise<ApiResponse<T>>
+  create<T = any>(url: string, data: any, options?: ApiHandlerOptions): Promise<ApiResponse<T>>
+  update<T = any>(url: string, data: any, options?: ApiHandlerOptions): Promise<ApiResponse<T>>
+  remove<T = any>(url: string, options?: ApiHandlerOptions): Promise<ApiResponse<T>>
+  toggleStatus<T = any>(url: string, enabled: boolean, options?: ApiHandlerOptions): Promise<ApiResponse<T>>
   batchToggleStatus(items: any[], enabled: boolean, getUrl: (item: any) => string, options?: ApiHandlerOptions): Promise<BatchResult>
 }
 
@@ -518,7 +523,7 @@ export const apiUtils: ApiUtils = {
    * @param {ApiHandlerOptions} options - 选项配置
    * @returns {Promise} 列表数据
    */
-  async getList<T = any>(url: string, params: Record<string, any> = {}, options: ApiHandlerOptions = {}): Promise<T> {
+  async getList<T = any>(url: string, params: Record<string, any> = {}, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     return apiHandler.get<T>(url, params, {
       cache: true,
       loadingText: '加载列表中...',
@@ -532,7 +537,7 @@ export const apiUtils: ApiUtils = {
    * @param {ApiHandlerOptions} options - 选项配置
    * @returns {Promise} 详情数据
    */
-  async getDetail<T = any>(url: string, options: ApiHandlerOptions = {}): Promise<T> {
+  async getDetail<T = any>(url: string, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     return apiHandler.get<T>(url, {}, {
       cache: true,
       cacheTime: 60000, // 1分钟缓存
@@ -548,7 +553,7 @@ export const apiUtils: ApiUtils = {
    * @param {ApiHandlerOptions} options - 选项配置
    * @returns {Promise} 创建结果
    */
-  async create<T = any>(url: string, data: any, options: ApiHandlerOptions = {}): Promise<T> {
+  async create<T = any>(url: string, data: any, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     return apiHandler.post<T>(url, data, {
       successMessage: '创建成功',
       loadingText: '创建中...',
@@ -563,7 +568,7 @@ export const apiUtils: ApiUtils = {
    * @param {ApiHandlerOptions} options - 选项配置
    * @returns {Promise} 更新结果
    */
-  async update<T = any>(url: string, data: any, options: ApiHandlerOptions = {}): Promise<T> {
+  async update<T = any>(url: string, data: any, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     return apiHandler.put<T>(url, data, {
       successMessage: '更新成功',
       loadingText: '更新中...',
@@ -577,7 +582,7 @@ export const apiUtils: ApiUtils = {
    * @param {ApiHandlerOptions} options - 选项配置
    * @returns {Promise} 删除结果
    */
-  async remove<T = any>(url: string, options: ApiHandlerOptions = {}): Promise<T> {
+  async remove<T = any>(url: string, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     return apiHandler.delete<T>(url, {
       successMessage: '删除成功',
       loadingText: '删除中...',
@@ -592,7 +597,7 @@ export const apiUtils: ApiUtils = {
    * @param {ApiHandlerOptions} options - 选项配置
    * @returns {Promise} 切换结果
    */
-  async toggleStatus<T = any>(url: string, enabled: boolean, options: ApiHandlerOptions = {}): Promise<T> {
+  async toggleStatus<T = any>(url: string, enabled: boolean, options: ApiHandlerOptions = {}): Promise<ApiResponse<T>> {
     return apiHandler.patch<T>(url, { enabled }, {
       successMessage: `${enabled ? '启用' : '禁用'}成功`,
       loadingText: '状态切换中...',

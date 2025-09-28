@@ -8,7 +8,7 @@
 > 面向系统用户的完整操作指南
 
 📁 **[用户指南目录](./user-guides/)**
-- [01. 系统架构总览](./user-guides/01-system-overview.md) - 了解5层架构体系
+- [01. 系统架构总览](./user-guides/01-system-overview.md) - 了解6层架构体系
 - [02. 快速入门指南](./user-guides/02-getting-started.md) - 新用户入门教程
 - [03. 系统管理指南](./user-guides/03-system-management.md) - 系统和模块管理
 - [04. API管理指南](./user-guides/04-api-management.md) - API接口管理
@@ -17,17 +17,35 @@
 - [07. 工作流设计器指南](./user-guides/07-workflow-designer.md) - 可视化API流程设计
 - [08. 用例场景管理指南](./user-guides/08-scenario-management.md) - 测试场景管理
 - [09. 需求管理指南](./user-guides/09-requirement-management.md) - 需求与测试用例关联管理
+- [10. AI编排执行指南](./user-guides/10-ai-orchestration-and-execution.md) - AI自动化执行
 
 ### 🤖 AI工作指南
 > 面向AI助手的提示词和工作指南
 
 📁 **[AI提示词目录](./ai-prompts/)**
+- [AI提示词总览](./ai-prompts/README.md) - AI工作指南概述
 - [系统分析提示词](./ai-prompts/system-analysis.md) - 系统架构分析指导
+- [文档编写提示词](./ai-prompts/documentation.md) - 文档编写指导
 - [用户协助提示词](./ai-prompts/user-assistance.md) - 用户问题解决指导
 
-### 📋 其他资源
+### 🛠️ 开发技术指南
+> 面向开发者的技术规范和架构指南
+
+- [开发指南](./DEVELOPMENT_GUIDE.md) - 前端开发完整指南
+- [架构指南](./ARCHITECTURE_GUIDE.md) - 前端架构设计指南
+- [问题解决指南](./TROUBLESHOOTING.md) - 常见问题解决方案
+
+### 🔄 重构相关文档
+> API层重构的完整方案和指南
+
+- [API重构指南](./API_REFACTORING_GUIDE.md) - 重构总体方案
+- [API重构实施方案](./API_REFACTORING_IMPLEMENTATION.md) - 详细实施步骤
+- [API重构对比分析](./API_REFACTORING_COMPARISON.md) - 重构前后对比
+- [API重构检查清单](./API_REFACTORING_CHECKLIST.md) - 执行检查清单
+
+### 📋 规范标准
 - [文档生成标准](./DOCUMENTATION_STANDARDS.md) - 文档创建和维护的标准规范
-- [共享组件说明](./shared-components.md) - 跨页面组件使用说明
+- [文档清理计划](./DOCUMENT_CLEANUP_PLAN.md) - 文档重组清理方案
 
 ## 🎯 使用指南
 

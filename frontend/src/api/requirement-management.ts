@@ -3,8 +3,8 @@
  * Requirement Management API
  */
 
-import { request } from '@/utils/request'
-import type { ApiResponse } from '@/types/api'
+import { apiHandler } from '@/utils/apiHandler'
+import type { ApiResponse } from '@/types'
 
 // 参数与数据类型
 interface RequirementListParams { [key: string]: unknown }
@@ -18,7 +18,7 @@ export const requirementApi = {
    * @returns {Promise} 需求列表
    */
   getRequirements(params: RequirementListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/requirements/v1/', params)
+    return apiHandler.get('/api/requirements/v1/', params)
   },
 
   /**
@@ -27,7 +27,7 @@ export const requirementApi = {
    * @returns {Promise} 需求详情
    */
   getRequirement(id: string): Promise<ApiResponse> {
-    return request.get(`/api/requirements/v1/${id}`)
+    return apiHandler.get(`/api/requirements/v1/${id}`)
   },
 
   /**
@@ -36,7 +36,7 @@ export const requirementApi = {
    * @returns {Promise} 创建结果
    */
   createRequirement(data: RequirementData): Promise<ApiResponse> {
-    return request.post('/api/requirements/v1/', data)
+    return apiHandler.post('/api/requirements/v1/', data)
   },
 
   /**
@@ -46,7 +46,7 @@ export const requirementApi = {
    * @returns {Promise} 更新结果
    */
   updateRequirement(id: string, data: RequirementData): Promise<ApiResponse> {
-    return request.put(`/api/requirements/v1/${id}`, data)
+    return apiHandler.put(`/api/requirements/v1/${id}`, data)
   },
 
   /**
@@ -55,7 +55,7 @@ export const requirementApi = {
    * @returns {Promise} 删除结果
    */
   deleteRequirement(id: string): Promise<ApiResponse> {
-    return request.delete(`/api/requirements/v1/${id}`)
+    return apiHandler.delete(`/api/requirements/v1/${id}`)
   },
 
   /**
@@ -64,7 +64,7 @@ export const requirementApi = {
    * @returns {Promise} 搜索结果
    */
   searchRequirements(query: RequirementData): Promise<ApiResponse> {
-    return request.post('/api/requirements/v1/search', query)
+    return apiHandler.post('/api/requirements/v1/search', query)
   },
 
   /**
@@ -73,7 +73,7 @@ export const requirementApi = {
    * @returns {Promise} 树形数据
    */
   getRequirementTree(params: RequirementListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/requirements/v1/tree', params)
+    return apiHandler.get('/api/requirements/v1/tree', params)
   },
 
   /**
@@ -81,7 +81,7 @@ export const requirementApi = {
    * @returns {Promise} 项目列表
    */
   getProjects(): Promise<ApiResponse> {
-    return request.get('/api/requirements/v1/projects')
+    return apiHandler.get('/api/requirements/v1/projects')
   },
 
   /**
@@ -90,7 +90,7 @@ export const requirementApi = {
    * @returns {Promise} 创建结果
    */
   createProject(data: RequirementData): Promise<ApiResponse> {
-    return request.post('/api/requirements/v1/projects', data)
+    return apiHandler.post('/api/requirements/v1/projects', data)
   },
 
   /**
@@ -99,7 +99,7 @@ export const requirementApi = {
    * @returns {Promise} 关联场景列表
    */
   getAssociatedScenarios(requirementId: string): Promise<ApiResponse> {
-    return request.get(`/api/requirements/v1/${requirementId}/scenarios`)
+    return apiHandler.get(`/api/requirements/v1/${requirementId}/scenarios`)
   },
 
   /**
@@ -109,7 +109,7 @@ export const requirementApi = {
    * @returns {Promise} 关联结果
    */
   linkScenarios(requirementId: string, scenarioIds: string[]): Promise<ApiResponse> {
-    return request.post(`/api/requirements/v1/${requirementId}/scenarios`, {
+    return apiHandler.post(`/api/requirements/v1/${requirementId}/scenarios`, {
       scenarioIds
     })
   },

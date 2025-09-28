@@ -11,6 +11,7 @@ API接口业务服务层
 """
 
 import logging
+import asyncio
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from ..database.dao import ApiInterfaceDAO, SystemDAO, ModuleDAO
@@ -20,6 +21,8 @@ from ..models.api_interface import (
     ApiInterfaceBatchRequest
 )
 from ..utils.logger import get_logger
+from ..mcp.tools.http_tools import HttpTools
+from ..mcp.tools.validation_tools import ValidationTools
 
 logger = get_logger(__name__)
 
@@ -411,6 +414,84 @@ class ApiInterfaceService:
         except Exception as e:
             logger.error(f"收集API接口数据失败: {e}")
             return []
+
+    # ======================================================================
+    # 草稿正确性校验（无需保存）
+    # ======================================================================
+    @staticmethod
+    def test_api_draft(test_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        基于前端表单的草稿配置进行正确性校验（不保存）
+
+        Args:
+            test_data: 前端提交的测试数据，预期包含：
+                - method: HTTP方法
+                - url: 完整URL或基础URL+路径
+                - headers: 可选，请求头字典
+                - params: 可选，查询参数字典
+                - body: 可选，请求体对象或字符串
+                - timeout: 可选，超时秒数
+                - rules: 可选，响应验证规则列表
+
+        Returns:
+            Dict[str, Any]: 校验结果，包含请求响应与规则校验摘要
+        """
+        try:
+            # 输入校验（快速失败）
+            if not test_data or 'method' not in test_data or 'url' not in test_data:
+                raise ValueError('缺少必要参数：method 或 url')
+
+            method = str(test_data.get('method', 'GET')).upper()
+            url = str(test_data.get('url'))
+            headers = test_data.get('headers') or {}
+            params = test_data.get('params')
+            body = test_data.get('body')
+            timeout = test_data.get('timeout', 30)
+            rules = test_data.get('rules') or []
+
+            # 构造HTTP请求参数
+            http_params = {
+                'method': method,
+                'url': url,
+                'headers': headers,
+                'timeout': timeout
+            }
+            if params:
+                http_params['params'] = params
+            if body is not None:
+                http_params['body'] = body
+
+            # 执行HTTP请求（使用内置HttpTools）
+            response = asyncio.run(HttpTools.http_request(http_params, context={}))
+
+            # 规则校验（可选）
+            validation_summary: Optional[Dict[str, Any]] = None
+            if isinstance(rules, list) and len(rules) > 0:
+                validate_params = {
+                    'response': {
+                        'status_code': response.get('status_code'),
+                        'headers': response.get('headers', {}),
+                        'body': response.get('body')
+                    },
+                    'rules': rules,
+                    'strict': False
+                }
+                validation_summary = asyncio.run(ValidationTools.validate_response(validate_params, context={}))
+
+            return {
+                'request': {
+                    'method': method,
+                    'url': url,
+                    'headers': headers,
+                    'params': params,
+                    'timeout': timeout
+                },
+                'response': response,
+                'validation': validation_summary
+            }
+        except Exception as e:
+            logger.error(f"草稿正确性校验失败: {e}")
+            raise
     
     # 私有方法
     @staticmethod

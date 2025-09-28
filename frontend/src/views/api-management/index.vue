@@ -89,12 +89,14 @@
         <SystemTree
           ref="systemTreeRef"
           :data="systemTreeData"
-          search-placeholder="搜索系统"
+          search-placeholder="搜索系统和模块"
           :show-count="false"
           :show-disabled="false"
+          :categories="['backend']"
           label-key="label"
           children-key="children"
           @node-click="handleSystemNodeClick"
+          @refresh="handleTreeRefresh"
         />
       </div>
 
@@ -250,13 +252,9 @@
                   <el-icon><View /></el-icon>
                   查看
                 </el-button>
-                <el-button type="text" @click="editApi(row)">
+                <el-button type="text" @click="showEditApiDialog(row)">
                   <el-icon><Edit /></el-icon>
                   编辑
-                </el-button>
-                <el-button type="text" @click="testApi(row)">
-                  <el-icon><VideoPlay /></el-icon>
-                  测试
                 </el-button>
                 <el-button type="text" @click="deleteApi(row)" style="color: var(--el-color-danger)">
                   <el-icon><Delete /></el-icon>
@@ -301,6 +299,7 @@
       @save="saveApi"
       @cancel="handleDialogCancel"
     />
+    <!-- 测试抽屉 -->
   </div>
 </template>
 
@@ -310,7 +309,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { 
   DocumentAdd, Upload, Download, Search, Refresh, ArrowDown, ArrowRight,
-  View, Edit, VideoPlay, Delete, Check, Close, Monitor, Document,
+  View, Edit, Delete, Check, Close, Monitor, Document,
   Link, Cloudy, Phone, Connection, DataBoard, Cpu, Platform
 } from '@element-plus/icons-vue'
 import unifiedApi from '@/api/unified-api'
@@ -333,6 +332,7 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('新增API')
 const systemTreeRef = ref()
 const apiFormDialogRef = ref()
+// 已移除测试抽屉功能
 
 // 系统相关数据
 const systemList = ref([])
@@ -419,19 +419,16 @@ const loadSystemList = async (retryCount = 0) => {
   try {
     // 使用新的按分类获取启用系统接口
     const response = await systemApi.getEnabledListByCategory('backend')
-    if (response && response.success) {
-      // 确保response.data是数组
-      const data = response.data
-      if (Array.isArray(data)) {
-        systemList.value = data
-      } else {
-        console.warn('系统列表数据格式不正确:', data)
-        systemList.value = []
-      }
+    // 兼容两种返回结构：数组 或 { success, data }
+    const data = Array.isArray(response) ? response : (response?.data ?? [])
+    if (Array.isArray(data)) {
+      systemList.value = data
       await loadModuleList() // 加载系统后立即加载模块
       buildSystemTree()
     } else {
-      throw new Error(response?.message || '获取启用系统列表失败')
+      console.warn('系统列表数据格式不正确:', data)
+      systemList.value = []
+      throw new Error('获取启用系统列表失败')
     }
   } catch (error) {
     console.error('加载启用系统列表失败:', error)
@@ -463,17 +460,14 @@ const loadModuleList = async (retryCount = 0) => {
   try {
     // 使用新的启用模块接口
     const response = await moduleApi.getEnabledList()
-    if (response && response.success) {
-      // 确保response.data是数组
-      const data = response.data
-      if (Array.isArray(data)) {
-        moduleList.value = data
-      } else {
-        console.warn('模块列表数据格式不正确:', data)
-        moduleList.value = []
-      }
+    // 兼容两种返回结构：数组 或 { success, data }
+    const data = Array.isArray(response) ? response : (response?.data ?? [])
+    if (Array.isArray(data)) {
+      moduleList.value = data
     } else {
-      throw new Error(response?.message || '获取启用模块列表失败')
+      console.warn('模块列表数据格式不正确:', data)
+      moduleList.value = []
+      throw new Error('获取启用模块列表失败')
     }
   } catch (error) {
     console.error('加载启用模块列表失败:', error)
@@ -558,10 +552,17 @@ const loadApiList = async (retryCount = 0) => {
       // 确保数据是数组格式
       const data = response.data
       if (Array.isArray(data)) {
-        apiList.value = data
+        // 映射后端 path 字段到前端使用的 url 字段，避免列表中URL为空
+        apiList.value = data.map(api => ({
+          ...api,
+          url: api.url ?? api.path ?? ''
+        }))
       } else if (data && typeof data === 'object' && Array.isArray(data.items)) {
-        // 处理分页数据格式
-        apiList.value = data.items
+        // 处理分页数据格式，同步字段映射
+        apiList.value = data.items.map(api => ({
+          ...api,
+          url: api.url ?? api.path ?? ''
+        }))
       } else {
         console.warn('API数据格式异常:', data)
         apiList.value = []
@@ -699,45 +700,10 @@ const showEditApiDialog = async (api) => {
   dialogVisible.value = true
 }
 
-const testApi = async (api) => {
-  try {
-    ElMessage.info('正在测试API...')
-    const loadingInstance = ElLoading.service({
-      text: '测试中，请稍候...',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
-    
-    const response = await apiProxy.testApi(api.id, {
-      headers: {},
-      params: {},
-      timeout: 30
-    })
-    
-    loadingInstance.close()
-    
-    if (response.success) {
-      ElMessage.success('API测试成功')
-      ElMessageBox.alert(
-        `<div style="text-align: left;">
-          <p><strong>响应时间:</strong> ${response.data.response_time}ms</p>
-          <p><strong>状态码:</strong> ${response.data.status_code}</p>
-          <p><strong>响应大小:</strong> ${response.data.response_size} bytes</p>
-          <p><strong>测试时间:</strong> ${response.data.test_time}</p>
-        </div>`,
-        'API测试结果',
-        {
-          dangerouslyUseHTMLString: true,
-          type: 'success'
-        }
-      )
-    } else {
-      ElMessage.error(response.message || 'API测试失败')
-    }
-  } catch (error) {
-    console.error('测试API失败:', error)
-    ElMessage.error('测试API失败: ' + (error.message || '网络错误'))
-  }
+const viewApi = (api) => {
+  return showEditApiDialog(api)
 }
+
 
 const deleteApi = async (api) => {
   try {
@@ -1025,6 +991,18 @@ onMounted(async () => {
     await loadApiList()
   }
 })
+
+const handleTreeRefresh = async () => {
+  try {
+    await loadSystemList()
+    await loadModuleList()
+    await buildSystemTree()
+    ElMessage.success('系统和模块树刷新成功')
+  } catch (error) {
+    console.error('刷新系统树失败:', error)
+    ElMessage.error('刷新系统和模块树失败')
+  }
+}
 </script>
 
 <style scoped>

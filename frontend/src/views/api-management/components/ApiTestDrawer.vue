@@ -67,12 +67,12 @@
               </el-col>
               <el-col :span="18">
                 <el-input
-                  v-model="requestConfig.url"
-                  placeholder="请求URL"
-                  size="small"
-                >
-                  <template #prepend>{{ baseUrl }}</template>
-                </el-input>
+                    v-model="testForm.url"
+                    placeholder="请求URL"
+                    size="small"
+                  >
+                    <template #prepend><span>{{ baseUrl }}</span></template>
+                  </el-input>
               </el-col>
             </el-row>
           </div>
@@ -430,6 +430,7 @@ import {
   Sort, CircleCheck, CircleClose, Plus, Edit, Delete
 } from '@element-plus/icons-vue'
 import KeyValueEditor from './KeyValueEditor.vue'
+import unifiedApi from '@/api/unified-api'
 
 // Props
 const props = defineProps({
@@ -523,9 +524,9 @@ const drawerTitle = computed(() => {
 })
 
 const baseUrl = computed(() => {
-  return (import.meta as any)?.env?.VITE_UNIFIED_API_BASE_URL || 'http://127.0.0.1:8000'
+  return import.meta.env?.VITE_UNIFIED_API_BASE_URL || 'http://127.0.0.1:8000'
 })
-
+ 
 const hasValidRequest = computed(() => {
   return requestConfig.url.trim() !== ''
 })
@@ -650,15 +651,30 @@ const sendRequest = async () => {
     // 构建请求配置
     const config = buildRequestConfig()
     
-    // 发送请求 (这里需要实现实际的HTTP请求逻辑)
-    const response = await mockApiRequest(config)
-    
-    responseData.value = response
-    
-    // 运行测试
-    runTests(response)
-    
-    ElMessage.success('请求发送成功')
+    // 发送请求到后端草稿测试接口
+    const resp = await unifiedApi.apiManagementApi.testApiDraft(config)
+
+    if (resp && resp.success) {
+      const data = resp.data || {}
+      const mapped = convertToViewResponse(data.response)
+      responseData.value = mapped
+
+      // 如果后端返回了校验结果，则优先展示
+      if (data.validation && Array.isArray(data.validation.results)) {
+        testResults.value = data.validation.results.map((r) => ({
+          name: (r.rule && r.rule.type) ? `规则: ${r.rule.type}` : '规则校验',
+          passed: !!r.passed,
+          message: r.message || ''
+        }))
+      } else {
+        // 否则运行内置的基础测试
+        runTests(mapped)
+      }
+
+      ElMessage.success('请求发送成功')
+    } else {
+      ElMessage.error((resp && resp.message) ? resp.message : '请求失败')
+    }
   } catch (error) {
     ElMessage.error('请求失败: ' + error.message)
   } finally {
@@ -671,7 +687,7 @@ const buildRequestConfig = () => {
     method: requestConfig.method,
     url: baseUrl.value + requestConfig.url,
     headers: {},
-    timeout: requestOptions.timeout * 1000
+    timeout: requestOptions.timeout
   }
   
   // 处理Headers
@@ -709,7 +725,12 @@ const buildRequestConfig = () => {
   // 处理Body
   if (requestConfig.bodyType === 'json' && requestConfig.body) {
     config.headers['Content-Type'] = 'application/json'
-    config.data = requestConfig.body
+    try {
+      config.body = JSON.parse(requestConfig.body)
+    } catch (e) {
+      // 保留原始字符串，后端将按text处理
+      config.body = requestConfig.body
+    }
   } else if (requestConfig.bodyType === 'form' && requestConfig.formData.length > 0) {
     const formData = new FormData()
     requestConfig.formData.forEach(item => {
@@ -717,42 +738,41 @@ const buildRequestConfig = () => {
         formData.append(item.key, item.value)
       }
     })
-    config.data = formData
+    config.body = formData
   } else if (requestConfig.bodyType === 'raw' && requestConfig.body) {
-    config.data = requestConfig.body
+    config.body = requestConfig.body
   }
   
   return config
 }
 
-// Mock API请求 (实际项目中需要替换为真实的HTTP客户端)
-const mockApiRequest = async (config) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        status: 200,
-        statusText: 'OK',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': '1234',
-          'Server': 'nginx/1.18.0'
-        },
-        body: JSON.stringify({
-          code: 0,
-          message: 'success',
-          data: {
-            id: 123,
-            name: 'Test API',
-            status: 'active'
-          }
-        }, null, 2),
-        time: Math.floor(Math.random() * 500) + 100,
-        size: 1234,
-        timestamp: Date.now(),
-        cookies: []
-      })
-    }, Math.random() * 1000 + 500)
-  })
+// 将后端响应结构转换为视图模型
+const convertToViewResponse = (resp) => {
+  if (!resp) return null
+  const body = resp.body
+  let bodyText = ''
+  try {
+    if (typeof body === 'string') {
+      bodyText = body
+    } else if (body !== null && body !== undefined) {
+      bodyText = JSON.stringify(body, null, 2)
+    } else {
+      bodyText = ''
+    }
+  } catch (e) {
+    bodyText = String(body)
+  }
+
+  return {
+    status: resp.status_code,
+    statusText: resp.status_text || '',
+    headers: resp.headers || {},
+    body: bodyText,
+    time: resp.response_time_ms || 0,
+    size: resp.content_length || 0,
+    timestamp: Date.now(),
+    cookies: []
+  }
 }
 
 const runTests = (response) => {

@@ -45,6 +45,7 @@
           search-placeholder="搜索系统和模块"
           :show-count="false"
           :show-disabled="false"
+          :categories="['frontend']"
           label-key="label"
           children-key="children"
           @node-click="handleSystemNodeClick"
@@ -59,8 +60,13 @@
         - 搜索和筛选功能
       -->
       <div class="right-panel">
+        <!-- 引导占位：未选择系统或模块时展示 -->
+        <div v-if="!(selectedSystemId || selectedModuleId)" class="empty-state">
+          <el-empty description="请先在左侧选择系统或模块以加载页面列表" />
+        </div>
+
         <!-- 搜索和筛选区域 -->
-        <div class="search-section">
+        <div class="search-section" v-if="selectedSystemId || selectedModuleId">
           <div class="search-form">
             <el-form :model="searchForm" inline>
               <el-form-item label="关键词">
@@ -108,7 +114,7 @@
         </div>
 
         <!-- 页面列表区域 -->
-        <div class="pages-section">
+        <div class="pages-section" v-if="selectedSystemId || selectedModuleId">
           <div class="section-header">
             <h3>页面列表</h3>
             <div class="section-actions">
@@ -209,7 +215,7 @@
           </div>
 
           <!-- 分页 -->
-          <div class="pagination-wrapper" v-if="filteredPageList.length > 0">
+          <div class="pagination-wrapper" v-if="(selectedSystemId || selectedModuleId) && filteredPageList.length > 0">
             <el-pagination
               v-model:current-page="pagination.page"
               v-model:page-size="pagination.size"
@@ -480,8 +486,13 @@ onMounted(async () => {
       }
     }
     
-    // 加载其他数据
-    loadPageList()
+    // 加载页面列表（门槛：选中系统或模块其一即可）
+    if (selectedSystemId.value || selectedModuleId.value) {
+      await loadPageList()
+    } else {
+      pageList.value = []
+      pagination.value.total = 0
+    }
     loadAvailableApis()
   } catch (error) {
     console.error('初始化页面数据失败:', error)
@@ -493,10 +504,14 @@ const loadSystemList = async () => {
   try {
     // 使用新的按分类获取启用系统接口
     const response = await systemApi.getEnabledListByCategory('frontend')
-    if (response.success) {
-      systemList.value = response.data || []
+    // 兼容两种返回结构：数组 或 { success, data }
+    const data = Array.isArray(response) ? response : (response?.data ?? [])
+    if (Array.isArray(data)) {
+      systemList.value = data
     } else {
-      throw new Error(response.message || '获取启用系统列表失败')
+      console.warn('系统列表数据格式不正确:', data)
+      systemList.value = []
+      throw new Error('获取启用系统列表失败')
     }
   } catch (error) {
     console.error('加载启用系统列表失败:', error)
@@ -567,6 +582,12 @@ const buildSystemTree = () => {
 
 const loadPageList = async () => {
   try {
+    // 加载门槛：选中系统或模块其一即可；均未选中则不加载
+    if (!selectedSystemId.value && !selectedModuleId.value) {
+      pageList.value = []
+      pagination.value.total = 0
+      return
+    }
     loading.value = true
     const response = await pageApi.getPages()
     if (response.success) {
@@ -623,8 +644,13 @@ const handleSystemNodeClick = (data) => {
     query 
   })
   
-  // 重新加载页面列表
-  loadPageList()
+  // 加载门槛：选中系统或模块其一即可
+  if (selectedSystemId.value || selectedModuleId.value) {
+    loadPageList()
+  } else {
+    pageList.value = []
+    pagination.value.total = 0
+  }
 }
 
 const selectPage = (page) => {

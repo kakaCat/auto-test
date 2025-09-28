@@ -1,27 +1,29 @@
-# API重构完成总结
+# API重构完成总结（同步至最新代码）
 
 ## 📋 重构概述
 
-本次API重构成功完成了系统、模块和分类管理API的标准化和统一，提供了更好的类型安全性和开发体验。
+本次更新同步了近期目录清理与统一入口调整，确保文档与代码一致：统一入口对齐、移除重复目录、保留兼容导出。
 
 ## ✅ 完成的工作
 
-### 1. 创建了新的API文件结构
+### 1. API文件结构（最新）
 
 #### 📁 核心API文件
-- **`base-api.ts`** - 基础API类，提供通用CRUD操作
-- **`system-api.ts`** - 系统管理API，继承自BaseApi
-- **`module-api.ts`** - 模块管理API，继承自BaseApi  
-- **`category-api.ts`** - 分类管理API，继承自BaseApi
+- **`unified-api.ts`** - 统一入口，聚合 `system`、`module`、`category`、`apiManagementApi`，并提供兼容别名 `unified*Api`
+- **`system-api.ts`** - 系统管理API（默认导出 `systemApi`）
+- **`module-api.ts`** - 模块管理API（默认导出 `moduleApi`）  
+- **`scenario.ts`** - 类目/场景API（命名导出 `categoryApi`）
+- **`api-management.ts`** - API管理（命名导出 `apiManagementApi`）
+- **`base-api.ts`** - 基础API抽象，通用CRUD与类型
 
 #### 📁 类型定义文件
-- **`types/index.ts`** - 统一的API类型定义入口
+- **`src/types/index.ts`** - 类型统一入口（包含 `api.ts`、`common.ts`）
 
 #### 📁 测试文件
-- **`compatibility-test.ts`** - TypeScript兼容性测试
-- **`test-api-compatibility.js`** - JavaScript基础测试
+- **`compatibility-test.ts`** - 兼容性测试（聚合入口与子域）
+- **`test-api-compatibility.js`** - JS基础测试
 
-### 2. 新API的主要特性
+### 2. 统一入口与主要特性
 
 #### 🔧 BaseApi 基础功能
 ```typescript
@@ -56,7 +58,7 @@ getModuleStatistics() // 获取模块统计
 moveToSystem(moduleId, systemId) // 移动到系统
 ```
 
-#### 🏷️ CategoryApi 分类管理
+#### 🏷️ CategoryApi 分类管理（来自 `scenario.ts`）
 ```typescript
 // 分类特有方法
 getTree() // 获取树形结构
@@ -66,17 +68,19 @@ getPath(categoryId) // 获取分类路径
 moveCategory(id, targetParentId) // 移动分类
 ```
 
-### 3. 兼容性保证
+### 3. 兼容性与清理
 
 #### 🔄 向后兼容
-- 保留了所有旧版API的方法签名
-- 提供了兼容性别名方法
-- 自动处理数据格式转换
+- 统一入口提供兼容别名导出：`unifiedSystemApi`、`unifiedModuleApi`、`unifiedCategoryApi`、`unifiedApiManagementApi`
+- 保留原有方法签名，避免历史代码报错
+
+#### 🗑️ 目录清理
+- 删除 `src/api/unified/`
+- 删除 `src/api/types/`
 
 #### 📝 类型安全
-- 完整的TypeScript类型定义
-- 严格的参数类型检查
-- 统一的返回值格式
+- 类型统一入口为 `src/types`，建议从该入口导入
+- 严格参数检查与统一返回格式保持不变
 
 ## 🧪 测试结果
 
@@ -86,11 +90,13 @@ moveCategory(id, targetParentId) // 移动分类
 - **构建大小**: 1.1MB (gzipped: 367KB)
 
 ### ✅ 文件完整性测试
+- **unified-api.ts**: 存在 ✅
 - **system-api.ts**: 存在 ✅
 - **module-api.ts**: 存在 ✅  
-- **category-api.ts**: 存在 ✅
+- **scenario.ts**: 存在 ✅
+- **api-management.ts**: 存在 ✅
 - **base-api.ts**: 存在 ✅
-- **types/index.ts**: 存在 ✅
+- **src/types/index.ts**: 存在 ✅
 
 ### ✅ 开发服务器
 - **状态**: 正常运行 ✅
@@ -99,19 +105,17 @@ moveCategory(id, targetParentId) // 移动分类
 
 ## 📖 使用指南
 
-### 导入新API
+### 导入与类型示例（更新）
 ```typescript
 // 导入单个API
-import { systemApi } from '@/api/system-api'
-import { moduleApi } from '@/api/module-api'
-import { categoryApi } from '@/api/category-api'
+import unifiedApi, { systemApi, moduleApi, categoryApi } from '@/api/unified-api'
 
-// 导入类型
+// 导入类型（统一入口）
 import type { 
-  SystemEntity, 
-  ModuleEntity, 
-  CategoryEntity 
-} from '@/api/types'
+  SystemData, 
+  ModuleData, 
+  ApiResponse 
+} from '@/types/api'
 ```
 
 ### 基本使用示例
@@ -177,6 +181,6 @@ VITE_UNIFIED_API_BASE_URL=http://localhost:8003
 
 ---
 
-**重构完成时间**: 2024年1月15日  
-**重构负责人**: AI Assistant  
-**版本**: v1.0.0
+**最后更新**: 2025年9月28日  
+**负责人**: AI Assistant  
+**版本**: v1.1.0

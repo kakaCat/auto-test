@@ -13,6 +13,15 @@
 - 为AI提供准确的系统知识和工作指导
 - 确保用户、AI、系统功能的完全对齐
 
+### 文件生成规范 ⭐ **重要**
+1. **约定一致性检查**: 生成文件前必须检查是否与现有项目约定一致
+2. **临时文件夹策略**: 当生成的文件与约定不一致时，使用临时文件夹
+   - **命名规范**: `temp-{功能名}-{日期}` (如: `temp-components-20240115`)
+   - **使用场景**: 大量新文件生成、文件结构重构、实验性功能
+   - **工作流程**: 临时文件夹生成 → 验证 → 移动到正确位置 → 清理
+3. **避免混乱**: 不在现有目录中直接生成不符合约定的文件
+4. **渐进式整合**: 通过临时文件夹实现平滑的文件组织重构
+
 ### 系统架构上下文
 当前系统采用6层架构：
 ```
@@ -108,6 +117,12 @@ docs/frontend/
   - `05-page-management.md` → 页面管理页面 (`/page-management`)
   - `06-page-call-flow.md` → 页面调用流程页面 (`/page-call-flow`)
   - `07-workflow-designer.md` → 工作流设计器页面 (`/designer`)
+
+### 类别过滤原则（SystemTree）
+- **API管理**：仅展示后端服务类别（`backend`）系统与模块
+- **页面管理**：仅展示前端应用类别（`frontend`）系统与模块
+- **系统管理**：支持“全部/后端/前端”类型筛选，按用户选择加载
+ - 关联变更日志：[`2025-09-28 SystemTree 类别过滤原则补充`](../../frontend/docs/changelogs/2025-09-28-systemtree-category-filter.md)
   - `08-scenario-management.md` → 用例场景管理页面 (`/scenario-management`)
   - `09-requirement-management.md` → 需求管理页面 (`/requirement-management`)
 

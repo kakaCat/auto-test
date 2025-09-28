@@ -1,5 +1,5 @@
-import { request } from '@/utils/request'
-import { ApiResponse } from '@/types/api'
+import { apiHandler } from '@/utils/apiHandler'
+import type { ApiResponse } from '@/types'
 import { ModuleConverter } from '../converters/ModuleConverter'
 
 // 查询参数接口
@@ -32,65 +32,68 @@ export class ModuleService {
    * 收集模块列表数据
    */
   static async collectModuleListData(params: ModuleListParams = {}): Promise<ApiResponse> {
-    const response = await request.get('/api/modules/v1/', { params });
-    if (response.data?.data) {
-      response.data.data = ModuleConverter.transformListFromBackend(response.data.data);
+    const response = await apiHandler.get('/api/modules/v1/', { params });
+    if (response.success && response.data) {
+      const raw = (response.data as any)?.data ?? response.data
+      response.data = ModuleConverter.transformListFromBackend(raw)
     }
-    return response;
+    return response
   }
 
   /**
    * 按系统收集模块数据
    */
   static async collectModulesBySystem(systemId: string, params: ModuleListParams = {}): Promise<ApiResponse> {
-    const response = await request.get('/api/modules/v1/', { 
+    const response = await apiHandler.get('/api/modules/v1/', { 
       params: { ...params, system_id: systemId } 
-    });
-    if (response.data?.data) {
-      response.data.data = ModuleConverter.transformListFromBackend(response.data.data);
+    })
+    if (response.success && response.data) {
+      const raw = (response.data as any)?.data ?? response.data
+      response.data = ModuleConverter.transformListFromBackend(raw)
     }
-    return response;
+    return response
   }
 
   /**
    * 收集模块详情数据
    */
   static async collectModuleDetailData(moduleId: string): Promise<ApiResponse> {
-    const response = await request.get(`/api/modules/v1/${moduleId}`);
-    if (response.data?.data) {
-      response.data.data = ModuleConverter.transformFromBackend(response.data.data);
+    const response = await apiHandler.get(`/api/modules/v1/${moduleId}`)
+    if (response.success && response.data) {
+      const raw = (response.data as any)?.data ?? response.data
+      response.data = ModuleConverter.transformFromBackend(raw)
     }
-    return response;
+    return response
   }
 
   /**
    * 创建模块数据
    */
   static async createModuleData(moduleData: ModuleData): Promise<ApiResponse> {
-    const backendData = ModuleConverter.transformToBackend(moduleData);
-    return await request.post('/api/modules/v1/', backendData);
+    const backendData = ModuleConverter.transformToBackend(moduleData)
+    return await apiHandler.post('/api/modules/v1/', backendData)
   }
 
   /**
    * 更新模块数据
    */
   static async updateModuleData(moduleId: string, moduleData: ModuleData): Promise<ApiResponse> {
-    const backendData = ModuleConverter.transformToBackend(moduleData);
-    return await request.put(`/api/modules/v1/${moduleId}`, backendData);
+    const backendData = ModuleConverter.transformToBackend(moduleData)
+    return await apiHandler.put(`/api/modules/v1/${moduleId}`, backendData)
   }
 
   /**
    * 删除模块数据
    */
   static async deleteModuleData(moduleId: string): Promise<ApiResponse> {
-    return await request.delete(`/api/modules/v1/${moduleId}`);
+    return await apiHandler.delete(`/api/modules/v1/${moduleId}`)
   }
 
   /**
    * 更新模块状态
    */
   static async updateModuleStatus(moduleId: string, enabled: boolean): Promise<ApiResponse> {
-    return await request.patch(`/api/modules/${moduleId}/status`, { enabled });
+    return await apiHandler.patch(`/api/modules/v1/${moduleId}/status`, { enabled })
   }
 
   /**
@@ -101,13 +104,13 @@ export class ModuleService {
     if (systemId) {
       params.system_id = systemId;
     }
-    return await request.get('/api/modules/v1/search', { params });
+    return await apiHandler.get('/api/modules/v1/search', { params })
   }
 
   /**
    * 按标签收集模块数据
    */
   static async collectModulesByTags(tags: string[]): Promise<ApiResponse> {
-    return await request.get('/api/modules/v1/', { params: { tags: tags.join(',') } });
+    return await apiHandler.get('/api/modules/v1/', { params: { tags: tags.join(',') } })
   }
 }

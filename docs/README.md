@@ -7,11 +7,13 @@
 ## 📚 文档组织结构
 
 ### 🎯 **项目级文档** (当前目录)
-- **[系统架构](./system_architecture_and_logic.md)** - 整体系统设计
-- **[数据库设计](./database_schema_viewer.html)** - 数据库结构图
-- **[部署指南](./deployment/)** - 生产环境部署
+- **[系统架构](./SYSTEM_ARCHITECTURE.md)** - 整体系统设计和技术架构
+- **[数据库设计](./DATABASE_DESIGN.md)** - 数据库表结构和关系设计
+- **[变更记录](./CHANGELOG.md)** - 项目重要功能更新和修复记录
 - **[文档规范](./DOCUMENTATION_STANDARDS.md)** - 文档组织标准
- - **[AI协作习惯](./AI_ASSISTANT_GUIDE.md)** - AI助手工作流程与执行准则
+- **[AI协作习惯](./AI_ASSISTANT_GUIDE.md)** - AI助手工作流程与执行准则
+- **[临时文件夹使用指南](./TEMP_FOLDER_USAGE_GUIDE.md)** - 文件生成和组织的规范指南
+- **[文档映射关系指南](./DOCUMENT_MAPPING_GUIDE.md)** - 代码变更与文档更新的映射关系
 
 ### 🎨 **前端项目文档** → [frontend/docs/](../frontend/docs/)
 - **[API文档](../frontend/docs/api/)** - 前端API接口层文档
@@ -25,9 +27,17 @@
 - **[开发指南](../backend/docs/guides/)** - 后端开发规范
 - **[变更记录](../backend/docs/changelogs/)** - 后端版本变更
 
-### 📋 **历史文档** (当前目录保留)
-- **[后端历史文档](./backend/)** - 历史后端文档
-- **[前端历史文档](./frontend/)** - 历史前端文档
+### 🤖 **AI平台设计文档** → [ai-platform/](./ai-platform/)
+- **[AI平台PRD](./ai-platform/01_AI_DRIVEN_TESTING_PLATFORM_PRD.md)** - 平台整体架构和愿景
+- **[系统重构设计](./ai-platform/02_SYSTEM_REFACTORING_DESIGN.md)** - 向AI驱动平台的重构方案
+- **[第一阶段：API编排](./ai-platform/03_PHASE1_API_ORCHESTRATION_DESIGN.md)** - API编排详细设计
+- **[第一阶段：实施指南](./ai-platform/04_PHASE1_IMPLEMENTATION_GUIDE.md)** - 详细开发指南和代码示例
+- **[第二阶段：UI自动化](./ai-platform/05_PHASE2_UI_AUTOMATION_DESIGN.md)** - UI测试的AI驱动设计
+- **[第三阶段：需求管理](./ai-platform/06_PHASE3_REQUIREMENT_MANAGEMENT_DESIGN.md)** - 需求到测试闭环设计
+
+### 📋 **技术文档** (当前目录)
+- **[后端技术文档](./backend/)** - 后端开发指南和API文档
+- **[前端技术文档](./frontend/)** - 前端开发指南和用户文档
 
 ## 🚀 快速开始
 

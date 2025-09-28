@@ -75,7 +75,7 @@ export class SystemService {
    * 更新系统状态
    */
   static async updateSystemStatus(systemId: string, enabled: boolean): Promise<ApiResponse> {
-    return await request.patch(`/api/systems/${systemId}/status`, { enabled });
+    return await request.patch(`/api/systems/v1/${systemId}/status`, { enabled });
   }
 
   /**

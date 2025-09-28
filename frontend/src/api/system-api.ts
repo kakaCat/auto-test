@@ -18,7 +18,7 @@
  */
 
 import { BaseApi, type BaseEntity, type BaseListParams } from './base-api'
-import type { ApiHandlerOptions } from '@/types'
+import type { ApiHandlerOptions, ApiResponse } from '@/types'
 
 /**
  * 系统实体接口
@@ -89,7 +89,7 @@ export interface SystemStatistics {
  */
 class SystemApi extends BaseApi<SystemEntity> {
   constructor() {
-    super('/api/systems')
+    super('/api/systems/v1')
   }
 
   /**
@@ -98,7 +98,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async getSystemList(
     params: SystemListParams = {}, 
     options: ApiHandlerOptions = {}
-  ): Promise<{data: SystemEntity[], total: number}> {
+  ): Promise<ApiResponse<{data: SystemEntity[], total: number}>> {
     return this.getList(params, options)
   }
 
@@ -108,7 +108,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async getSystemDetail(
     systemId: number, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity> {
+  ): Promise<ApiResponse<SystemEntity>> {
     return this.getDetail(systemId, options)
   }
 
@@ -118,7 +118,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async createSystem(
     data: CreateSystemParams, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity> {
+  ): Promise<ApiResponse<SystemEntity>> {
     return this.create(data, options)
   }
 
@@ -129,7 +129,7 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemId: number, 
     data: UpdateSystemParams, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity> {
+  ): Promise<ApiResponse<SystemEntity>> {
     return this.update(systemId, data, options)
   }
 
@@ -139,7 +139,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async deleteSystem(
     systemId: number, 
     options: ApiHandlerOptions = {}
-  ): Promise<void> {
+  ): Promise<ApiResponse<void>> {
     return this.delete(systemId, options)
   }
 
@@ -150,28 +150,28 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemId: number, 
     enabled: boolean, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity> {
+  ): Promise<ApiResponse<SystemEntity>> {
     return this.toggleEnabled(systemId, enabled, options)
   }
 
   /**
    * 获取启用的系统列表
    */
-  async getEnabledSystems(options: ApiHandlerOptions = {}): Promise<SystemEntity[]> {
+  async getEnabledSystems(options: ApiHandlerOptions = {}): Promise<ApiResponse<SystemEntity[]>> {
     return this.getEnabledList(options)
   }
 
   /**
    * 获取系统统计信息
    */
-  async getSystemStatistics(options: ApiHandlerOptions = {}): Promise<SystemStatistics> {
-    return this.getStatistics(options) as Promise<SystemStatistics>
+  async getSystemStatistics(options: ApiHandlerOptions = {}): Promise<ApiResponse<SystemStatistics>> {
+    return this.getStatistics(options) as Promise<ApiResponse<SystemStatistics>>
   }
 
   /**
    * 获取启用的系统列表（兼容性方法）
    */
-  async getEnabledList(options: ApiHandlerOptions = {}): Promise<SystemEntity[]> {
+  async getEnabledList(options: ApiHandlerOptions = {}): Promise<ApiResponse<SystemEntity[]>> {
     return this.getEnabledSystems(options)
   }
 
@@ -181,8 +181,10 @@ class SystemApi extends BaseApi<SystemEntity> {
   async getEnabledListByCategory(
     category: string, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity[]> {
-    return this.getSystemList({ category, enabled_only: true }, options).then(result => result.data)
+  ): Promise<ApiResponse<SystemEntity[]>> {
+    const res = await this.getSystemList({ category, enabled_only: true }, options)
+    const list = (res.data as any)?.data ?? (res.data as any)
+    return { ...res, data: list }
   }
 
   /**
@@ -192,14 +194,14 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemId: number, 
     enabled: boolean, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity> {
+  ): Promise<ApiResponse<SystemEntity>> {
     return this.toggleSystemEnabled(systemId, enabled, options)
   }
 
   /**
    * 获取系统分类列表
    */
-  async getCategories(options: ApiHandlerOptions = {}): Promise<string[]> {
+  async getCategories(options: ApiHandlerOptions = {}): Promise<ApiResponse<string[]>> {
     return this.apiHandler.get(`${this.baseUrl}/categories`, {}, {
       cache: true,
       cacheTime: 300000,
@@ -214,7 +216,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async searchSystems(
     keyword: string, 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity[]> {
+  ): Promise<ApiResponse<SystemEntity[]>> {
     return this.search(keyword, options)
   }
 
@@ -225,7 +227,7 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemIds: number[], 
     operation: 'enable' | 'disable' | 'delete', 
     options: ApiHandlerOptions = {}
-  ): Promise<{successful: number, failed: number}> {
+  ): Promise<ApiResponse<{successful: number, failed: number}>> {
     return this.batchOperation({ ids: systemIds, operation }, options)
   }
 
@@ -246,7 +248,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async importSystems(
     file: File, 
     options: ApiHandlerOptions = {}
-  ): Promise<any> {
+  ): Promise<ApiResponse<any>> {
     return this.import(file, options)
   }
 
@@ -256,7 +258,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async getSystemModuleCount(
     systemId: number, 
     options: ApiHandlerOptions = {}
-  ): Promise<{count: number}> {
+  ): Promise<ApiResponse<{count: number}>> {
     return this.apiHandler.get(`${this.baseUrl}/${systemId}/modules/count`, {}, {
       cache: true,
       cacheTime: 60000,
@@ -271,7 +273,7 @@ class SystemApi extends BaseApi<SystemEntity> {
   async getSystemApiCount(
     systemId: number, 
     options: ApiHandlerOptions = {}
-  ): Promise<{count: number}> {
+  ): Promise<ApiResponse<{count: number}>> {
     return this.apiHandler.get(`${this.baseUrl}/${systemId}/apis/count`, {}, {
       cache: true,
       cacheTime: 60000,
@@ -287,7 +289,7 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemId: number, 
     status: 'active' | 'inactive' | 'maintenance', 
     options: ApiHandlerOptions = {}
-  ): Promise<SystemEntity> {
+  ): Promise<ApiResponse<SystemEntity>> {
     return this.apiHandler.patch(`${this.baseUrl}/${systemId}/status`, { status }, {
       successMessage: '状态更新成功',
       loadingText: '更新状态中...',

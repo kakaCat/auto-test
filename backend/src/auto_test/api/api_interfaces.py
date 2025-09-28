@@ -234,6 +234,15 @@ async def test_api_interface(api_id: int, test_data: dict = Body(...)):
     except Exception as e:
         return error_response(message=f"API测试失败: {str(e)}")
 
+@router.post("/api-interfaces/v1/test-draft", response_model=dict, summary="草稿正确性校验（无需保存）")
+async def test_api_interface_draft(test_data: dict = Body(...)):
+    """基于当前表单配置进行正确性校验，不保存到数据库"""
+    try:
+        result = ApiInterfaceService.test_api_draft(test_data)
+        return success_response(data=result, message="草稿正确性校验完成")
+    except Exception as e:
+        return error_response(message=f"草稿正确性校验失败: {str(e)}")
+
 @router.get("/api-interfaces/v1/export/data", response_model=dict, summary="导出API接口数据")
 async def export_api_interfaces(
     system_id: Optional[int] = Query(None, description="系统ID"),

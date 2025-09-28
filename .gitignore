@@ -89,6 +89,10 @@ Thumbs.db
 *.swo
 *~
 
+# AI Assistant temporary folders
+temp-*
+temp-*/
+
 # Coverage reports
 htmlcov/
 .coverage

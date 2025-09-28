@@ -4,12 +4,19 @@
  */
 
 // ============= 基础响应类型 =============
-export interface ApiResponse<T = any> {
+// 统一错误与结果模型
+export interface ApiError extends ErrorInfo {}
+
+export interface Result<T = unknown> {
   success: boolean
   message: string
   data?: T
+  error?: ApiError
   timestamp: string
 }
+
+// 兼容旧命名：保持ApiResponse与Result一致
+export interface ApiResponse<T = any> extends Result<T> {}
 
 // ============= 分页相关类型 =============
 export interface PaginationParams {

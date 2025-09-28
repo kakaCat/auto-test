@@ -16,7 +16,6 @@
         <el-button text :type="getSectionButtonType('params')" @click="scrollToSection('params')">请求参数</el-button>
         <el-button text :type="getSectionButtonType('response')" @click="scrollToSection('response')">响应配置</el-button>
         <el-button text :type="getSectionButtonType('tags')" @click="scrollToSection('tags')">标签与认证</el-button>
-        <el-button text :type="getSectionButtonType('test')" @click="scrollToSection('test')">测试配置</el-button>
         <div class="progress-container">
           <el-progress :percentage="formProgress" :stroke-width="10" striped />
           <span>完成度</span>
@@ -235,61 +234,7 @@
       </el-form-item>
     </el-collapse-item>
 
-    <!-- 测试配置面板 -->
-    <el-collapse-item name="test" ref="testSection">
-      <template #title>
-        <div class="panel-title">
-          <el-icon><Aim /></el-icon>
-          <span>测试配置</span>
-          <el-tag v-if="localFormData.enableTest" type="success" size="small">
-            <el-icon><VideoPlay /></el-icon>
-            已启用
-          </el-tag>
-          <el-tag v-else type="info" size="small">未启用</el-tag>
-        </div>
-      </template>
-
-      <!-- 测试配置 -->
-      <el-form-item label="测试配置">
-        <div class="test-config">
-          <el-row :gutter="20">
-            <el-col :span="8">
-              <el-checkbox v-model="localFormData.enableTest">
-                <el-icon><Aim /></el-icon>
-                启用测试
-              </el-checkbox>
-            </el-col>
-            <el-col :span="8">
-              <el-select
-                v-model="localFormData.testEnvironment"
-                placeholder="测试环境"
-                :disabled="!localFormData.enableTest"
-                style="width: 100%"
-              >
-                <el-option label="开发环境" value="development" />
-                <el-option label="测试环境" value="testing" />
-                <el-option label="预发布环境" value="staging" />
-              </el-select>
-            </el-col>
-            <el-col :span="8">
-              <el-button
-                type="success"
-                :disabled="!localFormData.enableTest"
-                @click="handleImmediateTest"
-              >
-                <el-icon><VideoPlay /></el-icon>
-                立即测试
-              </el-button>
-            </el-col>
-          </el-row>
-          <div v-if="localFormData.enableTest" class="test-hint">
-            <el-text size="small" type="info">
-              保存API后将自动生成测试用例模板并跳转到测试界面
-            </el-text>
-          </div>
-        </div>
-      </el-form-item>
-    </el-collapse-item>
+    
 
   </el-collapse>
 </el-form>
@@ -310,7 +255,7 @@
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { 
-  Plus, Delete, Aim, VideoPlay, 
+  Plus, Delete, 
   InfoFilled, Setting, DataAnalysis, PriceTag 
 } from '@element-plus/icons-vue'
 import unifiedApi from '@/api/unified-api'
@@ -377,8 +322,7 @@ const localFormData = reactive({
   parameters: [],
   response_example: '',
   tags: [],
-  enableTest: false, // 新增：是否启用测试
-  testEnvironment: 'development' // 新增：测试环境
+  
 })
 
 // HTTP方法选项
@@ -427,7 +371,6 @@ const rawFormProgress = computed(() => {
   const params = [...localFormData.parameters]
   const hasResponse = !!localFormData.response_example
   const tags = [...localFormData.tags]
-  const enableTest = localFormData.enableTest
   
   let total = 0
   let completed = 0
@@ -450,7 +393,7 @@ const rawFormProgress = computed(() => {
   
   // 标签和测试 (权重: 10%)
   total += 10
-  if (tags.length > 0 || enableTest) {
+  if (tags.length > 0) {
     completed += 10
   }
   
@@ -504,8 +447,7 @@ watch(() => props.formData, (newData) => {
     localFormData.parameters = newData.parameters || []
     localFormData.response_example = newData.response_example || ''
     localFormData.tags = toStringArray(newData.tags)
-    localFormData.enableTest = newData.enableTest || false // 新增：测试配置映射
-    localFormData.testEnvironment = newData.testEnvironment || 'development'
+    
     
     // 如果系统ID发生变化，重新加载模块列表
     if (localFormData.system_id && localFormData.system_id !== oldSystemId) {
@@ -570,9 +512,7 @@ const handleResponseChange = (response) => {
   console.log('Response changed:', response)
 }
 
-const handleImmediateTest = () => {
-  ElMessage.info('立即测试功能将在保存API后可用')
-}
+// 已移除草稿态调试功能
 
 const handleCollapseChange = (activeNames) => {
   activeCollapse.value = activeNames
@@ -619,8 +559,7 @@ const resetForm = () => {
     localFormData.parameters = []
     localFormData.response_example = ''
     localFormData.tags = []
-    localFormData.enableTest = false
-    localFormData.testEnvironment = 'development'
+    
   } catch (error) {
     console.warn('重置表单数据失败:', error)
   }
