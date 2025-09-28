@@ -27,13 +27,14 @@
 
 ### 启动服务
 ```bash
-# 启动API v2服务
-python scripts/startup/start_api_v2.py
+# 通用启动（推荐）
+python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
 
-# 启动服务API
+# 备用：脚本入口（从 backend/ 目录运行）
+python start_api_v2.py
+
+# 其他脚本入口（如保留）
 python scripts/startup/start_service_api.py
-
-# 启动统一API
 python scripts/startup/start_unified_api.py
 ```
 

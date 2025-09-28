@@ -13,7 +13,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
 
-from .dao import get_db_cursor
+from .connection import get_db_cursor
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)

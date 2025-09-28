@@ -5,6 +5,7 @@ Configuration Management Module - Simplified
 """
 
 import os
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, List
 
@@ -54,6 +55,35 @@ class Config:
     APP_NAME: str = "AI自动化测试平台"
     APP_VERSION: str = "4.0.0"
     APP_DESCRIPTION: str = "AI Auto Test Platform - Simplified Architecture"
+
+    def __post_init__(self) -> None:
+        """标准化数据库路径，避免因工作目录不同而产生多个 SQLite 文件。
+
+        规则：
+        - 若设置了 `DATABASE_PATH`：
+          - 支持 `~`，自动展开；
+          - 若为相对路径，则相对于仓库根目录解析为绝对路径；
+        - 若未设置：统一使用仓库根目录下的 `auto_test.db`；
+        - 若 `DATABASE_URL` 为 SQLite 或未显式设置，则与 `DATABASE_PATH` 保持一致。
+        """
+        # 仓库根目录：.../auto-test
+        repo_root = Path(__file__).resolve().parents[3]
+
+        # 处理 DATABASE_PATH -> 绝对路径
+        db_path_env = os.getenv("DATABASE_PATH")
+        if db_path_env and db_path_env.strip():
+            p = Path(db_path_env).expanduser()
+            if not p.is_absolute():
+                p = (repo_root / p).resolve()
+        else:
+            p = (repo_root / "auto_test.db").resolve()
+
+        self.DATABASE_PATH = str(p)
+
+        # 若 DATABASE_URL 未设置或为 sqlite，确保与 DATABASE_PATH 一致
+        db_url_env = os.getenv("DATABASE_URL")
+        if not db_url_env or db_url_env.startswith("sqlite:///"):
+            self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
 
 # 全局配置实例
 config = Config()

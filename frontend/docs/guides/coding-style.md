@@ -439,19 +439,20 @@ export class SystemApi extends BaseApi<SystemEntity> {
 
 为彻底避免路径前缀歧义，前端在 API 路径书写与配置上必须遵循以下强约束：
 
-### 核心原则
-- 全局基础路径：`request.baseURL` 仅在设置了 `VITE_API_BASE_URL` 时生效；默认不设置任何基础路径（不会自动添加 `/api`）。
+### 核心原则（2025-09 更新）
+- 仅保留统一端点变量：全局以 `VITE_UNIFIED_API_BASE_URL` 表示后端基地址；默认回退 `http://127.0.0.1:8000`。
 - 端点写全路径：在业务域中书写完整端点路径（至少包含 `'/api/...'`，或直接使用完整域名）。
-- 统一接口单独基地址：`unified-api` 通过 `unifiedRequest` 设置绝对 `UNIFIED_API_BASE`，该通道内 URL 可包含 `/api/...`，与全局代理互不影响。
+- 统一接口通道：`unified-api` 通过 `unifiedRequest` 使用 `VITE_UNIFIED_API_BASE_URL` 作为 `baseURL`，与全局代理一致。
+- 兼容性说明：历史变量 `VITE_API_BASE_URL` 已弃用，不再在配置与代理中使用。
 
 ### 网关与基础路径配置
 - `/api` 是后端对外暴露的路径片段之一，并非“全局自动前缀”。
-- 如需通过网关或不同环境域名访问，可在业务域端点中直接写完整路径；也可选择在 `.env.*` 中设置 `VITE_API_BASE_URL`（可选）。
-- 建议：默认不配置全局 `baseURL`，端点写全路径；只有在明确需要集中切换基地址时，才配置 `VITE_API_BASE_URL`。
+- 如需通过网关或不同环境域名访问，可在业务域端点中直接写完整路径；也可通过 `.env.*` 设置 `VITE_UNIFIED_API_BASE_URL` 统一切换。
+- 本地开发：Vite 代理使用 `VITE_UNIFIED_API_BASE_URL` 作为目标地址。
 
 ### 名词解释：基础路径 vs 网关前缀
-- 基础路径（baseURL）：仅当通过 `VITE_API_BASE_URL` 配置时才生效；默认不设置。
-- 网关前缀（gateway prefix）：如 `'/gateway'` 或完整域名（`https://gw.company.com`）。若使用网关，可直接在端点中写完整路径或通过 `VITE_API_BASE_URL` 统一配置。
+- 基础路径（baseURL）：由 `VITE_UNIFIED_API_BASE_URL` 提供；默认回退 `http://127.0.0.1:8000`。
+- 网关前缀（gateway prefix）：如 `'/gateway'` 或完整域名（`https://gw.company.com`）。若使用网关，可直接在端点中写完整路径或通过 `VITE_UNIFIED_API_BASE_URL` 统一配置。
 - 端点路径（endpoint path）：业务代码中建议直接书写完整路径，例如 `'/api/workflows/v1'`、`'/api/modules/v1'`，或使用完整域名。
 
 ### Do / Don't（立即可用的修复对照）
@@ -468,33 +469,38 @@ request.post('/modules/v1/', data)
 unifiedRequest.get('/api/api-interfaces/v1/', params)
 ```
 
-### 配置示例（可选：仅在需要集中切换基地址时）
+### 配置示例（集中切换与本地代理）
 ```bash
-# .env.development（默认不设置，全路径由端点显式书写）
-# VITE_API_BASE_URL=
+# .env.development
+VITE_UNIFIED_API_BASE_URL=http://127.0.0.1:8000
 
 # .env.staging（如需集中切换，可设置完整网关或域名）
-# VITE_API_BASE_URL=https://staging.api.company.com
+VITE_UNIFIED_API_BASE_URL=https://staging.api.company.com
 
 # .env.production（如需集中切换，可设置完整域名）
-# VITE_API_BASE_URL=https://api.company.com
+VITE_UNIFIED_API_BASE_URL=https://api.company.com
 ```
 
 注意：`'/api'` 是后端接口路径的一部分，并非“全局自动前缀”。默认不配置 `baseURL` 时，请在端点中显式书写 `'/api/...'` 或完整域名。
 
 ### 兼容性与防御性增强（可选）
-- 兼容历史代码：如项目曾配置 `baseURL='/api'`，`normalizeUrl` 会在发现重复时自动剥除，避免 `/api/api/...`。
-- 规范约束：结合当前约定，建议检测“在未配置 baseURL 时遗漏 '/api'”的情况。
+- 历史变量兼容：如仍存在 `VITE_API_BASE_URL` 相关告警，属历史兼容提示，对功能无影响；推荐逐步移除依赖。
+- 重复前缀防护：`normalizeUrl` 会在发现重复时自动剥除，避免 `/api/api/...`。
 
 ### 迁移指引
 1. 去除对默认 `'/api'` baseURL 的依赖：不再提供默认基础路径。
 2. 在各模块 API 文件中将端点改为包含 `'/api/...'` 的完整路径，或根据需要写入完整域名。
-3. 如需集中切换基地址，可在 `.env.*` 配置 `VITE_API_BASE_URL`，否则保持未配置并在端点中显式书写。
-4. 统一接口（`unified-api.ts`）保持使用 `UNIFIED_API_BASE`，内部 URL 可保留 `/api/...`。
+3. 如需集中切换基地址，请在 `.env.*` 配置 `VITE_UNIFIED_API_BASE_URL`；端点仍建议显式书写。
+4. 统一接口（`unified-api.ts`）仅使用 `VITE_UNIFIED_API_BASE_URL`，内部 URL 可保留 `/api/...`。
 
 ### 设计来源与现状
 - 后端 API 前缀统一为 `/api`，本地通过 Vite 代理或环境变量直连；
 - 统一接口模块使用独立服务端口与绝对基础地址；
 - 出现 404 的根因是“`request.baseURL='/api'` + 端点自身以 `/api/...` 开头”的双重前缀叠加，已在工作流与场景模块修复。
+
+### 重要变更记录（2025-09）
+- 移除 `VITE_API_BASE_URL` 的使用，统一为 `VITE_UNIFIED_API_BASE_URL`。
+- 本地 Vite 代理与统一接口变量对齐，默认端口 `8000`。
+- 清理硬编码 `http://localhost:8002`，以环境变量为准。
 
 请在新增或改动任何 API 时，严格按照本节规范执行，确保不会产生路径前缀重复问题；不要在源码中重复书写 `/api` 或网关前缀。

@@ -523,12 +523,7 @@ const drawerTitle = computed(() => {
 })
 
 const baseUrl = computed(() => {
-  const envUrls = {
-    development: 'http://localhost:8002',
-    testing: 'http://test.example.com',
-    staging: 'http://staging.example.com'
-  }
-  return envUrls[currentEnvironment.value] || envUrls.development
+  return (import.meta as any)?.env?.VITE_UNIFIED_API_BASE_URL || 'http://127.0.0.1:8000'
 })
 
 const hasValidRequest = computed(() => {

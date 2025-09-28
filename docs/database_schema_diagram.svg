@@ -1,188 +1,96 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1000" height="700" xmlns="http://www.w3.org/2000/svg">
+
+<svg xmlns='http://www.w3.org/2000/svg' width='900' height='840' viewBox='0 0 900 840'>
   <defs>
-    <style>
-      .table-box {
-        fill: #f8f9fa;
-        stroke: #2c3e50;
-        stroke-width: 2;
-        rx: 8;
-      }
-      .table-header {
-        fill: #3498db;
-        stroke: #2c3e50;
-        stroke-width: 2;
-        rx: 8 8 0 0;
-      }
-      .table-title {
-        fill: white;
-        font-family: 'Arial', sans-serif;
-        font-size: 16px;
-        font-weight: bold;
-        text-anchor: middle;
-      }
-      .field-text {
-        fill: #2c3e50;
-        font-family: 'Arial', sans-serif;
-        font-size: 12px;
-      }
-      .primary-key {
-        fill: #e74c3c;
-        font-weight: bold;
-      }
-      .foreign-key {
-        fill: #f39c12;
-        font-weight: bold;
-      }
-      .relationship-line {
-        stroke: #e74c3c;
-        stroke-width: 2;
-        marker-end: url(#arrowhead);
-      }
-      .relationship-label {
-        fill: #e74c3c;
-        font-family: 'Arial', sans-serif;
-        font-size: 11px;
-        font-weight: bold;
-      }
-    </style>
-    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-            refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c" />
+    <marker id='arrow' markerWidth='10' markerHeight='10' refX='10' refY='3' orient='auto' markerUnits='strokeWidth'>
+      <path d='M0,0 L0,6 L9,3 z' fill='#6b7280' />
     </marker>
   </defs>
-  
-  <!-- Background -->
-  <rect width="1000" height="700" fill="#ecf0f1"/>
-  
-  <!-- Title -->
-  <text x="500" y="30" text-anchor="middle" 
-        style="font-family: Arial; font-size: 24px; font-weight: bold; fill: #2c3e50;">
-    Auto-Test 数据库表关系图
-  </text>
-  
-  <!-- system_categories Table -->
-  <g id="system_categories">
-    <rect class="table-box" x="50" y="80" width="280" height="320"/>
-    <rect class="table-header" x="50" y="80" width="280" height="40"/>
-    <text class="table-title" x="190" y="105">system_categories</text>
-    
-    <!-- Fields -->
-    <text class="field-text primary-key" x="60" y="135">🔑 id (INTEGER, PK, AUTO_INCREMENT)</text>
-    <text class="field-text" x="60" y="155">code (TEXT, NOT NULL, UNIQUE)</text>
-    <text class="field-text" x="60" y="175">name (TEXT, NOT NULL)</text>
-    <text class="field-text" x="60" y="195">description (TEXT)</text>
-    <text class="field-text" x="60" y="215">icon (TEXT)</text>
-    <text class="field-text" x="60" y="235">color (TEXT)</text>
-    <text class="field-text" x="60" y="255">enabled (INTEGER, DEFAULT 1)</text>
-    <text class="field-text" x="60" y="275">order_index (INTEGER, DEFAULT 0)</text>
-    <text class="field-text" x="60" y="295">created_at (DATETIME, DEFAULT NOW)</text>
-    <text class="field-text" x="60" y="315">updated_at (DATETIME, DEFAULT NOW)</text>
-    
-    <!-- Indexes -->
-    <text class="field-text" x="60" y="340" style="fill: #7f8c8d; font-style: italic;">📊 索引: code, enabled, order_index</text>
-    <text class="field-text" x="60" y="360" style="fill: #27ae60; font-weight: bold;">✅ 当前使用中</text>
+  <rect x='0' y='0' width='900' height='840' fill='#fafafa' />
+  <text x='450' y='28' text-anchor='middle' font-family='Inter, Arial' font-size='16' font-weight='700' fill='#111'>Database Schema Diagram</text>
+  <g>
+    <line x1="770" y1="420" x2="291" y2="697" stroke="#6b7280" stroke-width="1.2" marker-end="url(#arrow)" /><line x1="770" y1="420" x2="290" y2="143" stroke="#6b7280" stroke-width="1.2" marker-end="url(#arrow)" /><line x1="291" y1="697" x2="290" y2="143" stroke="#6b7280" stroke-width="1.2" marker-end="url(#arrow)" />
   </g>
-  
-  <!-- systems Table -->
-  <g id="systems">
-    <rect class="table-box" x="400" y="80" width="280" height="280"/>
-    <rect class="table-header" x="400" y="80" width="280" height="40"/>
-    <text class="table-title" x="540" y="105">systems</text>
-    
-    <!-- Fields -->
-    <text class="field-text primary-key" x="410" y="135">🔑 id (INTEGER, PK, AUTO_INCREMENT)</text>
-    <text class="field-text" x="410" y="155">name (TEXT, NOT NULL, UNIQUE)</text>
-    <text class="field-text" x="410" y="175">description (TEXT)</text>
-    <text class="field-text" x="410" y="195">status (TEXT, DEFAULT 'active')</text>
-    <text class="field-text" x="410" y="215">category (TEXT, DEFAULT 'backend')</text>
-    <text class="field-text" x="410" y="235">created_at (TIMESTAMP, DEFAULT NOW)</text>
-    <text class="field-text" x="410" y="255">updated_at (TIMESTAMP, DEFAULT NOW)</text>
-    
-    <!-- Data Info -->
-    <text class="field-text" x="410" y="285" style="fill: #7f8c8d; font-style: italic;">📊 数据量: 8 条记录</text>
-    <text class="field-text" x="410" y="305" style="fill: #27ae60; font-weight: bold;">✅ 当前使用中</text>
+  <g>
+    <rect x="640" y="196" width="260" height="448" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2" />
+<rect x="640" y="196" width="260" height="28" fill="#f2f4f7" stroke="#333" stroke-width="0.8" />
+<text x="650" y="215" font-family="Inter, Arial" font-size="14" font-weight="700" fill="#111">api_interfaces</text>
+<text x="650" y="238" font-family="Inter, Arial" font-size="12" fill="#333">🔑 id</text>
+<text x="890" y="238" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="650" y="258" font-family="Inter, Arial" font-size="12" fill="#333">system_id</text>
+<text x="890" y="258" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="650" y="278" font-family="Inter, Arial" font-size="12" fill="#333">module_id</text>
+<text x="890" y="278" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="650" y="298" font-family="Inter, Arial" font-size="12" fill="#333">name</text>
+<text x="890" y="298" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="318" font-family="Inter, Arial" font-size="12" fill="#333">description</text>
+<text x="890" y="318" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="338" font-family="Inter, Arial" font-size="12" fill="#333">method</text>
+<text x="890" y="338" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="358" font-family="Inter, Arial" font-size="12" fill="#333">path</text>
+<text x="890" y="358" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="378" font-family="Inter, Arial" font-size="12" fill="#333">version</text>
+<text x="890" y="378" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="398" font-family="Inter, Arial" font-size="12" fill="#333">status</text>
+<text x="890" y="398" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="418" font-family="Inter, Arial" font-size="12" fill="#333">request_format</text>
+<text x="890" y="418" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="438" font-family="Inter, Arial" font-size="12" fill="#333">response_format</text>
+<text x="890" y="438" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="458" font-family="Inter, Arial" font-size="12" fill="#333">auth_required</text>
+<text x="890" y="458" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="650" y="478" font-family="Inter, Arial" font-size="12" fill="#333">rate_limit</text>
+<text x="890" y="478" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="650" y="498" font-family="Inter, Arial" font-size="12" fill="#333">timeout</text>
+<text x="890" y="498" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="650" y="518" font-family="Inter, Arial" font-size="12" fill="#333">tags</text>
+<text x="890" y="518" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="538" font-family="Inter, Arial" font-size="12" fill="#333">request_schema</text>
+<text x="890" y="538" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="558" font-family="Inter, Arial" font-size="12" fill="#333">response_schema</text>
+<text x="890" y="558" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="578" font-family="Inter, Arial" font-size="12" fill="#333">example_request</text>
+<text x="890" y="578" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="598" font-family="Inter, Arial" font-size="12" fill="#333">example_response</text>
+<text x="890" y="598" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="650" y="618" font-family="Inter, Arial" font-size="12" fill="#333">created_at</text>
+<text x="890" y="618" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">DATETIME</text>
+<text x="650" y="638" font-family="Inter, Arial" font-size="12" fill="#333">updated_at</text>
+<text x="890" y="638" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">DATETIME</text><rect x="161" y="593" width="260" height="208" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2" />
+<rect x="161" y="593" width="260" height="28" fill="#f2f4f7" stroke="#333" stroke-width="0.8" />
+<text x="171" y="612" font-family="Inter, Arial" font-size="14" font-weight="700" fill="#111">modules</text>
+<text x="171" y="635" font-family="Inter, Arial" font-size="12" fill="#333">🔑 id</text>
+<text x="411" y="635" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="171" y="655" font-family="Inter, Arial" font-size="12" fill="#333">system_id</text>
+<text x="411" y="655" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="171" y="675" font-family="Inter, Arial" font-size="12" fill="#333">name</text>
+<text x="411" y="675" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="171" y="695" font-family="Inter, Arial" font-size="12" fill="#333">description</text>
+<text x="411" y="695" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="171" y="715" font-family="Inter, Arial" font-size="12" fill="#333">status</text>
+<text x="411" y="715" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="171" y="735" font-family="Inter, Arial" font-size="12" fill="#333">tags</text>
+<text x="411" y="735" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="171" y="755" font-family="Inter, Arial" font-size="12" fill="#333">created_at</text>
+<text x="411" y="755" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TIMESTAMP</text>
+<text x="171" y="775" font-family="Inter, Arial" font-size="12" fill="#333">updated_at</text>
+<text x="411" y="775" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TIMESTAMP</text>
+<text x="171" y="795" font-family="Inter, Arial" font-size="12" fill="#333">path</text>
+<text x="411" y="795" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text><rect x="160" y="59" width="260" height="168" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2" />
+<rect x="160" y="59" width="260" height="28" fill="#f2f4f7" stroke="#333" stroke-width="0.8" />
+<text x="170" y="78" font-family="Inter, Arial" font-size="14" font-weight="700" fill="#111">systems</text>
+<text x="170" y="101" font-family="Inter, Arial" font-size="12" fill="#333">🔑 id</text>
+<text x="410" y="101" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">INTEGER</text>
+<text x="170" y="121" font-family="Inter, Arial" font-size="12" fill="#333">name</text>
+<text x="410" y="121" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="170" y="141" font-family="Inter, Arial" font-size="12" fill="#333">description</text>
+<text x="410" y="141" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="170" y="161" font-family="Inter, Arial" font-size="12" fill="#333">status</text>
+<text x="410" y="161" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
+<text x="170" y="181" font-family="Inter, Arial" font-size="12" fill="#333">created_at</text>
+<text x="410" y="181" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TIMESTAMP</text>
+<text x="170" y="201" font-family="Inter, Arial" font-size="12" fill="#333">updated_at</text>
+<text x="410" y="201" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TIMESTAMP</text>
+<text x="170" y="221" font-family="Inter, Arial" font-size="12" fill="#333">category</text>
+<text x="410" y="221" text-anchor="end" font-family="Inter, Arial" font-size="11" fill="#666">TEXT</text>
   </g>
-  
-  <!-- modules Table -->
-  <g id="modules">
-    <rect class="table-box" x="750" y="80" width="220" height="320"/>
-    <rect class="table-header" x="750" y="80" width="220" height="40"/>
-    <text class="table-title" x="860" y="105">modules</text>
-    
-    <!-- Fields -->
-    <text class="field-text primary-key" x="760" y="135">🔑 id (INTEGER, PK, AUTO_INCREMENT)</text>
-    <text class="field-text foreign-key" x="760" y="155">🔗 system_id (INTEGER, FK)</text>
-    <text class="field-text" x="760" y="175">name (TEXT, NOT NULL)</text>
-    <text class="field-text" x="760" y="195">description (TEXT)</text>
-    <text class="field-text" x="760" y="215">status (TEXT, DEFAULT 'active')</text>
-    <text class="field-text" x="760" y="235">tags (TEXT)</text>
-    <text class="field-text" x="760" y="255">path (TEXT, DEFAULT '/')</text>
-    <text class="field-text" x="760" y="275">created_at (TIMESTAMP, DEFAULT NOW)</text>
-    <text class="field-text" x="760" y="295">updated_at (TIMESTAMP, DEFAULT NOW)</text>
-    
-    <!-- Constraints -->
-    <text class="field-text" x="760" y="320" style="fill: #7f8c8d; font-style: italic;">🔒 UNIQUE(system_id, name)</text>
-    <text class="field-text" x="760" y="340" style="fill: #7f8c8d; font-style: italic;">📊 数据量: 10 条记录</text>
-    <text class="field-text" x="760" y="360" style="fill: #27ae60; font-weight: bold;">✅ 当前使用中</text>
-  </g>
-  
-  <!-- Relationship: systems -> modules -->
-  <line class="relationship-line" x1="680" y1="155" x2="750" y2="155"/>
-  <text class="relationship-label" x="715" y="150">1:N</text>
-  <text class="relationship-label" x="700" y="170" style="font-size: 10px;">一个系统包含多个模块</text>
-  
-  <!-- Deleted Tables Section -->
-  <g id="deleted-tables">
-    <rect x="50" y="450" width="920" height="200" fill="#ffebee" stroke="#e57373" stroke-width="2" rx="8"/>
-    <text x="70" y="475" style="font-family: Arial; font-size: 18px; font-weight: bold; fill: #c62828;">
-      🗑️ 已删除的冗余表
-    </text>
-    
-    <text x="70" y="500" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
-      ❌ management_systems - 与 systems 表功能重复
-    </text>
-    <text x="70" y="520" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
-      ❌ service_modules - 与 modules 表功能重复
-    </text>
-    <text x="70" y="540" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
-      ❌ api_interfaces - 未在代码中使用，数据为空
-    </text>
-    <text x="70" y="560" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
-      ❌ test_scenarios - 未在代码中使用，数据为空
-    </text>
-    <text x="70" y="580" style="font-family: Arial; font-size: 14px; fill: #d32f2f;">
-      ❌ test_executions - 未在代码中使用，数据为空
-    </text>
-    
-    <text x="70" y="610" style="font-family: Arial; font-size: 12px; fill: #666; font-style: italic;">
-      删除原因: 这些表要么与现有表功能重复，要么完全未被使用且无数据，删除后提高了数据库的维护性和性能。
-    </text>
-  </g>
-  
-  <!-- Legend -->
-  <g id="legend">
-    <rect x="400" y="420" width="280" height="120" fill="#f8f9fa" stroke="#bdc3c7" stroke-width="1" rx="5"/>
-    <text x="540" y="440" text-anchor="middle" style="font-family: Arial; font-size: 14px; font-weight: bold; fill: #2c3e50;">
-      图例说明
-    </text>
-    
-    <text x="410" y="460" style="font-family: Arial; font-size: 12px; fill: #e74c3c; font-weight: bold;">
-      🔑 主键 (Primary Key)
-    </text>
-    <text x="410" y="480" style="font-family: Arial; font-size: 12px; fill: #f39c12; font-weight: bold;">
-      🔗 外键 (Foreign Key)
-    </text>
-    <text x="410" y="500" style="font-family: Arial; font-size: 12px; fill: #e74c3c;">
-      → 一对多关系 (1:N)
-    </text>
-    <text x="410" y="520" style="font-family: Arial; font-size: 12px; fill: #27ae60; font-weight: bold;">
-      ✅ 当前使用的表
-    </text>
-  </g>
-  
-  <!-- Database Info -->
-  <text x="50" y="680" style="font-family: Arial; font-size: 12px; fill: #7f8c8d;">
-    数据库文件: auto_test.db | 最后更新: 2024年 | 表总数: 3 (已优化)
-  </text>
 </svg>

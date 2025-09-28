@@ -148,20 +148,20 @@ backend/
 git clone <repository-url>
 cd ai-auto-test/backend
 
-# 创建虚拟环境
+# 创建或激活虚拟环境
+# 如果你“已经有虚拟环境”，请直接激活它，无需重新创建：
+# 例如（替换为你的路径）：
+# source /path/to/your-venv/bin/activate  # Linux/Mac
+# 或
+# C:\Path\to\your-venv\Scripts\activate  # Windows
+
+# 如需新建一个（可选）：
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # 或
 venv\Scripts\activate     # Windows
 
-# 安装依赖
-# 开发环境（包含开发工具和测试框架）
-pip install -r requirements-dev.txt
-
-# 或者生产环境（仅核心功能）
-pip install -r requirements-prod.txt
-
-# 或者基础环境（最小依赖）
+# 安装依赖（统一）
 pip install -r requirements.txt
 ```
 
@@ -204,13 +204,9 @@ python migrate_to_v2.py
 
 ### 4. 启动服务
 
-#### 方式一：新版API服务（推荐）
+#### 方式一：通用启动（推荐）
 ```bash
-# 开发模式启动
-python start_api_v2.py --debug --port 8002
-
-# 生产模式启动
-python start_api_v2.py --host 0.0.0.0 --port 8000
+python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 #### 方式二：传统服务API
@@ -221,6 +217,11 @@ python start_service_api.py
 #### 方式三：主入口启动
 ```bash
 python main.py
+```
+
+#### 方式四：脚本入口（备用）
+```bash
+python start_api_v2.py --host 0.0.0.0 --port 8000
 ```
 
 ### 5. 验证安装
@@ -439,14 +440,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 # 复制依赖文件
-COPY requirements.txt requirements-prod.txt ./
-# 生产环境使用生产依赖
-RUN pip install -r requirements-prod.txt
+COPY requirements.txt ./
+# 安装依赖（统一）
+RUN pip install -r requirements.txt
 
 COPY . .
 EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "src.auto_test.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
-CMD ["python", "start_api_v2.py", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### 生产环境配置
@@ -458,7 +459,7 @@ export DEBUG=false
 export DATABASE_URL=postgresql://user:pass@localhost/autotest
 
 # 启动服务
-python start_api_v2.py --host 0.0.0.0 --port 8000
+python -m uvicorn src.auto_test.main:app --host 0.0.0.0 --port 8000
 ```
 
 ## 🔗 相关链接

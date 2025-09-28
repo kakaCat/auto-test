@@ -32,7 +32,7 @@
 1. **环境准备**
    ```bash
    pip install -r requirements.txt
-   python start_api_v2.py
+   python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
 2. **开发规范**

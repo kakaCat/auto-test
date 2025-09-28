@@ -43,7 +43,7 @@ npm run dev
 ```bash
 cd backend
 pip install -r requirements.txt
-python start_api_v2.py
+python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
 ```
 📖 详细指南: [后端开发文档](../backend/docs/README.md)
 
@@ -106,14 +106,11 @@ pip install -r requirements.txt
 cp .env.example .env
 
 # 4. 启动后端服务
-# API管理模块v2（推荐）
-python start_api_v2.py --debug --port 8002
+# 通用启动（推荐）
+python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
 
-# 或启动服务API模块
-python start_service_api.py
-
-# 或启动主应用
-cd src && python -m auto_test.main
+# 备用：脚本入口
+python start_api_v2.py --debug --port 8000
 ```
 
 **推荐阅读顺序**:

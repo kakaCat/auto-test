@@ -55,10 +55,47 @@ def init_database():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         description TEXT,
+        category TEXT NOT NULL DEFAULT 'custom',
         status TEXT DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+    """
+    
+    # API 接口表
+    create_api_interfaces_table = """
+    CREATE TABLE IF NOT EXISTS api_interfaces (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        system_id INTEGER NOT NULL,
+        module_id INTEGER,
+        name TEXT NOT NULL,
+        description TEXT,
+        method TEXT NOT NULL CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')),
+        path TEXT NOT NULL,
+        version TEXT DEFAULT 'v1',
+        status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'deprecated')),
+        request_format TEXT DEFAULT 'json' CHECK (request_format IN ('json', 'form', 'xml')),
+        response_format TEXT DEFAULT 'json' CHECK (response_format IN ('json', 'xml', 'text')),
+        auth_required INTEGER DEFAULT 1 CHECK (auth_required IN (0, 1)),
+        rate_limit INTEGER DEFAULT 1000,
+        timeout INTEGER DEFAULT 30,
+        tags TEXT,
+        request_schema TEXT,
+        response_schema TEXT,
+        example_request TEXT,
+        example_response TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (system_id) REFERENCES systems (id) ON DELETE CASCADE,
+        FOREIGN KEY (module_id) REFERENCES modules (id) ON DELETE SET NULL,
+        UNIQUE(system_id, method, path, version)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_api_interfaces_system_id ON api_interfaces(system_id);
+    CREATE INDEX IF NOT EXISTS idx_api_interfaces_module_id ON api_interfaces(module_id);
+    CREATE INDEX IF NOT EXISTS idx_api_interfaces_method ON api_interfaces(method);
+    CREATE INDEX IF NOT EXISTS idx_api_interfaces_path ON api_interfaces(path);
+    CREATE INDEX IF NOT EXISTS idx_api_interfaces_version ON api_interfaces(version);
     """
     
     # 模块表
@@ -69,6 +106,7 @@ def init_database():
         name TEXT NOT NULL,
         description TEXT,
         status TEXT DEFAULT 'active',
+        path TEXT DEFAULT '/',
         tags TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -76,7 +114,52 @@ def init_database():
         UNIQUE(system_id, name)
     );
     """
-    
+
+    # 页面表
+    create_pages_table = """
+    CREATE TABLE IF NOT EXISTS pages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        system_id INTEGER NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        route_path VARCHAR(200),
+        page_type VARCHAR(50) DEFAULT 'page',
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_pages_system_id ON pages(system_id);
+    CREATE INDEX IF NOT EXISTS idx_pages_status ON pages(status);
+    """
+
+    # 页面-API 关联表
+    create_page_apis_table = """
+    CREATE TABLE IF NOT EXISTS page_apis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        page_id INTEGER NOT NULL,
+        api_id INTEGER NOT NULL,
+        execution_type VARCHAR(20) DEFAULT 'parallel',
+        execution_order INTEGER DEFAULT 0,
+        trigger_action VARCHAR(50),
+        api_purpose VARCHAR(100),
+        success_action VARCHAR(100),
+        error_action VARCHAR(100),
+        conditions TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE,
+        FOREIGN KEY (api_id) REFERENCES api_interfaces(id) ON DELETE CASCADE,
+        UNIQUE(page_id, api_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_page_apis_page_id ON page_apis(page_id);
+    CREATE INDEX IF NOT EXISTS idx_page_apis_api_id ON page_apis(api_id);
+    CREATE INDEX IF NOT EXISTS idx_page_apis_execution_order ON page_apis(page_id, execution_order);
+    """
+
     # 初始化数据
     init_data_sql = """
     INSERT OR IGNORE INTO systems (name, description) VALUES 
@@ -97,9 +180,28 @@ def init_database():
     
     try:
         with get_db_cursor() as cursor:
+            # 确保开启外键（SQLite 默认关闭）
+            cursor.execute("PRAGMA foreign_keys = ON")
             cursor.executescript(create_systems_table)
             cursor.executescript(create_modules_table)
+            cursor.executescript(create_api_interfaces_table)
+            cursor.executescript(create_pages_table)
+            cursor.executescript(create_page_apis_table)
             cursor.executescript(init_data_sql)
+
+            # 补丁迁移：为已有的 systems 表增加缺失的 category 列
+            cursor.execute("PRAGMA table_info(systems)")
+            system_columns = [row[1] if isinstance(row, tuple) else row["name"] for row in cursor.fetchall()]
+            if "category" not in system_columns:
+                logger.info("检测到 systems.category 缺失，正在执行迁移补丁……")
+                cursor.execute("ALTER TABLE systems ADD COLUMN category TEXT NOT NULL DEFAULT 'custom'")
+
+            # 补丁迁移：为已有的 modules 表增加缺失的 path 列
+            cursor.execute("PRAGMA table_info(modules)")
+            module_columns = [row[1] if isinstance(row, tuple) else row["name"] for row in cursor.fetchall()]
+            if "path" not in module_columns:
+                logger.info("检测到 modules.path 缺失，正在执行迁移补丁……")
+                cursor.execute("ALTER TABLE modules ADD COLUMN path TEXT DEFAULT '/'")
         
         logger.info("数据库初始化成功")
     except Exception as e:

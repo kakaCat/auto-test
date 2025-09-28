@@ -137,3 +137,21 @@ curl -X PUT "http://localhost:8000/api/api-interfaces/v1/11" \
 
 ## 修复人员
 AI Assistant
+## 2025-09-28
+
+- 将 `api_interfaces` 表的建表、索引及外键创建纳入应用启动初始化（`backend/src/auto_test/database/connection.py`）。
+- 新增 `pages` 与 `page_apis` 的建表及索引创建，确保页面与接口的关联管理具备基础表结构。
+- 说明：初始化会在应用启动时执行，不会删除已有数据；仅在表不存在时创建。
+
+### 如何更新数据库与关系图
+
+- 启动后端或执行初始化逻辑后，当前库会自动创建缺失的表：`pages`、`page_apis`、`api_interfaces`。
+- 生成/更新 ER 图：
+  - 命令：`python scripts/database/generate_schema_svg.py`
+  - 输出：`docs/database_schema_diagram.svg`
+  - 注意：脚本读取仓库根目录的 `auto_test.db`，不会新建数据库文件。
+
+### 兼容性说明
+
+- `page_apis.api_id` 外键引用 `api_interfaces.id`，删除接口或页面会级联删除对应关联。
+- 表中保留业务字段（`status`、`execution_type` 等），与 DAO/Service 查询使用保持一致。

@@ -44,6 +44,68 @@ frontend/
 └── tests/                  # 测试文件
 ```
 
+## 环境变量与本地代理（2025-09 更新）
+
+为统一前后端联调配置、消除历史端口与变量分歧，前端仅保留统一端点变量，并让本地代理与之对齐：
+
+### 统一端点变量
+- 使用 `VITE_UNIFIED_API_BASE_URL` 表示后端基础地址。
+- 开发环境默认回退：`http://127.0.0.1:8000`。
+
+示例：`frontend/.env.development`
+```bash
+VITE_UNIFIED_API_BASE_URL=http://127.0.0.1:8000
+```
+
+其他环境：
+```bash
+# .env.staging
+VITE_UNIFIED_API_BASE_URL=https://staging.api.company.com
+
+# .env.production
+VITE_UNIFIED_API_BASE_URL=https://api.company.com
+```
+
+### Vite 代理配置
+- `vite.config.js` 读取 `VITE_UNIFIED_API_BASE_URL` 作为 `/api` 代理目标。
+- 启动开发服务器后，通过该代理访问后端接口。
+
+相关片段：
+```ts
+// vite.config.js（要点节选）
+import { defineConfig, loadEnv } from 'vite'
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const targetBase = env.VITE_UNIFIED_API_BASE_URL || 'http://127.0.0.1:8000'
+  return {
+    server: {
+      proxy: {
+        '/api': { target: targetBase, changeOrigin: true }
+      }
+    }
+  }
+})
+```
+
+### 代码中的调用规范
+- 业务 API 端点请显式以 `'/api/...'` 开头或使用完整域名。
+- 统一接口模块（`src/api/unified-api.ts`）仅使用 `VITE_UNIFIED_API_BASE_URL` 作为 `baseURL`。
+
+### 历史变量与端口清理
+- `VITE_API_BASE_URL` 已弃用，不再在文档与配置中使用。
+- 移除硬编码 `http://localhost:8002`；如需本地默认值，使用 `127.0.0.1:8000`。
+
+### 启动与验证
+```bash
+# 后端（默认 8000）
+uvicorn src.auto_test.main:app --app-dir backend --host 127.0.0.1 --port 8000
+
+# 前端
+npm run dev -- --host
+```
+访问 `http://localhost:5173/`，在页面触发任一 `/api/...` 请求验证 200/业务正常。
+
 ## 开发规范
 
 ### 1. 代码风格

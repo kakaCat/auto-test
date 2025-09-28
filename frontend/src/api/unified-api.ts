@@ -26,8 +26,8 @@
 import { request } from '@/utils/request'
 import { ApiResponse } from '@/types/api'
 
-// 统一API基础配置
-const UNIFIED_API_BASE = import.meta.env.VITE_UNIFIED_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8002'
+// 统一API基础配置（仅使用统一端点变量，默认回退到 8000）
+const UNIFIED_API_BASE = import.meta.env.VITE_UNIFIED_API_BASE_URL || 'http://127.0.0.1:8000'
 
 // 查询参数接口
 interface SystemListParams {
