@@ -98,10 +98,31 @@
             </el-tag>
             <code class="api-path">{{ selectedApiInfo.path }}</code>
           </div>
-          <div v-if="selectedApiInfo.description" class="api-description">
-            {{ selectedApiInfo.description }}
+        <div v-if="selectedApiInfo.description" class="api-description">
+          {{ selectedApiInfo.description }}
+        </div>
+      </div>
+
+      <!-- 响应字段参考（优先使用 response_schema，回退 example_response） -->
+      <div class="response-ref">
+        <label class="config-label">响应字段参考:</label>
+        <div v-if="responseFieldRef.length > 0" class="response-list">
+          <div
+            v-for="item in responseFieldRef"
+            :key="item.id"
+            class="response-item"
+            :style="{ marginLeft: (item.level || 0) * 12 + 'px' }"
+          >
+            <span class="field-name">{{ item.name }}</span>
+            <el-tag size="small" type="info" class="field-type">{{ item.type }}</el-tag>
+            <el-tag size="small" :type="item.required ? 'danger' : 'success'" class="field-required">
+              {{ item.required ? '必填' : '可选' }}
+            </el-tag>
+            <span v-if="item.description" class="field-desc">{{ item.description }}</span>
           </div>
         </div>
+        <div v-else class="empty-tip">暂无响应字段参考</div>
+      </div>
 
         <!-- 请求参数配置 -->
         <div class="params-config">
@@ -214,6 +235,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { Connection, Loading, Check, Close, ArrowDown } from '@element-plus/icons-vue'
 import { apiManagementApi } from '@/api/api-management'
+import { ParamsConverter, type ParamItem } from '@/utils/paramsConverter'
 
 const props = defineProps<{
   data: {
@@ -266,6 +288,7 @@ const systemOptions = ref<any[]>([])
 const moduleOptions = ref<any[]>([])
 const apiOptions = ref<any[]>([])
 const selectedApiInfo = ref<any>(null)
+const responseFieldRef = ref<ParamItem[]>([])
 
 // 方法
 const toggleExpanded = () => {
@@ -320,6 +343,21 @@ const onApiChange = async (apiId: number) => {
   } catch (error) {
     console.error('加载API详情失败:', error)
     selectedApiInfo.value = null
+  }
+  // 解析响应字段参考：优先使用 response_schema，回退 example_response
+  try {
+    const schema = selectedApiInfo.value?.response_schema
+    const example = selectedApiInfo.value?.example_response
+    if (schema && typeof schema === 'object' && Object.keys(schema || {}).length > 0) {
+      responseFieldRef.value = ParamsConverter.fromSchema(schema)
+    } else if (example) {
+      responseFieldRef.value = ParamsConverter.fromExample(example)
+    } else {
+      responseFieldRef.value = []
+    }
+  } catch (e) {
+    console.warn('解析响应字段参考失败:', e)
+    responseFieldRef.value = []
   }
   
   updateNodeConfig()

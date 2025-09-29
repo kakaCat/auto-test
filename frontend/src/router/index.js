@@ -100,6 +100,16 @@ const routes = [
           title: '页面列表',
           icon: 'List'
         }
+      },
+      {
+        path: 'preview-runner',
+        name: 'PagePreviewRunner',
+        component: () => import('@/views/page-management/PagePreviewRunner.vue'),
+        meta: {
+          title: '预览运行器',
+          icon: 'VideoPlay',
+          description: '执行API并应用响应字段映射到运行时Store，用于快速验证映射配置'
+        }
       }
     ]
   },
@@ -169,6 +179,27 @@ const routes = [
           title: '系统列表',
           icon: 'Grid',
           description: '管理系统和模块的两级架构'
+        }
+      }
+    ]
+  },
+  {
+    path: '/dev',
+    component: Layout,
+    redirect: '/dev/params-editor',
+    meta: {
+      title: '开发演示',
+      icon: 'MagicStick'
+    },
+    children: [
+      {
+        path: 'params-editor',
+        name: 'DevParamsEditor',
+        component: () => import('@/views/dev/ParamsEditorDemo.vue'),
+        meta: {
+          title: 'ParamsEditor Demo',
+          icon: 'MagicStick',
+          description: '验证 expandedKeys、键盘导航与A11y 行为'
         }
       }
     ]

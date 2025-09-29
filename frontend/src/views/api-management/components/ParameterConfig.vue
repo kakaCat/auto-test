@@ -50,6 +50,19 @@
           <el-icon><Delete /></el-icon>
           清空所有
         </el-button>
+        <div class="table-search">
+          <el-input
+            v-model="searchText"
+            size="small"
+            clearable
+            placeholder="搜索参数名/描述（自动展开匹配路径）"
+            @input="handleSearchInput"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
       </div>
 
       <div v-if="parameters.length > 0" class="parameter-table">
@@ -71,10 +84,23 @@
             <div 
               :class="['parameter-row', { 'is-child': param.level > 0 }]"
               :style="{ paddingLeft: `${param.level * 20}px` }"
+              v-show="isRowVisible(param)"
             >
               <div class="row-content">
                 <div class="cell name">
                   <el-icon class="drag-handle"><Rank /></el-icon>
+                  <el-button
+                    v-if="param.type === 'object' || param.type === 'array'"
+                    class="collapse-toggle"
+                    text
+                    size="small"
+                    aria-label="展开/折叠子参数"
+                    @click="toggleCollapse(param)"
+                  >
+                    <el-icon>
+                      <component :is="isCollapsed(param.id) ? 'CaretRight' : 'CaretBottom'" />
+                    </el-icon>
+                  </el-button>
                   <el-input
                     v-model="param.name"
                     placeholder="参数名"
@@ -203,7 +229,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Grid, Document, Plus, Delete, Upload, Download, 
   Rank, ArrowUp, ArrowDown, CopyDocument, 
-  MagicStick, CircleCheck 
+  MagicStick, CircleCheck, CaretRight, CaretBottom, Search 
 } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
 
@@ -228,6 +254,9 @@ const jsonContent = ref('')
 const jsonError = ref('')
 const parameters = ref([])
 let parameterIdCounter = 0
+// 折叠与搜索
+const collapsedIds = ref([]) // 存储被折叠的参数ID（仅对象/数组）
+const searchText = ref('')
 
 // 计算属性
 const parameterExample = computed(() => {
@@ -249,6 +278,25 @@ watch(parameters, (newValue) => {
   emit('update:modelValue', newValue)
   emit('change', newValue)
 }, { deep: true })
+
+// 本地持久化折叠状态（最小版）
+const COLLAPSE_STORAGE_KEY = 'parameterConfigCollapsedIds'
+watch(collapsedIds, (ids) => {
+  try {
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(ids))
+  } catch {}
+}, { deep: true })
+
+// 初始化折叠状态
+try {
+  const saved = localStorage.getItem(COLLAPSE_STORAGE_KEY)
+  if (saved) {
+    const parsed = JSON.parse(saved)
+    if (Array.isArray(parsed)) {
+      collapsedIds.value = parsed
+    }
+  }
+} catch {}
 
 // 方法
 const generateId = () => ++parameterIdCounter
@@ -412,6 +460,91 @@ const handleDragEnd = () => {
   // 这里可以添加更复杂的层级重新计算逻辑
 }
 
+// 折叠/展开逻辑
+const isCollapsed = (id) => {
+  return collapsedIds.value.includes(id)
+}
+
+const toggleCollapse = (param) => {
+  if (param.type !== 'object' && param.type !== 'array') return
+  const idx = collapsedIds.value.indexOf(param.id)
+  if (idx >= 0) {
+    collapsedIds.value.splice(idx, 1)
+  } else {
+    collapsedIds.value.push(param.id)
+  }
+}
+
+// 辅助：构建id->param映射
+const idMap = computed(() => {
+  const map = new Map()
+  parameters.value.forEach(p => map.set(p.id, p))
+  return map
+})
+
+// 获取某节点的所有祖先ID（含父链）
+const getAncestorIds = (param) => {
+  const ancestors = []
+  let current = param
+  const map = idMap.value
+  while (current && current.parentId) {
+    ancestors.push(current.parentId)
+    current = map.get(current.parentId)
+  }
+  return ancestors
+}
+
+// 搜索输入处理（最小版自动展开：搜索时显示匹配节点及其祖先）
+const handleSearchInput = () => {
+  // 无需复杂计算，这里依赖可见性计算
+}
+
+// 计算可见ID集合
+const visibleIdSet = computed(() => {
+  const set = new Set()
+  const query = searchText.value.trim().toLowerCase()
+  const items = parameters.value
+  const map = idMap.value
+  if (!query) {
+    // 无搜索：隐藏任何祖先被折叠的节点
+    const collapsedSet = new Set(collapsedIds.value)
+    for (const p of items) {
+      // 检查祖先是否折叠
+      let hidden = false
+      let cur = p
+      while (cur && cur.parentId) {
+        if (collapsedSet.has(cur.parentId)) {
+          hidden = true
+          break
+        }
+        cur = map.get(cur.parentId)
+      }
+      if (!hidden) set.add(p.id)
+    }
+    return set
+  }
+  // 有搜索：仅显示匹配项及其祖先（自动展开匹配路径）
+  const matched = []
+  for (const p of items) {
+    const name = (p.name || '').toLowerCase()
+    const desc = (p.description || '').toLowerCase()
+    if (name.includes(query) || desc.includes(query)) {
+      matched.push(p)
+    }
+  }
+  // 将匹配及其祖先加入可见集合
+  for (const m of matched) {
+    set.add(m.id)
+    const ancestors = getAncestorIds(m)
+    for (const aid of ancestors) set.add(aid)
+  }
+  return set
+})
+
+const isRowVisible = (param) => {
+  return visibleIdSet.value.has(param.id)
+}
+
 const handleModeChange = (mode) => {
   if (mode === 'json' && parameters.value.length > 0) {
     // 切换到JSON模式时，将表格数据转换为JSON
@@ -420,7 +553,9 @@ const handleModeChange = (mode) => {
     // 切换到表格模式时，尝试解析JSON
     try {
       const parsed = JSON.parse(jsonContent.value)
-      const converted = convertJsonToParameters(parsed)
+      const converted = parsed && parsed.properties 
+        ? convertJsonToParameters(parsed) 
+        : convertExampleToParameters(parsed)
       parameters.value = converted
     } catch (error) {
       ElMessage.warning('JSON格式有误，无法转换为表格模式')
@@ -437,7 +572,9 @@ const generateFromJson = () => {
   
   try {
     const parsed = JSON.parse(jsonContent.value)
-    const converted = convertJsonToParameters(parsed)
+    const converted = parsed && parsed.properties 
+      ? convertJsonToParameters(parsed) 
+      : convertExampleToParameters(parsed)
     parameters.value = converted
     currentMode.value = 'table'
     ElMessage.success('JSON转换成功')
@@ -587,6 +724,59 @@ const convertJsonToParameters = (json, level = 0, parentId = null) => {
     })
   }
   
+  return params
+}
+
+// 新增：支持从示例JSON（非Schema）生成参数
+const convertExampleToParameters = (example, level = 0, parentId = null) => {
+  const params = []
+
+  const inferType = (val) => {
+    if (Array.isArray(val)) return 'array'
+    if (val === null || val === undefined) return 'string'
+    const t = typeof val
+    if (t === 'string') return 'string'
+    if (t === 'number') return 'number'
+    if (t === 'boolean') return 'boolean'
+    if (t === 'object') return 'object'
+    return 'string'
+  }
+
+  const handleObject = (obj, lvl, pid) => {
+    Object.entries(obj).forEach(([name, value]) => {
+      const type = inferType(value)
+      const param = {
+        id: generateId(),
+        name,
+        type,
+        required: false,
+        description: '',
+        level: lvl,
+        parentId: pid
+      }
+      params.push(param)
+
+      if (type === 'object' && value) {
+        handleObject(value, lvl + 1, param.id)
+      } else if (type === 'array' && Array.isArray(value)) {
+        const first = value.find(v => v && typeof v === 'object') || value[0]
+        if (first && typeof first === 'object') {
+          handleObject(first, lvl + 1, param.id)
+        }
+      }
+    })
+  }
+
+  if (Array.isArray(example)) {
+    // 顶层为数组：取首元素推断结构
+    const first = example.find(v => v && typeof v === 'object') || example[0]
+    if (first && typeof first === 'object') {
+      handleObject(first, level, parentId)
+    }
+  } else if (example && typeof example === 'object') {
+    handleObject(example, level, parentId)
+  }
+
   return params
 }
 

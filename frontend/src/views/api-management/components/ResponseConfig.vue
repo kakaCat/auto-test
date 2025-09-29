@@ -218,7 +218,7 @@
     <!-- JSON模式 -->
     <div v-if="currentMode === 'json'" class="json-mode">
       <div class="json-header">
-        <span class="json-title">响应示例编辑器</span>
+        <span class="json-title">响应参数JSON编辑器</span>
         <div class="json-actions">
           <el-button size="small" @click="formatJson">
             <el-icon><MagicStick /></el-icon>
@@ -361,6 +361,56 @@ const generateResponseJson = (responses) => {
   return result
 }
 
+// 将示例JSON转换为字段列表（与请求参数一致的推断规则）
+const inferType = (value) => {
+  if (value === null) return 'null'
+  if (Array.isArray(value)) return 'array'
+  switch (typeof value) {
+    case 'string': return 'string'
+    case 'number': return 'number'
+    case 'boolean': return 'boolean'
+    case 'object': return 'object'
+    default: return 'string'
+  }
+}
+
+const convertExampleToParameters = (data, level = 0, parentId = null) => {
+  const fields = []
+  if (typeof data !== 'object' || data === null) {
+    return fields
+  }
+  
+  // 对象：逐键生成字段
+  Object.entries(data).forEach(([key, value]) => {
+    const type = inferType(value)
+    const id = generateId()
+    const field = {
+      id,
+      name: key,
+      type,
+      required: true,
+      description: '',
+      level,
+      parentId
+    }
+    fields.push(field)
+    
+    // 嵌套结构处理
+    if (type === 'object') {
+      fields.push(...convertExampleToParameters(value, level + 1, id))
+    } else if (type === 'array') {
+      const first = value.length > 0 ? value[0] : null
+      const itemType = inferType(first)
+      if (itemType === 'object') {
+        fields.push(...convertExampleToParameters(first || {}, level + 1, id))
+      }
+      // 原生类型数组无需额外子字段
+    }
+  })
+  
+  return fields
+}
+
 // 3. 初始化函数
 const initializeDefaultResponse = () => {
   responses.value = [{
@@ -376,11 +426,26 @@ const convertJsonToResponses = (json) => {
   const newResponses = []
   
   Object.entries(json).forEach(([statusCode, config]) => {
+    let exampleObj = {}
+    if (config && typeof config === 'object' && 'example' in config) {
+      const ex = config.example
+      if (typeof ex === 'string') {
+        try { exampleObj = JSON.parse(ex) } catch { exampleObj = {} }
+      } else {
+        exampleObj = ex || {}
+      }
+    } else {
+      // 如果没有标准结构，则将整个config视为示例JSON
+      exampleObj = config || {}
+    }
+
+    const fields = convertExampleToParameters(exampleObj)
+
     newResponses.push({
       statusCode,
-      description: config.description || statusCodeMap[statusCode] || '自定义响应',
-      fields: [],
-      example: JSON.stringify(config.example || {}, null, 2)
+      description: (config && config.description) || statusCodeMap[statusCode] || '自定义响应',
+      fields,
+      example: JSON.stringify(exampleObj || {}, null, 2)
     })
   })
   

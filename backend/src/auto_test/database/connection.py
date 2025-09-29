@@ -202,7 +202,19 @@ def init_database():
             if "path" not in module_columns:
                 logger.info("检测到 modules.path 缺失，正在执行迁移补丁……")
                 cursor.execute("ALTER TABLE modules ADD COLUMN path TEXT DEFAULT '/'")
-        
+
+            # 补丁迁移：为已有的 api_interfaces 表增加缺失的 enabled 列，并初始化值与索引
+            cursor.execute("PRAGMA table_info(api_interfaces)")
+            api_columns = [row[1] if isinstance(row, tuple) else row["name"] for row in cursor.fetchall()]
+            if "enabled" not in api_columns:
+                logger.info("检测到 api_interfaces.enabled 缺失，正在执行迁移补丁……")
+                # 添加列，默认启用
+                cursor.execute("ALTER TABLE api_interfaces ADD COLUMN enabled INTEGER DEFAULT 1")
+                # 根据现有的 status 初始化 enabled 值：active -> 1，其它 -> 0
+                cursor.execute("UPDATE api_interfaces SET enabled = CASE WHEN status = 'active' THEN 1 ELSE 0 END")
+                # 创建索引以提高查询性能
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_api_interfaces_enabled ON api_interfaces(enabled)")
+
         logger.info("数据库初始化成功")
     except Exception as e:
         logger.error(f"数据库初始化失败: {e}")

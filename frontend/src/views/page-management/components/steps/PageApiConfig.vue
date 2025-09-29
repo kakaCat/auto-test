@@ -291,6 +291,87 @@
               :rows="3"
             />
           </el-form-item>
+
+          <!-- 响应字段映射（非持久化，仅页面配置使用） -->
+          <el-form-item label="响应字段映射">
+            <div class="response-mapping">
+              <div class="mapping-header">
+                <span>将响应字段映射到页面数据键</span>
+                <el-button
+                  size="small"
+                  @click="addMappingRow"
+                  :disabled="responseFieldOptions.length === 0"
+                >新增映射</el-button>
+              </div>
+
+              <div v-if="mappingEntries.length === 0" class="empty-mapping">
+                <el-empty description="暂无映射规则" />
+              </div>
+
+              <div v-else class="mapping-table">
+                <div
+                  class="mapping-row"
+                  v-for="(entry, idx) in mappingEntries"
+                  :key="entry.source + '-' + idx"
+                >
+                  <el-select
+                    :model-value="entry.source"
+                    size="small"
+                    style="width: 220px"
+                    placeholder="选择响应字段"
+                    @change="(val: string) => updateMappingSource(entry.source, val)"
+                  >
+                    <el-option
+                      v-for="field in getAvailableSourceOptions(entry.source)"
+                      :key="field"
+                      :label="field"
+                      :value="field"
+                    />
+                  </el-select>
+
+                  <el-input
+                    :model-value="entry.target"
+                    size="small"
+                    placeholder="目标键，例如 userList"
+                    style="width: 240px"
+                    @input="(val: string | number) => updateMappingTarget(entry.source, String(val))"
+                  />
+
+                  <el-button
+                    size="small"
+                    type="danger"
+                    @click="removeMappingRow(entry.source)"
+                  >删除</el-button>
+                </div>
+              </div>
+
+              <div class="mapping-tips">提示：映射仅在本页面配置中使用，暂不持久化到后端。</div>
+            </div>
+          </el-form-item>
+
+          <!-- 响应字段参考（来源：response_schema 优先，兼容回退 example_response） -->
+          <el-form-item label="响应字段参考">
+            <div class="response-fields-panel">
+              <div class="fields-header">
+                <span>可用字段（{{ responseFieldOptions.length }}）</span>
+                <el-tooltip content="字段从 response_schema 推断，若缺失则回退 example_response 顶层键" placement="top">
+                  <el-icon class="info-tip"><i class="el-icon-info"/></el-icon>
+                </el-tooltip>
+              </div>
+              <div v-if="responseFieldOptions.length === 0" class="empty-fields">
+                <el-empty description="暂无可参考字段" />
+              </div>
+              <div v-else class="fields-list">
+                <el-tag
+                  v-for="field in responseFieldOptions"
+                  :key="field"
+                  type="info"
+                  size="small"
+                  class="field-tag"
+                >{{ field }}</el-tag>
+              </div>
+            </div>
+          </el-form-item>
         </el-form>
       </div>
 
@@ -308,6 +389,8 @@ import { ElMessage } from 'element-plus'
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { PageApiConfig, ApiConfigItem } from '../../types/page-config'
 import { systemApi, moduleApi } from '@/api/unified-api'
+import { apiManagementApi } from '@/api/api-management'
+import { ParamsConverter } from '@/utils/paramsConverter'
 
 const props = defineProps<{
   modelValue: PageApiConfig
@@ -326,6 +409,8 @@ const selectedApiId = ref<number | null>(null)
 const selectedApiItem = ref<ApiConfigItem | null>(null)
 const editingApiItem = ref<ApiConfigItem | null>(null)
 const showApiDetailDialog = ref(false)
+// 当前编辑 API 的响应字段参考（优先来自 response_schema，回退 example_response）
+const responseFieldOptions = ref<string[]>([])
 
 const systemOptions = ref<any[]>([])
 const moduleOptions = ref<any[]>([])
@@ -517,6 +602,14 @@ const selectApiItem = (apiItem: ApiConfigItem) => {
 const editApiItem = (apiItem: ApiConfigItem) => {
   editingApiItem.value = { ...apiItem }
   showApiDetailDialog.value = true
+  // 确保响应对象结构存在
+  ensureResponseObj()
+  // 加载响应字段参考
+  if (apiItem && apiItem.apiId) {
+    loadApiResponseFields(apiItem.apiId)
+  } else {
+    responseFieldOptions.value = []
+  }
 }
 
 // 删除API项
@@ -532,6 +625,11 @@ const removeApiItem = (index: number) => {
 // 保存API详细配置
 const saveApiDetail = () => {
   if (editingApiItem.value) {
+    // 校验响应字段映射
+    const mappingOk = validateResponseMapping()
+    if (!mappingOk) {
+      return
+    }
     const index = apiConfigData.apis.findIndex(item => item.id === editingApiItem.value!.id)
     if (index !== -1) {
       apiConfigData.apis[index] = { ...editingApiItem.value }
@@ -539,6 +637,121 @@ const saveApiDetail = () => {
   }
   showApiDetailDialog.value = false
   ElMessage.success('配置保存成功')
+}
+
+// 加载并推断响应字段（统一使用 response_schema，兼容回退 example_response）
+const loadApiResponseFields = async (apiId: number) => {
+  try {
+    const resp = await apiManagementApi.getApiDetail(String(apiId))
+    const data = resp && resp.data ? resp.data : null
+    let fields: string[] = []
+    if (data && (data.response_schema || data.example_response)) {
+      if (data.response_schema) {
+        const schemaObj = typeof data.response_schema === 'string'
+          ? JSON.parse(data.response_schema)
+          : data.response_schema
+        const items = ParamsConverter.fromSchema(schemaObj)
+        fields = (items || [])
+          .filter(it => (it.level === 0) && (it.name || '').trim())
+          .map(it => it.name.trim())
+      } else if (data.example_response) {
+        const exampleObj = typeof data.example_response === 'string'
+          ? JSON.parse(data.example_response)
+          : data.example_response
+        const items = ParamsConverter.fromExample(exampleObj)
+        // 仅展示顶层字段名，避免过度复杂（后续可扩展为路径推断）
+        fields = (items || [])
+          .filter(it => it.level === 0 && (it.name || '').trim())
+          .map(it => it.name.trim())
+      }
+    }
+    responseFieldOptions.value = Array.from(new Set(fields))
+  } catch (e) {
+    console.warn('加载 API 详情失败或响应字段解析失败:', e)
+    responseFieldOptions.value = []
+  }
+}
+
+// 响应映射编辑逻辑（非持久化）
+const mappingEntries = computed(() => {
+  const extract = editingApiItem.value?.response?.extract || {}
+  return Object.keys(extract).map((src) => ({ source: src, target: String((extract as any)[src] ?? '') }))
+})
+
+const ensureResponseObj = () => {
+  if (!editingApiItem.value) return
+  if (!editingApiItem.value.response) {
+    editingApiItem.value.response = { extract: {}, transform: '', target: '' }
+  }
+  if (!editingApiItem.value.response.extract) {
+    editingApiItem.value.response.extract = {}
+  }
+}
+
+const addMappingRow = () => {
+  ensureResponseObj()
+  if (!editingApiItem.value) return
+  const used = new Set(Object.keys(editingApiItem.value.response!.extract!))
+  const candidate = responseFieldOptions.value.find(f => !used.has(f))
+  if (!candidate) {
+    ElMessage.warning('没有可用的未映射字段')
+    return
+  }
+  (editingApiItem.value.response!.extract as Record<string, string>)[candidate] = candidate
+}
+
+const updateMappingSource = (oldSource: string, newSource: string) => {
+  ensureResponseObj()
+  if (!editingApiItem.value) return
+  const extract = editingApiItem.value.response!.extract as Record<string, string>
+  if (!newSource || newSource === oldSource) return
+  if (extract[newSource] !== undefined) {
+    ElMessage.error('该字段已映射，请选择其他字段')
+    return
+  }
+  const target = extract[oldSource]
+  delete extract[oldSource]
+  extract[newSource] = target
+}
+
+const updateMappingTarget = (source: string, target: string) => {
+  ensureResponseObj()
+  if (!editingApiItem.value) return
+  (editingApiItem.value.response!.extract as Record<string, string>)[source] = target || ''
+}
+
+const removeMappingRow = (source: string) => {
+  ensureResponseObj()
+  if (!editingApiItem.value) return
+  delete (editingApiItem.value.response!.extract as Record<string, string>)[source]
+}
+
+const getAvailableSourceOptions = (currentSource?: string) => {
+  const used = new Set(Object.keys(editingApiItem.value?.response?.extract || {}))
+  if (currentSource) used.delete(currentSource)
+  return responseFieldOptions.value.filter(f => !used.has(f))
+}
+
+const validateResponseMapping = (): boolean => {
+  const extract = editingApiItem.value?.response?.extract || {}
+  const entries = Object.entries(extract as Record<string, string>)
+  for (const [src, tgt] of entries) {
+    if (!src || !src.trim()) {
+      ElMessage.error('映射源字段不能为空')
+      return false
+    }
+    if (!tgt || !String(tgt).trim()) {
+      ElMessage.error(`字段 ${src} 的目标键不能为空`)
+      return false
+    }
+  }
+  const targets = entries.map(([_, t]) => String(t).trim()).filter(Boolean)
+  const targetSet = new Set(targets)
+  if (targetSet.size !== targets.length) {
+    ElMessage.error('目标键不能重复')
+    return false
+  }
+  return true
 }
 
 // 刷新流程图

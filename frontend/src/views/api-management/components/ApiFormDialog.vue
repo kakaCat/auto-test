@@ -75,13 +75,27 @@
       <el-form-item label="URL路径" prop="url">
         <el-input
           v-model="localFormData.url"
-          placeholder="请输入API路径，如：/api/users"
+          placeholder="请输入API路径，如：/api/users 或完整URL"
           clearable
         >
           <template #prepend>
             <span>{{ baseUrl }}</span>
           </template>
+          <template #append>
+            <el-button
+              :disabled="localFormData.method !== 'GET'"
+              @click="handleParseQueryClick"
+              title="从URL中解析GET参数并填充表格"
+            >
+              解析GET参数
+            </el-button>
+          </template>
         </el-input>
+        <div class="url-hint" v-if="localFormData.method === 'GET'">
+          <el-text type="info" size="small">
+            示例：/api/interfaces?system_id=10&enabled_only=false，点击“解析GET参数”自动生成参数表
+          </el-text>
+        </div>
       </el-form-item>
 
       <el-row :gutter="20">
@@ -187,16 +201,15 @@
          <div class="panel-title">
            <el-icon><DataAnalysis /></el-icon>
            <span>响应配置</span>
-           <el-tag v-if="localFormData.response_example" type="success" size="small">已配置</el-tag>
+           <el-tag v-if="localFormData.response_parameters && localFormData.response_parameters.length > 0" type="success" size="small">{{ localFormData.response_parameters.length }} 个字段</el-tag>
            <el-tag v-else type="info" size="small">未配置</el-tag>
          </div>
        </template>
 
        <!-- 响应配置 (增强版) -->
       <el-form-item label="响应配置">
-        <ResponseConfig
-          v-model="localFormData.response_example"
-          @change="handleResponseChange"
+        <ParamsEditor
+          v-model="localFormData.response_parameters"
         />
       </el-form-item>
     </el-collapse-item>
@@ -260,7 +273,8 @@ import {
 } from '@element-plus/icons-vue'
 import unifiedApi from '@/api/unified-api'
 import ParameterConfig from './ParameterConfig.vue'
-import ResponseConfig from './ResponseConfig.vue'
+import ParamsEditor from '@/components/common/ParamsEditor.vue'
+import { ParamsConverter } from '@/utils/paramsConverter'
 import { debounce } from 'lodash-es'
 
 // 直接使用统一API的 API 管理入口
@@ -320,7 +334,7 @@ const localFormData = reactive({
   enabled: true,
   requireAuth: true, // 新增：是否需要登录认证，默认需要
   parameters: [],
-  response_example: '',
+  response_parameters: [],
   tags: [],
   
 })
@@ -369,7 +383,7 @@ const basicInfoComplete = computed(() => basicInfoProgress.value === 5)
 const rawFormProgress = computed(() => {
   // 使用浅拷贝避免响应式追踪过深
   const params = [...localFormData.parameters]
-  const hasResponse = !!localFormData.response_example
+  const hasResponse = Array.isArray(localFormData.response_parameters) && localFormData.response_parameters.length > 0
   const tags = [...localFormData.tags]
   
   let total = 0
@@ -445,7 +459,25 @@ watch(() => props.formData, (newData) => {
     localFormData.enabled = newData.enabled !== undefined ? newData.enabled : true
     localFormData.requireAuth = newData.auth_required !== undefined ? Boolean(newData.auth_required) : true // 新增：认证字段映射
     localFormData.parameters = newData.parameters || []
-    localFormData.response_example = newData.response_example || ''
+    // 初始化响应参数：优先从 response_schema，其次从 response_example 推断
+    try {
+      if (newData.response_schema) {
+        const schemaObj = typeof newData.response_schema === 'string'
+          ? JSON.parse(newData.response_schema)
+          : newData.response_schema
+        localFormData.response_parameters = ParamsConverter.fromSchema(schemaObj)
+      } else if (newData.response_example) {
+        const exampleObj = typeof newData.response_example === 'string'
+          ? JSON.parse(newData.response_example)
+          : newData.response_example
+        localFormData.response_parameters = ParamsConverter.fromExample(exampleObj)
+      } else {
+        localFormData.response_parameters = []
+      }
+    } catch (e) {
+      console.warn('初始化响应参数失败，已回退为空：', e)
+      localFormData.response_parameters = []
+    }
     localFormData.tags = toStringArray(newData.tags)
     
     
@@ -557,7 +589,7 @@ const resetForm = () => {
     localFormData.enabled = true
     localFormData.requireAuth = true
     localFormData.parameters = []
-    localFormData.response_example = ''
+    localFormData.response_parameters = []
     localFormData.tags = []
     
   } catch (error) {
@@ -609,16 +641,7 @@ const handleSave = async () => {
       return
     }
 
-    // 验证响应示例JSON格式
-    if (localFormData.response_example) {
-      try {
-        JSON.parse(localFormData.response_example)
-      } catch (error) {
-        ElMessage.warning('响应示例必须是有效的JSON格式')
-        saving.value = false
-        return
-      }
-    }
+    // 响应参数采用统一编辑器结构，无需示例校验
 
     // 准备保存数据，严格按照后端ApiInterfaceCreate模型构建
     const saveData = {
@@ -658,14 +681,15 @@ const handleSave = async () => {
           return acc
         }, {})) : null,
       
-      // 处理响应示例 - 转换为JSON字符串
-      example_response: localFormData.response_example ? 
-        (typeof localFormData.response_example === 'string' ? 
-          localFormData.response_example : 
-          JSON.stringify(localFormData.response_example)) : null
+      // 处理响应Schema - 由统一参数编辑器生成
+      response_schema: (Array.isArray(localFormData.response_parameters) && localFormData.response_parameters.length > 0)
+        ? JSON.stringify(ParamsConverter.toSchema(localFormData.response_parameters))
+        : null,
+      // 保留示例字段占位
+      example_response: null
     }
     
-    emit('save', saveData)
+  emit('save', saveData)
   } catch (error) {
     console.error('保存失败:', error)
     ElMessage.error('保存失败: ' + (error.message || '未知错误'))
@@ -681,6 +705,90 @@ const resetSavingState = () => {
 // 暴露方法给父组件
 defineExpose({
   resetSavingState
+})
+
+// ——— 增强：从URL解析GET查询参数并填充到参数表 ———
+const handleParseQueryClick = async () => {
+  if (localFormData.method !== 'GET') {
+    ElMessage.warning('仅在GET方法下支持从URL解析参数')
+    return
+  }
+  const urlInput = (localFormData.url || '').trim()
+  if (!urlInput) {
+    ElMessage.warning('请先输入包含查询参数的URL')
+    return
+  }
+
+  const toFullUrl = (u) => {
+    if (/^https?:\/\//i.test(u)) return u
+    // 支持以 / 开头的相对路径或纯路径
+    const path = u.startsWith('/') ? u : `/${u}`
+    return `${baseUrl.value}${path}`
+  }
+
+  let parsed
+  try {
+    parsed = new URL(toFullUrl(urlInput))
+  } catch (e) {
+    ElMessage.error('URL格式不正确，无法解析查询参数')
+    return
+  }
+
+  const entries = []
+  parsed.searchParams.forEach((value, key) => {
+    entries.push({ key, value })
+  })
+
+  if (entries.length === 0) {
+    ElMessage.info('URL中未包含查询参数')
+    return
+  }
+
+  // 若已有参数，提示是否覆盖
+  if (Array.isArray(localFormData.parameters) && localFormData.parameters.length > 0) {
+    try {
+      await ElMessageBox.confirm(
+        '检测到已配置的请求参数，是否用URL中的查询参数替换？',
+        '覆盖确认',
+        { confirmButtonText: '替换', cancelButtonText: '取消', type: 'warning' }
+      )
+    } catch {
+      return
+    }
+  }
+
+  // 转换为参数表结构
+  const newParams = entries.map(({ key, value }) => ({
+    // id/level/parentId由参数组件填充或使用默认
+    name: key,
+    type: 'string',
+    required: false,
+    description: String(value ?? ''),
+    level: 0,
+    parentId: null
+  }))
+
+  // 仅保留路径部分
+  localFormData.url = parsed.pathname
+  // 覆盖参数
+  localFormData.parameters = newParams
+  ElMessage.success(`已解析 ${newParams.length} 个查询参数并填充表格`)
+}
+
+// 自动提示：当GET且URL出现查询串时，引导用户点击解析
+const urlParseHintShown = ref(false)
+watch(() => localFormData.url, (newVal) => {
+  if (localFormData.method === 'GET' && typeof newVal === 'string' && newVal.includes('?')) {
+    if (!urlParseHintShown.value) {
+      ElMessage.info('检测到查询参数，点击“解析GET参数”可自动生成参数表')
+      urlParseHintShown.value = true
+    }
+  }
+})
+
+// 方法切换时重置提示标记
+watch(() => localFormData.method, () => {
+  urlParseHintShown.value = false
 })
 
 // 生命周期

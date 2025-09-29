@@ -1,0 +1,571 @@
+{
+  "api_info": {
+    "name": "Large Dataset Performance Test API",
+    "version": "1.0.0",
+    "description": "API with complex nested parameters for performance testing"
+  },
+  "request": {
+    "user_profile": {
+      "basic_info": {
+        "user_id": "user_12345",
+        "username": "performance_test_user",
+        "email": "test@example.com",
+        "phone": "+1234567890",
+        "created_at": "2024-01-01T00:00:00Z",
+        "last_login": "2024-01-15T10:30:00Z"
+      },
+      "personal_details": {
+        "first_name": "Performance",
+        "last_name": "Tester",
+        "date_of_birth": "1990-01-01",
+        "gender": "other",
+        "nationality": "US",
+        "languages": ["en", "zh", "es", "fr"],
+        "timezone": "UTC-8",
+        "preferences": {
+          "theme": "dark",
+          "notifications": {
+            "email": true,
+            "sms": false,
+            "push": true,
+            "marketing": false
+          },
+          "privacy": {
+            "profile_visibility": "friends",
+            "data_sharing": false,
+            "analytics": true
+          }
+        }
+      },
+      "address": {
+        "primary": {
+          "street": "123 Main Street",
+          "apartment": "Apt 4B",
+          "city": "San Francisco",
+          "state": "CA",
+          "postal_code": "94102",
+          "country": "US",
+          "coordinates": {
+            "latitude": 37.7749,
+            "longitude": -122.4194
+          }
+        },
+        "billing": {
+          "street": "456 Oak Avenue",
+          "city": "Los Angeles",
+          "state": "CA",
+          "postal_code": "90210",
+          "country": "US",
+          "is_same_as_primary": false
+        },
+        "shipping_addresses": [
+          {
+            "id": "ship_001",
+            "label": "Home",
+            "street": "123 Main Street",
+            "city": "San Francisco",
+            "state": "CA",
+            "postal_code": "94102",
+            "country": "US",
+            "is_default": true
+          },
+          {
+            "id": "ship_002",
+            "label": "Office",
+            "street": "789 Business Blvd",
+            "city": "Palo Alto",
+            "state": "CA",
+            "postal_code": "94301",
+            "country": "US",
+            "is_default": false
+          }
+        ]
+      }
+    },
+    "order_details": {
+      "order_id": "ORD_2024_001234",
+      "order_date": "2024-01-15T14:30:00Z",
+      "status": "processing",
+      "priority": "high",
+      "items": [
+        {
+          "item_id": "ITEM_001",
+          "product_name": "Premium Laptop",
+          "sku": "LAPTOP-PRO-15-2024",
+          "category": "electronics",
+          "subcategory": "computers",
+          "brand": "TechBrand",
+          "model": "ProBook 15",
+          "specifications": {
+            "processor": {
+              "brand": "Intel",
+              "model": "Core i7-12700H",
+              "cores": 14,
+              "base_frequency": "2.3GHz",
+              "max_frequency": "4.7GHz",
+              "cache": "24MB"
+            },
+            "memory": {
+              "type": "DDR4",
+              "size": "32GB",
+              "speed": "3200MHz",
+              "slots": 2,
+              "expandable": true,
+              "max_capacity": "64GB"
+            },
+            "storage": [
+              {
+                "type": "SSD",
+                "interface": "NVMe",
+                "capacity": "1TB",
+                "speed": "7000MB/s",
+                "is_primary": true
+              },
+              {
+                "type": "HDD",
+                "interface": "SATA",
+                "capacity": "2TB",
+                "speed": "7200RPM",
+                "is_primary": false
+              }
+            ],
+            "display": {
+              "size": "15.6",
+              "resolution": "3840x2160",
+              "panel_type": "OLED",
+              "refresh_rate": "120Hz",
+              "color_gamut": "100% DCI-P3",
+              "brightness": "400 nits",
+              "touch_support": true
+            },
+            "graphics": {
+              "integrated": {
+                "model": "Intel Iris Xe",
+                "memory": "shared"
+              },
+              "dedicated": {
+                "model": "NVIDIA RTX 4060",
+                "memory": "8GB GDDR6",
+                "cuda_cores": 3072
+              }
+            },
+            "connectivity": {
+              "wifi": {
+                "standard": "Wi-Fi 6E",
+                "bands": ["2.4GHz", "5GHz", "6GHz"]
+              },
+              "bluetooth": "5.3",
+              "ports": [
+                {
+                  "type": "USB-C",
+                  "version": "4.0",
+                  "count": 2,
+                  "features": ["Thunderbolt 4", "Power Delivery", "DisplayPort"]
+                },
+                {
+                  "type": "USB-A",
+                  "version": "3.2",
+                  "count": 2
+                },
+                {
+                  "type": "HDMI",
+                  "version": "2.1",
+                  "count": 1
+                },
+                {
+                  "type": "Audio Jack",
+                  "version": "3.5mm",
+                  "count": 1
+                }
+              ],
+              "ethernet": {
+                "speed": "1Gbps",
+                "connector": "RJ45"
+              }
+            },
+            "battery": {
+              "capacity": "99.9Wh",
+              "cells": 6,
+              "type": "Li-ion",
+              "fast_charging": true,
+              "wireless_charging": false,
+              "estimated_life": "12 hours"
+            },
+            "dimensions": {
+              "width": "359mm",
+              "depth": "253mm",
+              "height": "19.9mm",
+              "weight": "2.1kg"
+            },
+            "operating_system": {
+              "name": "Windows",
+              "version": "11 Pro",
+              "architecture": "x64",
+              "license_type": "OEM"
+            }
+          },
+          "quantity": 2,
+          "unit_price": 2499.99,
+          "currency": "USD",
+          "discount": {
+            "type": "percentage",
+            "value": 10,
+            "code": "TECH10",
+            "description": "10% off electronics"
+          },
+          "warranty": {
+            "duration": "3 years",
+            "type": "comprehensive",
+            "coverage": ["hardware", "software", "accidental_damage"],
+            "provider": "TechBrand",
+            "cost": 299.99
+          },
+          "customizations": [
+            {
+              "option": "engraving",
+              "value": "Property of Performance Tester",
+              "cost": 49.99
+            },
+            {
+              "option": "extended_warranty",
+              "value": "5 years",
+              "cost": 199.99
+            }
+          ]
+        },
+        {
+          "item_id": "ITEM_002",
+          "product_name": "Wireless Mouse",
+          "sku": "MOUSE-WIRELESS-PRO",
+          "category": "electronics",
+          "subcategory": "accessories",
+          "brand": "PeripheralCo",
+          "specifications": {
+            "sensor": {
+              "type": "optical",
+              "dpi": "25600",
+              "tracking_speed": "650 IPS",
+              "acceleration": "50G"
+            },
+            "connectivity": {
+              "type": "wireless",
+              "technology": "2.4GHz + Bluetooth",
+              "range": "10m",
+              "battery_life": "70 hours"
+            },
+            "buttons": {
+              "count": 7,
+              "programmable": 5,
+              "scroll_wheel": true,
+              "side_buttons": 2
+            },
+            "ergonomics": {
+              "hand_orientation": "right",
+              "grip_style": ["palm", "claw", "fingertip"],
+              "weight": "95g",
+              "adjustable_weight": false
+            }
+          },
+          "quantity": 1,
+          "unit_price": 79.99,
+          "currency": "USD"
+        }
+      ],
+      "shipping": {
+        "method": "express",
+        "carrier": "FastShip",
+        "tracking_number": "FS123456789",
+        "estimated_delivery": "2024-01-18T16:00:00Z",
+        "cost": 15.99,
+        "insurance": {
+          "enabled": true,
+          "value": 5000.00,
+          "cost": 25.00
+        },
+        "special_instructions": "Leave at front door if no answer",
+        "delivery_window": {
+          "start": "09:00",
+          "end": "18:00"
+        }
+      },
+      "payment": {
+        "method": "credit_card",
+        "card_details": {
+          "type": "visa",
+          "last_four": "1234",
+          "expiry_month": 12,
+          "expiry_year": 2027,
+          "cardholder_name": "Performance Tester",
+          "billing_address_id": "billing"
+        },
+        "transaction_id": "TXN_20240115_143000",
+        "authorization_code": "AUTH123456",
+        "installments": {
+          "enabled": true,
+          "count": 6,
+          "interest_rate": 0,
+          "monthly_amount": 916.66
+        }
+      },
+      "totals": {
+        "subtotal": 5079.97,
+        "discount_amount": 499.99,
+        "tax_amount": 458.00,
+        "shipping_cost": 15.99,
+        "insurance_cost": 25.00,
+        "total_amount": 5078.97,
+        "currency": "USD"
+      }
+    },
+    "api_configuration": {
+      "request_settings": {
+        "timeout": 30000,
+        "retry_attempts": 3,
+        "retry_delay": 1000,
+        "compression": "gzip",
+        "cache_control": "no-cache",
+        "content_type": "application/json",
+        "accept_language": "en-US,en;q=0.9",
+        "user_agent": "PerformanceTestClient/1.0"
+      },
+      "security": {
+        "authentication": {
+          "type": "bearer_token",
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "refresh_token": "refresh_token_here",
+          "expires_at": "2024-01-15T15:30:00Z"
+        },
+        "encryption": {
+          "enabled": true,
+          "algorithm": "AES-256-GCM",
+          "key_rotation": true
+        },
+        "rate_limiting": {
+          "requests_per_minute": 100,
+          "burst_limit": 20,
+          "window_size": 60
+        }
+      },
+      "monitoring": {
+        "tracing": {
+          "enabled": true,
+          "trace_id": "trace_12345",
+          "span_id": "span_67890",
+          "parent_span_id": "parent_span_11111"
+        },
+        "metrics": {
+          "collect_performance": true,
+          "collect_errors": true,
+          "sample_rate": 0.1
+        },
+        "logging": {
+          "level": "info",
+          "include_request_body": false,
+          "include_response_body": false,
+          "correlation_id": "corr_id_98765"
+        }
+      }
+    },
+    "business_context": {
+      "campaign": {
+        "id": "CAMP_2024_Q1",
+        "name": "New Year Tech Sale",
+        "start_date": "2024-01-01",
+        "end_date": "2024-01-31",
+        "budget": 100000.00,
+        "target_audience": {
+          "demographics": {
+            "age_range": [25, 45],
+            "income_range": [50000, 150000],
+            "education": ["bachelor", "master", "phd"],
+            "interests": ["technology", "gaming", "productivity"]
+          },
+          "geographic": {
+            "countries": ["US", "CA", "UK", "DE", "FR"],
+            "regions": ["North America", "Europe"],
+            "cities": ["San Francisco", "New York", "London", "Berlin"]
+          }
+        }
+      },
+      "analytics": {
+        "session": {
+          "id": "sess_abc123",
+          "start_time": "2024-01-15T14:00:00Z",
+          "duration": 1800,
+          "page_views": 15,
+          "events": [
+            {
+              "type": "page_view",
+              "timestamp": "2024-01-15T14:00:00Z",
+              "page": "/products/laptops"
+            },
+            {
+              "type": "product_view",
+              "timestamp": "2024-01-15T14:05:00Z",
+              "product_id": "ITEM_001"
+            },
+            {
+              "type": "add_to_cart",
+              "timestamp": "2024-01-15T14:10:00Z",
+              "product_id": "ITEM_001",
+              "quantity": 2
+            }
+          ]
+        },
+        "attribution": {
+          "source": "google",
+          "medium": "cpc",
+          "campaign": "tech_sale_2024",
+          "keyword": "premium laptop",
+          "ad_group": "laptops_high_end",
+          "creative": "laptop_banner_001"
+        }
+      }
+    }
+  },
+  "response": {
+    "status": {
+      "code": 200,
+      "message": "Success",
+      "timestamp": "2024-01-15T14:30:15Z",
+      "request_id": "req_789012345",
+      "processing_time_ms": 245
+    },
+    "order_confirmation": {
+      "order_id": "ORD_2024_001234",
+      "confirmation_number": "CONF_ABC123XYZ",
+      "status": "confirmed",
+      "estimated_processing_time": "2-3 business days",
+      "next_steps": [
+        "Order will be processed within 24 hours",
+        "You will receive a shipping notification",
+        "Track your order using the provided tracking number"
+      ]
+    },
+    "payment_result": {
+      "transaction_id": "TXN_20240115_143000",
+      "status": "approved",
+      "authorization_code": "AUTH123456",
+      "processor_response": {
+        "code": "00",
+        "message": "Approved",
+        "avs_result": "Y",
+        "cvv_result": "M"
+      },
+      "installment_plan": {
+        "plan_id": "PLAN_001",
+        "monthly_payments": [
+          {
+            "payment_number": 1,
+            "amount": 916.66,
+            "due_date": "2024-02-15"
+          },
+          {
+            "payment_number": 2,
+            "amount": 916.66,
+            "due_date": "2024-03-15"
+          },
+          {
+            "payment_number": 3,
+            "amount": 916.66,
+            "due_date": "2024-04-15"
+          },
+          {
+            "payment_number": 4,
+            "amount": 916.66,
+            "due_date": "2024-05-15"
+          },
+          {
+            "payment_number": 5,
+            "amount": 916.66,
+            "due_date": "2024-06-15"
+          },
+          {
+            "payment_number": 6,
+            "amount": 916.67,
+            "due_date": "2024-07-15"
+          }
+        ]
+      }
+    },
+    "inventory_updates": {
+      "items": [
+        {
+          "item_id": "ITEM_001",
+          "previous_stock": 50,
+          "reserved_quantity": 2,
+          "available_stock": 48,
+          "reorder_level": 10,
+          "next_restock_date": "2024-01-20"
+        },
+        {
+          "item_id": "ITEM_002",
+          "previous_stock": 200,
+          "reserved_quantity": 1,
+          "available_stock": 199,
+          "reorder_level": 25,
+          "next_restock_date": "2024-01-25"
+        }
+      ]
+    },
+    "recommendations": {
+      "related_products": [
+        {
+          "product_id": "ITEM_003",
+          "name": "Laptop Stand",
+          "price": 89.99,
+          "discount": 15,
+          "reason": "frequently_bought_together"
+        },
+        {
+          "product_id": "ITEM_004",
+          "name": "USB-C Hub",
+          "price": 49.99,
+          "discount": 20,
+          "reason": "compatible_accessory"
+        }
+      ],
+      "upsell_opportunities": [
+        {
+          "product_id": "ITEM_005",
+          "name": "Premium Support Package",
+          "price": 199.99,
+          "benefits": ["24/7 support", "priority repairs", "loaner device"],
+          "reason": "value_add_service"
+        }
+      ]
+    },
+    "notifications": {
+      "email": {
+        "confirmation_sent": true,
+        "tracking_updates": true,
+        "delivery_notifications": true,
+        "promotional_emails": false
+      },
+      "sms": {
+        "order_updates": false,
+        "delivery_alerts": false
+      },
+      "push": {
+        "order_status": true,
+        "shipping_updates": true,
+        "delivery_confirmation": true
+      }
+    },
+    "metadata": {
+      "api_version": "2.1.0",
+      "response_format": "json",
+      "compression": "gzip",
+      "cache_headers": {
+        "cache_control": "private, max-age=300",
+        "etag": "W/\"abc123def456\"",
+        "last_modified": "2024-01-15T14:30:15Z"
+      },
+      "rate_limit": {
+        "remaining": 95,
+        "reset_time": "2024-01-15T15:00:00Z",
+        "limit": 100
+      }
+    }
+  }
+}

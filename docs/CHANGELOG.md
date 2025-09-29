@@ -2,6 +2,22 @@
 
 本文档记录了系统的重要功能更新、修复和改进。
 
+## [2025.09] - Sprint A 统一参数组件验收完成
+
+### ✅ 验收结论
+- 前端 ParamsEditor 统一组件的核心交互与数据转换全部通过：
+  - 折叠/展开交互稳定，层级状态一致
+  - 搜索自动展开与清空恢复行为正确
+  - 同/跨层级拖拽位置与层级调整准确，大量节点场景稳定
+  - JSON 导入/导出完整；table/json/url 模式切换不丢数据、状态保持合理
+  - 刷新后折叠状态持久化生效
+
+### 📝 文档更新
+- 更新 <docs/frontend/user-guides/UNIFIED_PARAMS_COMPONENT_GUIDE.md>，新增“验收状态（Sprint A）”小节，使用复选框记录完成项与验收日期。
+
+### 🔗 关联
+- 前端预览验收入口：`http://localhost:5173/` → API Management → Interface Configuration → Request Parameters
+
 ## [2025.09] - 需求管理文档对齐与状态更新
 
 ### 🧭 文档结构与放置

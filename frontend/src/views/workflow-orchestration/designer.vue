@@ -1078,7 +1078,7 @@ const generateApiParameterTemplate = (apiInfo: any) => {
       }
     }
     
-    // 设置响应模板（用于参考）
+    // 设置响应模板（用于参考）——优先使用 response_schema，兼容回退到 example_response
     if (apiInfo.response_schema) {
       try {
         const responseSchema = typeof apiInfo.response_schema === 'string'

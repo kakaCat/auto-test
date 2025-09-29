@@ -548,27 +548,45 @@ class ApiInterfaceService:
         else:
             api['tags_list'] = []
         
-        # 处理请求参数
-        request_params = api.get('request_params')
-        if request_params and isinstance(request_params, str):
+        # 处理请求模式（优先使用 request_schema，兼容旧字段 request_params）
+        import json
+        request_schema = api.get('request_schema')
+        if isinstance(request_schema, str):
             try:
-                import json
-                api['request_schema'] = json.loads(request_params)
-            except:
+                api['request_schema'] = json.loads(request_schema)
+            except Exception:
                 api['request_schema'] = {}
+        elif request_schema is None:
+            # 兼容旧字段 request_params
+            request_params = api.get('request_params')
+            if isinstance(request_params, str):
+                try:
+                    api['request_schema'] = json.loads(request_params)
+                except Exception:
+                    api['request_schema'] = {}
+            else:
+                api['request_schema'] = request_params or {}
         else:
-            api['request_schema'] = request_params or {}
-        
-        # 处理响应示例
-        response_example = api.get('response_example')
-        if response_example and isinstance(response_example, str):
+            api['request_schema'] = request_schema
+
+        # 处理响应模式（优先使用 response_schema，兼容字段 example_response 作为回退）
+        response_schema = api.get('response_schema')
+        if isinstance(response_schema, str):
             try:
-                import json
-                api['response_schema'] = json.loads(response_example)
-            except:
+                api['response_schema'] = json.loads(response_schema)
+            except Exception:
                 api['response_schema'] = {}
+        elif response_schema is None or response_schema == {}:
+            example_response = api.get('example_response')
+            if isinstance(example_response, str):
+                try:
+                    api['response_schema'] = json.loads(example_response)
+                except Exception:
+                    api['response_schema'] = {}
+            else:
+                api['response_schema'] = example_response or {}
         else:
-            api['response_schema'] = response_example or {}
+            api['response_schema'] = response_schema
         
         # 添加完整URL
         path = api.get('path', '')
