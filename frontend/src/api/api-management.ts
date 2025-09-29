@@ -68,6 +68,32 @@ export interface TestConfig {
   [key: string]: any
 }
 
+// Mock数据相关接口定义
+export interface MockFieldConfig {
+  name: string
+  type: string
+  description?: string
+  required?: boolean
+  example?: any
+}
+
+export interface MockConfig {
+  dataType: 'object' | 'array'
+  arraySize?: number
+  fields: MockFieldConfig[]
+}
+
+export interface MockGenerateRequest {
+  apiId: string
+  config: MockConfig
+}
+
+export interface MockGenerateResponse {
+  mockData: any
+  config: MockConfig
+  generatedAt: string
+}
+
 export interface ApiStatistics {
   total_apis: number
   [key: string]: any
@@ -271,9 +297,46 @@ export const apiManagementApi = {
    * @returns 文件数据
    */
   exportApis(params: Record<string, any> = {}): Promise<Blob> {
-    // TODO: 后端需要实现 GET /api/export 接口
+    // TODO: 后端需要实现 GET /api/apis/export 接口
     console.warn('导出API接口未在后端实现')
     return Promise.resolve(new Blob())
+  },
+
+  /**
+   * 生成Mock数据
+   * @param request - Mock生成请求
+   * @returns Mock数据生成结果
+   */
+  generateMockData(request: MockGenerateRequest): Promise<ApiResponse<MockGenerateResponse>> {
+    return apiHandler.post('/api/mock/generate', request)
+  },
+
+  /**
+   * 获取API的智能字段推荐
+   * @param apiId - API ID
+   * @returns 推荐的字段配置
+   */
+  getSmartFieldRecommendations(apiId: string): Promise<ApiResponse<MockFieldConfig[]>> {
+    return apiHandler.get(`/api/mock/recommendations/${apiId}`)
+  },
+
+  /**
+   * 保存Mock配置
+   * @param apiId - API ID
+   * @param config - Mock配置
+   * @returns 保存结果
+   */
+  saveMockConfig(apiId: string, config: MockConfig): Promise<ApiResponse> {
+    return apiHandler.post(`/api/mock/config/${apiId}`, config)
+  },
+
+  /**
+   * 获取已保存的Mock配置
+   * @param apiId - API ID
+   * @returns Mock配置
+   */
+  getMockConfig(apiId: string): Promise<ApiResponse<MockConfig>> {
+    return apiHandler.get(`/api/mock/config/${apiId}`)
   }
 }
 

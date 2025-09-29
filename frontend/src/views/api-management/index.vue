@@ -246,7 +246,7 @@
               </template>
             </el-table-column>
             
-            <el-table-column label="操作" width="200" fixed="right">
+            <el-table-column label="操作" width="250" fixed="right">
               <template #default="{ row }">
                 <el-button type="text" @click="viewApi(row)">
                   <el-icon><View /></el-icon>
@@ -255,6 +255,10 @@
                 <el-button type="text" @click="showEditApiDialog(row)">
                   <el-icon><Edit /></el-icon>
                   编辑
+                </el-button>
+                <el-button type="text" @click="mockApi(row)" style="color: var(--el-color-success)">
+                  <el-icon><DataBoard /></el-icon>
+                  Mock
                 </el-button>
                 <el-button type="text" @click="deleteApi(row)" style="color: var(--el-color-danger)">
                   <el-icon><Delete /></el-icon>
@@ -299,6 +303,13 @@
       @save="saveApi"
       @cancel="handleDialogCancel"
     />
+    
+    <!-- Mock数据生成器 -->
+    <MockDataGenerator
+      v-model="mockGeneratorVisible"
+      :api-info="currentMockApi || {}"
+      @mock-generated="handleMockGenerated"
+    />
     <!-- 测试抽屉 -->
   </div>
 </template>
@@ -314,6 +325,7 @@ import {
 } from '@element-plus/icons-vue'
 import unifiedApi from '@/api/unified-api'
 import ApiFormDialog from './components/ApiFormDialog.vue'
+import MockDataGenerator from './components/MockDataGenerator.vue'
 import SystemTree from '@/components/SystemTree.vue'
 
 // 直接使用统一API
@@ -332,6 +344,9 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('新增API')
 const systemTreeRef = ref()
 const apiFormDialogRef = ref()
+// Mock数据生成器相关
+const mockGeneratorVisible = ref(false)
+const currentMockApi = ref(null)
 // 已移除测试抽屉功能
 
 // 系统相关数据
@@ -400,7 +415,7 @@ const filteredApiList = computed(() => {
   if (searchForm.keyword) {
     const keyword = searchForm.keyword.toLowerCase()
     list = list.filter(api => 
-      api.name.toLowerCase().includes(keyword) ||
+      (api.name ? api.name.toLowerCase() : '').includes(keyword) ||
       api.description?.toLowerCase().includes(keyword) ||
       api.url?.toLowerCase().includes(keyword)
     )
@@ -722,6 +737,17 @@ const deleteApi = async (api) => {
   }
 }
 
+const mockApi = (api) => {
+  currentMockApi.value = api
+  mockGeneratorVisible.value = true
+}
+
+const handleMockGenerated = (mockData) => {
+  console.log('Mock数据已生成:', mockData)
+  ElMessage.success('Mock数据生成成功')
+  mockGeneratorVisible.value = false
+}
+
 const saveApi = async (formData) => {
   try {
     if (formData.id) {
@@ -982,13 +1008,30 @@ onMounted(async () => {
   
   // 从URL参数中读取系统和模块ID
   const { systemId, moduleId } = route.query
-  if (systemId) {
-    selectedSystemId.value = systemId
-    if (moduleId) {
-      selectedModuleId.value = moduleId
+  const sysId = systemId ? String(systemId) : ''
+  const modId = moduleId ? String(moduleId) : ''
+
+  // 校验systemId是否存在于系统列表
+  const systemExists = sysId && Array.isArray(systemList.value) && systemList.value.some(s => String(s.id) === sysId)
+  // 校验moduleId是否存在且属于该systemId
+  const moduleExists = modId && Array.isArray(moduleList.value) && moduleList.value.some(m => String(m.id) === modId && String(m.system_id ?? m.systemId) === sysId)
+
+  if (systemExists) {
+    selectedSystemId.value = sysId
+    if (modId && moduleExists) {
+      selectedModuleId.value = modId
+    } else {
+      // URL中的moduleId无效时，移除moduleId，避免后端报错
+      selectedModuleId.value = ''
+      router.replace({ path: route.path, query: { systemId: sysId } })
     }
-    // 如果有URL参数，则加载对应的API列表
     await loadApiList()
+  } else if (sysId) {
+    // URL中的systemId在当前系统列表中不存在，清理并提示
+    ElMessage.warning('URL中的系统不存在，已重置为未选择状态')
+    selectedSystemId.value = ''
+    selectedModuleId.value = ''
+    router.replace({ path: route.path })
   }
 })
 

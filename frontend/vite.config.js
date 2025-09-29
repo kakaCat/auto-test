@@ -21,7 +21,8 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       open: true,
       proxy: {
-        '/api': {
+        // 只代理以 /api/ 开头且不包含 -management 或 -orchestration 的请求
+        '^/api/(?!.*(-management|-orchestration))': {
           target: targetBase,
           changeOrigin: true
         }

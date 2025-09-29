@@ -3,7 +3,7 @@
  */
 import { h, VNode } from 'vue'
 import { ElIcon, ElTag, ElTooltip, ElSwitch, ElButton } from 'element-plus'
-import { Link, View, Edit, VideoPlay, Delete } from '@element-plus/icons-vue'
+import { Link, View, Edit, VideoPlay, Delete, DataAnalysis } from '@element-plus/icons-vue'
 
 // API数据接口定义
 export interface ApiItem {
@@ -29,6 +29,7 @@ export interface TableHandlers {
   viewApi?: (row: ApiItem) => void
   editApi?: (row: ApiItem) => void
   testApi?: (row: ApiItem) => void
+  mockApi?: (row: ApiItem) => void
   deleteApi?: (row: ApiItem) => void
 }
 
@@ -142,7 +143,7 @@ export const apiTableColumns: TableColumn[] = [
   },
   {
     label: '操作',
-    width: 200,
+    width: 250,
     fixed: 'right',
     template: ({ row, handlers }: ColumnTemplateParams) => {
       return [
@@ -171,6 +172,16 @@ export const apiTableColumns: TableColumn[] = [
           default: () => [
             h(ElIcon, () => h(VideoPlay)),
             '测试'
+          ]
+        }),
+        h(ElButton, {
+          type: 'text',
+          style: 'color: var(--success-color)',
+          onClick: () => handlers.mockApi?.(row)
+        }, {
+          default: () => [
+            h(ElIcon, () => h(DataAnalysis)),
+            'Mock'
           ]
         }),
         h(ElButton, {
