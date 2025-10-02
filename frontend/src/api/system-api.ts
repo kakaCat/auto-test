@@ -93,6 +93,33 @@ class SystemApi extends BaseApi<SystemEntity> {
   }
 
   /**
+   * 参数归一化：支持 camelCase → snake_case
+   */
+  private _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p = { ...params }
+    if (p.enabledOnly !== undefined) {
+      p.enabled_only = p.enabledOnly
+      delete p.enabledOnly
+    }
+    if (p.hasModules !== undefined) {
+      p.has_modules = p.hasModules
+      delete p.hasModules
+    }
+    return p
+  }
+
+  /**
+   * 覆盖列表查询以确保归一化
+   */
+  async getList(
+    params: BaseListParams = {},
+    options: ApiHandlerOptions = {}
+  ): Promise<import('@/types').ApiResponse<{data: SystemEntity[], total: number}>> {
+    const normalized = this._normalizeQueryParams(params as any)
+    return super.getList(normalized, options)
+  }
+
+  /**
    * 获取系统列表
    */
   async getSystemList(

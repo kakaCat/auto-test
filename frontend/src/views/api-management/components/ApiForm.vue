@@ -1,10 +1,9 @@
 <template>
-  <el-form
+  <el-form>
     ref="formRef"
     :model="localFormData"
     :rules="rules"
     label-width="100px"
-  >
     <el-row :gutter="20">
       <el-col :span="12">
         <el-form-item label="API名称" prop="name">
@@ -27,12 +26,11 @@
       <el-col :span="12">
         <el-form-item label="服务模块" prop="moduleId">
           <el-select v-model="localFormData.moduleId" placeholder="请选择服务模块" style="width: 100%">
-            <el-option 
+            <el-option >
               v-for="module in availableModules" 
               :key="module.id" 
               :label="module.name" 
               :value="module.id" 
-            />
           </el-select>
         </el-form-item>
       </el-col>
@@ -42,24 +40,22 @@
       <el-col :span="6">
         <el-form-item label="请求方法" prop="method">
           <el-select v-model="localFormData.method" placeholder="请选择请求方法">
-            <el-option 
+            <el-option >
               v-for="method in httpMethods" 
               :key="method.value" 
               :label="method.label" 
               :value="method.value" 
-            />
           </el-select>
         </el-form-item>
       </el-col>
       <el-col :span="6">
         <el-form-item label="通信协议" prop="protocol">
           <el-select v-model="localFormData.protocol" placeholder="请选择协议">
-            <el-option 
+            <el-option >
               v-for="protocol in protocolOptions" 
               :key="protocol.value" 
               :label="protocol.label" 
               :value="protocol.value" 
-            />
           </el-select>
         </el-form-item>
       </el-col>
@@ -71,36 +67,31 @@
     </el-row>
     
     <el-form-item label="描述" prop="description">
-      <el-input
+      <el-input>
         v-model="localFormData.description"
         type="textarea"
         :rows="3"
         placeholder="请输入API描述"
-      />
     </el-form-item>
     
     <el-form-item label="请求头">
       <div class="params-section">
-        <div
+        <div>
           v-for="(header, index) in localFormData.headers"
           :key="index"
           class="param-row"
-        >
-          <el-input
+          <el-input>
             v-model="header.key"
             placeholder="Header名称"
             style="width: 200px"
-          />
-          <el-input
+          <el-input>
             v-model="header.value"
             placeholder="Header值"
             style="width: 300px"
-          />
-          <el-button
+          <el-button>
             type="text"
             @click="removeHeader(index)"
             style="color: var(--danger-color)"
-          >
             删除
           </el-button>
         </div>
@@ -113,39 +104,33 @@
     
     <el-form-item label="请求参数">
       <div class="params-section">
-        <div
+        <div>
           v-for="(param, index) in localFormData.parameters"
           :key="index"
           class="param-row"
-        >
-          <el-input
+          <el-input>
             v-model="param.name"
             placeholder="参数名"
             style="width: 150px"
-          />
-          <el-select
+          <el-select>
             v-model="param.type"
             placeholder="类型"
             style="width: 100px"
-          >
-            <el-option 
+            <el-option >
               v-for="type in parameterTypes" 
               :key="type.value" 
               :label="type.label" 
               :value="type.value" 
-            />
           </el-select>
           <el-checkbox v-model="param.required">必填</el-checkbox>
-          <el-input
+          <el-input>
             v-model="param.description"
             placeholder="参数描述"
             style="width: 200px"
-          />
-          <el-button
+          <el-button>
             type="text"
             @click="removeParameter(index)"
             style="color: var(--danger-color)"
-          >
             删除
           </el-button>
         </div>

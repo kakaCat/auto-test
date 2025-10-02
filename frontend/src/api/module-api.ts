@@ -108,6 +108,60 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
     super('/api/modules/v1');
   }
 
+  /**
+   * 参数归一化：支持 camelCase → snake_case，以及数组字段处理
+   */
+  private _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p = { ...params }
+    if (p.systemId !== undefined) {
+      p.system_id = p.systemId
+      delete p.systemId
+    }
+    if (p.moduleType !== undefined) {
+      p.module_type = p.moduleType
+      delete p.moduleType
+    }
+    if (p.enabledOnly !== undefined) {
+      p.enabled_only = p.enabledOnly
+      delete p.enabledOnly
+    }
+    if (Array.isArray(p.tags)) {
+      p.tags = p.tags.join(',')
+    }
+    return p
+  }
+
+  /**
+   * 负载归一化：支持 camelCase → snake_case，并处理 url → path
+   */
+  private _normalizePayload(data: Record<string, any> = {}): Record<string, any> {
+    const d = { ...data }
+    if (d.systemId !== undefined) {
+      d.system_id = d.systemId
+      delete d.systemId
+    }
+    if (d.moduleType !== undefined) {
+      d.module_type = d.moduleType
+      delete d.moduleType
+    }
+    if (d.url && !d.path) {
+      d.path = d.url
+      delete d.url
+    }
+    return d
+  }
+
+  /**
+   * 覆盖列表查询以确保归一化
+   */
+  async getList(
+    params: BaseListParams = {},
+    options: ApiHandlerOptions = {}
+  ): Promise<import('@/types').ApiResponse<{data: ModuleEntity[], total: number}>> {
+    const normalized = this._normalizeQueryParams(params as any)
+    return super.getList(normalized, options)
+  }
+
   // ==================== 基础CRUD操作 ====================
   // 继承自BaseApi的标准方法：
   // - getList(params): 获取模块列表
@@ -126,7 +180,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param params 查询参数
    * @returns 模块列表
    */
-  async getBySystem(systemId: string, params: Omit<ModuleListParams, 'system_id'> = {}): Promise<{data: ModuleEntity[], total: number}> {
+  async getBySystem(systemId: string, params: Omit<ModuleListParams, 'system_id'> = {}): Promise<import('@/types').ApiResponse<{data: ModuleEntity[], total: number}>> {
     try {
       const queryParams = { ...params, system_id: systemId };
       return await this.getList(queryParams);
@@ -140,7 +194,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param params 查询参数
    * @returns 启用的模块列表
    */
-  async getEnabledModules(params: ModuleListParams = {}): Promise<{data: ModuleEntity[], total: number}> {
+  async getEnabledModules(params: ModuleListParams = {}): Promise<import('@/types').ApiResponse<{data: ModuleEntity[], total: number}>> {
     try {
       const queryParams = { ...params, enabled_only: true };
       return await this.getList(queryParams);
@@ -155,7 +209,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param params 其他查询参数
    * @returns 模块列表
    */
-  async getByTags(tags: string[], params: Omit<ModuleListParams, 'tags'> = {}): Promise<{data: ModuleEntity[], total: number}> {
+  async getByTags(tags: string[], params: Omit<ModuleListParams, 'tags'> = {}): Promise<import('@/types').ApiResponse<{data: ModuleEntity[], total: number}>> {
     try {
       const queryParams = { ...params, tags: tags.join(',') };
       return await this.getList(queryParams);
@@ -169,13 +223,13 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param options API处理选项，可包含system_id参数
    * @returns 模块统计数据
    */
-  async getStatistics(options: ApiHandlerOptions & { system_id?: string } = {}): Promise<ModuleStatistics> {
+  async getStatistics(options: ApiHandlerOptions = {}): Promise<import('@/types').ApiResponse<BaseStatistics>> {
     try {
-      const { system_id, ...apiOptions } = options;
-      const url = system_id 
+      const { system_id, ...apiOptions } = (options as any);
+      const url = system_id
         ? `${this.baseUrl}/statistics?system_id=${system_id}`
         : `${this.baseUrl}/statistics`;
-      return await this.apiHandler.get<ModuleStatistics>(url, {}, apiOptions);
+      return await this.apiHandler.get<BaseStatistics>(url, {}, apiOptions);
     } catch (error: any) {
       throw new Error(`获取模块统计信息失败: ${error?.message || error}`);
     }
@@ -186,7 +240,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param moduleId 模块ID
    * @returns 模块依赖关系
    */
-  async getDependencies(moduleId: string): Promise<ModuleDependency> {
+  async getDependencies(moduleId: string): Promise<import('@/types').ApiResponse<ModuleDependency>> {
     try {
       return await this.apiHandler.get<ModuleDependency>(`${this.baseUrl}/${moduleId}/dependencies`);
     } catch (error: any) {
@@ -200,7 +254,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param dependencies 依赖的模块ID列表
    * @returns 更新结果
    */
-  async updateDependencies(moduleId: string, dependencies: string[]): Promise<ModuleDependency> {
+  async updateDependencies(moduleId: string, dependencies: string[]): Promise<import('@/types').ApiResponse<ModuleDependency>> {
     try {
       return await this.apiHandler.put<ModuleDependency>(
         `${this.baseUrl}/${moduleId}/dependencies`,
@@ -218,12 +272,10 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param systemId 可选的目标系统ID
    * @returns 新创建的模块
    */
-  async copyModule(moduleId: string, newName: string, systemId?: string): Promise<ModuleEntity> {
+  async copyModule(moduleId: string, newName: string, systemId?: string): Promise<import('@/types').ApiResponse<ModuleEntity>> {
     try {
-      return await this.apiHandler.post<ModuleEntity>(`${this.baseUrl}/${moduleId}/copy`, {
-        name: newName,
-        system_id: systemId
-      });
+      const payload = this._normalizePayload({ name: newName, systemId: systemId })
+      return await this.apiHandler.post<ModuleEntity>(`${this.baseUrl}/${moduleId}/copy`, payload);
     } catch (error: any) {
       throw new Error(`复制模块失败: ${error?.message || error}`);
     }
@@ -235,11 +287,10 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param targetSystemId 目标系统ID
    * @returns 更新结果
    */
-  async moveToSystem(moduleId: string, targetSystemId: string): Promise<ModuleEntity> {
+  async moveToSystem(moduleId: string, targetSystemId: string): Promise<import('@/types').ApiResponse<ModuleEntity>> {
     try {
-      return await this.apiHandler.put<ModuleEntity>(`${this.baseUrl}/${moduleId}/move`, {
-        system_id: targetSystemId
-      });
+      const payload = this._normalizePayload({ systemId: targetSystemId })
+      return await this.apiHandler.put<ModuleEntity>(`${this.baseUrl}/${moduleId}/move`, payload);
     } catch (error: any) {
       throw new Error(`移动模块失败: ${error?.message || error}`);
     }
@@ -251,7 +302,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param timeRange 时间范围（可选）
    * @returns 使用统计数据
    */
-  async getUsageStats(moduleId: string, timeRange?: string): Promise<any> {
+  async getUsageStats(moduleId: string, timeRange?: string): Promise<import('@/types').ApiResponse<any>> {
     try {
       const params = timeRange ? { time_range: timeRange } : {};
       return await this.apiHandler.get<any>(`${this.baseUrl}/${moduleId}/usage`, params);
@@ -265,7 +316,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * @param moduleId 模块ID
    * @returns 测试结果
    */
-  async testConnection(moduleId: string): Promise<any> {
+  async testConnection(moduleId: string): Promise<import('@/types').ApiResponse<any>> {
     try {
       return await this.apiHandler.post<any>(`${this.baseUrl}/${moduleId}/test`);
     } catch (error: any) {
@@ -279,7 +330,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * 兼容旧版API：按系统获取模块（别名方法）
    * @deprecated 请使用 getBySystem 方法
    */
-  async getModulesBySystem(systemId: string, params: any = {}): Promise<{data: ModuleEntity[], total: number}> {
+  async getModulesBySystem(systemId: string, params: any = {}): Promise<import('@/types').ApiResponse<{data: ModuleEntity[], total: number}>> {
     console.warn('getModulesBySystem 方法已废弃，请使用 getBySystem 方法');
     return this.getBySystem(systemId, params);
   }
@@ -288,25 +339,27 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    * 兼容旧版API：创建模块（别名方法）
    * @deprecated 请使用 create 方法
    */
-  async createModule(data: CreateModuleParams): Promise<ModuleEntity> {
+  async createModule(data: CreateModuleParams): Promise<import('@/types').ApiResponse<ModuleEntity>> {
     console.warn('createModule 方法已废弃，请使用 create 方法');
-    return this.create(data);
+    const payload = this._normalizePayload(data as any)
+    return await this.create(payload as any)
   }
 
   /**
    * 兼容旧版API：更新模块（别名方法）
    * @deprecated 请使用 update 方法
    */
-  async updateModule(moduleId: number, data: Partial<CreateModuleParams>): Promise<ModuleEntity> {
+  async updateModule(moduleId: number, data: Partial<CreateModuleParams>): Promise<import('@/types').ApiResponse<ModuleEntity>> {
     console.warn('updateModule 方法已废弃，请使用 update 方法');
-    return this.update(moduleId, data);
+    const payload = this._normalizePayload(data as any)
+    return await this.update(moduleId, payload as any)
   }
 
   /**
    * 兼容旧版API：删除模块（别名方法）
    * @deprecated 请使用 delete 方法
    */
-  async deleteModule(moduleId: number): Promise<void> {
+  async deleteModule(moduleId: number): Promise<import('@/types').ApiResponse<void>> {
     console.warn('deleteModule 方法已废弃，请使用 delete 方法');
     return this.delete(moduleId);
   }

@@ -111,6 +111,9 @@ export interface PaginationConfig {
   pageSize: number
   total: number
   pageSizes: number[]
+  // 兼容统一分页字段
+  page?: number
+  size?: number
 }
 
 // 选项接口

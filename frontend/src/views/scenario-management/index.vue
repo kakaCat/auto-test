@@ -75,20 +75,7 @@
           </template>
         </el-input>
         
-        <el-select
-          v-model="searchForm.type"
-          placeholder="执行类型"
-          clearable
-          style="width: 120px"
-          @change="handleSearch"
-        >
-          <el-option 
-            v-for="type in executionTypeOptions" 
-            :key="type.value" 
-            :label="type.label" 
-            :value="type.value" 
-          />
-        </el-select>
+        <!-- 已移除执行类型筛选，统一为无分页与简化筛选 -->
         
         <el-select
           v-model="searchForm.status"
@@ -104,6 +91,73 @@
             :value="status.value" 
           />
         </el-select>
+
+        <el-select
+          v-model="searchForm.tags"
+          multiple
+          collapse-tags
+          filterable
+          placeholder="选择标签"
+          style="width: 260px"
+          @change="handleSearch"
+        >
+          <el-option
+            v-for="opt in tagOptions"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          >
+            <div class="tag-option">
+              <el-tag
+                size="small"
+                :style="opt.color ? { backgroundColor: opt.color, color: '#fff', borderColor: opt.color } : {}"
+                type="info"
+              >
+                {{ opt.label }}
+              </el-tag>
+              <span v-if="opt.group" class="tag-group">{{ opt.group }}</span>
+            </div>
+          </el-option>
+        </el-select>
+
+        <el-select
+          v-model="searchForm.createdBy"
+          filterable
+          remote
+          reserve-keyword
+          placeholder="创建人"
+          style="width: 180px"
+          :remote-method="loadCreatorOptions"
+          :loading="creatorLoading"
+          @change="handleSearch"
+          @focus="loadCreatorOptions('')"
+          clearable
+        >
+          <el-option 
+            v-for="u in creatorOptions"
+            :key="u.value"
+            :label="u.label"
+            :value="u.value"
+          />
+        </el-select>
+
+        <el-date-picker
+          v-model="searchForm.createdTimeRange"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          unlink-panels
+          style="width: 320px"
+          @change="handleSearch"
+        />
+
+        <el-switch
+          v-model="searchForm.isParametersSaved"
+          active-text="已保存参数"
+          @change="handleSearch"
+        />
         
         <el-button type="primary" @click="handleSearch">
           <el-icon><Search /></el-icon>
@@ -138,10 +192,10 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="type" label="执行类型" width="100">
+        <el-table-column prop="scenario_type" label="场景类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="getTypeColor(row.type)" size="small">
-              {{ getTypeLabel(row.type) }}
+            <el-tag :type="getTypeColor(row.scenario_type)" size="small">
+              {{ getTypeLabel(row.scenario_type) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -206,18 +260,7 @@
         </el-table-column>
       </el-table>
       
-      <!-- 分页 -->
-      <div class="pagination-wrapper">
-        <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handlePageChange"
-        />
-      </div>
+      <!-- 无分页显示 -->
     </div>
     
     <!-- 批量操作 -->
@@ -246,10 +289,10 @@
           <el-input v-model="createForm.name" placeholder="请输入场景名称" />
         </el-form-item>
         
-        <el-form-item label="执行类型" prop="type">
-          <el-radio-group v-model="createForm.type">
+        <el-form-item label="场景类型" prop="scenario_type">
+          <el-radio-group v-model="createForm.scenario_type">
             <el-radio 
-              v-for="type in executionTypeOptions" 
+              v-for="type in scenarioTypeOptions" 
               :key="type.value" 
               :label="type.value"
             >
@@ -308,12 +351,11 @@
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import scenarioApi from '@/api/scenario'
+import scenarioApiAll, { categoryApi } from '@/api/scenario'
 import {
-  executionTypeOptions,
+  scenarioTypeOptions,
   scenarioStatusOptions,
   defaultSearchForm,
-  defaultPagination,
   defaultStats,
   defaultCreateForm,
   createFormRules,
@@ -336,6 +378,27 @@ const selectedScenarios = ref([])
 const tagInputVisible = ref(false)
 const tagInputValue = ref('')
 const tagInputRef = ref()
+const tagOptions = ref([])
+const creatorOptions = ref([])
+const creatorLoading = ref(false)
+let creatorSearchTimer
+
+// 兜底：从当前场景列表构造创建人选项（无用户系统时）
+const ensureCreatorOptionsFromList = () => {
+  const rows = Array.isArray(scenarioList.value) ? scenarioList.value : []
+  if (rows.length === 0) return
+  const map = new Map()
+  rows.forEach((row) => {
+    const label = row?.created_by || row?.createdBy || row?.creator?.name || row?.creator?.username || row?.owner || row?.author || ''
+    const value = row?.created_by || row?.createdBy || row?.creator?.id || row?.creator?.username || row?.owner || row?.author || ''
+    if (label && value && !map.has(value)) {
+      map.set(value, { label: String(label), value: String(value) })
+    }
+  })
+  if (map.size > 0) {
+    creatorOptions.value = Array.from(map.values())
+  }
+}
 
 // 统计数据
 const stats = ref({ ...defaultStats })
@@ -343,8 +406,7 @@ const stats = ref({ ...defaultStats })
 // 搜索表单
 const searchForm = reactive({ ...defaultSearchForm })
 
-// 分页
-const pagination = reactive({ ...defaultPagination })
+// 无分页
 
 // 创建表单
 const createForm = reactive({ ...defaultCreateForm })
@@ -482,7 +544,7 @@ const handleSelectionChange = (selection) => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.page = 1
+  // 无分页
   loadScenarioList()
 }
 
@@ -490,23 +552,16 @@ const handleSearch = () => {
 const resetSearch = () => {
   Object.assign(searchForm, {
     keyword: '',
-    type: '',
-    status: ''
+    status: '',
+    tags: [],
+    createdBy: '',
+    createdTimeRange: [],
+    isParametersSaved: false
   })
   handleSearch()
 }
 
-// 分页变更
-const handlePageChange = (page) => {
-  pagination.page = page
-  loadScenarioList()
-}
-
-const handleSizeChange = (size) => {
-  pagination.size = size
-  pagination.page = 1
-  loadScenarioList()
-}
+// 无分页：移除分页变更处理
 
 // 批量操作
 const batchExecute = () => {
@@ -553,17 +608,21 @@ const importScenario = () => {
 const loadScenarioList = async () => {
   loading.value = true
   try {
-    const response = await scenarioApi.getScenarioList({
-      keyword: searchForm.keyword,
-      type: searchForm.type,
-      status: searchForm.status,
-      page: pagination.currentPage,
-      pageSize: pagination.pageSize
+    const response = await scenarioApiAll.scenario.getList({
+      keyword: searchForm.keyword || undefined,
+      status: searchForm.status || undefined,
+      tags: (searchForm.tags && searchForm.tags.length > 0) ? searchForm.tags : undefined,
+      createdBy: searchForm.createdBy || undefined,
+      createdTimeRange: (searchForm.createdTimeRange && searchForm.createdTimeRange.length === 2) ? searchForm.createdTimeRange : undefined,
+      isParametersSaved: searchForm.isParametersSaved || undefined
     })
     
     if (response.success) {
       scenarioList.value = response.data || []
-      pagination.total = response.total || 0
+      // 前端兜底：如果后端没有创建人列表接口或未返回数据，则从场景列表去重生成创建人选项
+      if (!creatorOptions.value || creatorOptions.value.length === 0) {
+        ensureCreatorOptionsFromList()
+      }
     } else {
       ElMessage.error(response.message || '加载场景列表失败')
     }
@@ -578,7 +637,7 @@ const loadScenarioList = async () => {
 // 加载统计数据
 const loadStats = async () => {
   try {
-    const response = await scenarioApi.getStats()
+    const response = await scenarioApiAll.scenario.getStatistics()
     if (response.success) {
       stats.value = response.data
     }
@@ -590,7 +649,59 @@ const loadStats = async () => {
 onMounted(() => {
   loadStats()
   loadScenarioList()
+  loadTagOptions()
 })
+
+// 加载标签选项
+const loadTagOptions = async () => {
+  try {
+    const res = await categoryApi.getTags()
+    if (res && res.success) {
+      const list = Array.isArray(res.data) ? res.data : []
+      tagOptions.value = list.map((item) => {
+        const label = item?.label || item?.name || String(item)
+        const value = item?.value || item?.name || String(item)
+        const color = item?.color || ''
+        const group = item?.group || item?.category || ''
+        return { label, value, color, group }
+      })
+    }
+  } catch (e) {
+    console.warn('加载标签失败', e)
+  }
+}
+
+// 远程加载创建人选项
+const loadCreatorOptions = (query) => {
+  if (creatorSearchTimer) {
+    clearTimeout(creatorSearchTimer)
+  }
+  creatorLoading.value = true
+  creatorSearchTimer = setTimeout(async () => {
+    try {
+      const keyword = (query || '').trim()
+      const res = await scenarioApiAll.scenario.getCreators(keyword ? { keyword } : {})
+      if (res && res.success) {
+        const list = Array.isArray(res.data) ? res.data : []
+        creatorOptions.value = list.map((item) => {
+          const label = item?.label || item?.name || item?.username || item?.id || String(item)
+          const value = item?.value || item?.username || item?.id || item?.name || String(item)
+          return { label, value }
+        })
+        // 后端未提供或返回空数据时，启用前端兜底
+        if (!creatorOptions.value || creatorOptions.value.length === 0) {
+          ensureCreatorOptionsFromList()
+        }
+      }
+    } catch (e) {
+      console.warn('加载创建人失败', e)
+      // 请求失败也用前端兜底
+      ensureCreatorOptionsFromList()
+    } finally {
+      creatorLoading.value = false
+    }
+  }, 300)
+}
 </script>
 
 <style scoped>
@@ -714,11 +825,7 @@ onMounted(() => {
   color: var(--text-color-regular);
 }
 
-.pagination-wrapper {
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-}
+/* 无分页样式移除 */
 
 .batch-actions {
   position: fixed;
@@ -734,6 +841,17 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   z-index: 1000;
+}
+
+.tag-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-group {
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 
 /* 响应式设计 */

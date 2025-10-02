@@ -8,11 +8,12 @@ import systemApi from './system-api'
 import moduleApi from './module-api'
 import { apiManagementApi } from './api-management'
 import { pageApi } from './page-management'
+import { testApisApi } from './test-apis'
 import { scenarioApi, categoryApi } from './scenario'
 import { workflowApi } from './workflow'
 import requirementApi, { requirementApi as namedRequirementApi } from './requirement-management'
 
-export { systemApi, moduleApi, categoryApi, apiManagementApi, pageApi, scenarioApi, workflowApi }
+export { systemApi, moduleApi, categoryApi, apiManagementApi, pageApi, scenarioApi, workflowApi, testApisApi }
 export { namedRequirementApi as requirementApi }
 
 // 兼容旧版命名导出（unified*Api 别名），避免历史代码报错
@@ -24,7 +25,8 @@ export {
   pageApi as unifiedPageApi,
   scenarioApi as unifiedScenarioApi,
   workflowApi as unifiedWorkflowApi,
-  namedRequirementApi as unifiedRequirementApi
+  namedRequirementApi as unifiedRequirementApi,
+  testApisApi as unifiedTestApisApi
 }
 
 const unified = {
@@ -35,7 +37,8 @@ const unified = {
   scenario: scenarioApi,
   workflow: workflowApi,
   requirement: namedRequirementApi,
-  apiManagementApi
+  apiManagementApi,
+  testApisApi
 }
 
 export default unified

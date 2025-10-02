@@ -159,6 +159,51 @@ class SystemConverter {
 - **安全规范**：数据安全、权限控制
 - **版本控制规范**：提交规范、分支管理
 
+### 参数归一化与返回一致性
+
+为保证前后端协作稳定性与一致性，API 层在代理/转换层实施统一的入参归一化与返回结构约束。
+
+#### 归一化策略
+- 字段风格统一：`camelCase` → `snake_case` 在 Converter/代理层完成映射
+- 路由与查询参数：遵循相同策略；分页/筛选等公共参数统一映射
+- 页面/组件不重复映射：上层使用 `camelCase`，由 API 层承担格式转换职责
+
+#### 覆盖范围
+- 主域 API：`systemApi`、`moduleApi`、`apiManagementApi` 等均执行归一化
+- 统一在 `src/api/converters/` 维护领域转换器，避免分散至视图或 Service 层
+
+#### 统一返回结构
+- 所有 API 方法返回 `ApiResponse<T>`，采用结果分支处理，不抛异常
+- 返回结构示例：
+  - 成功：`{ success: true, data: T, code?: string }`
+  - 失败：`{ success: false, error: { code: string, message: string }, data?: undefined }`
+
+#### 示例
+```ts
+// 页面使用 camelCase
+await moduleApi.create({ systemId: 'sys-1', moduleName: '新模块' })
+
+// API 层 Converter 负责映射到 snake_case
+// create => POST /modules  payload: { system_id, module_name }
+
+// 统一返回结构
+const res = await systemApi.getList({ page: 1, pageSize: 20 })
+if (res.success) {
+  // res.data: SystemEntity[]
+} else {
+  console.warn(res.error?.message)
+}
+```
+
+#### 注意事项
+- 归一化只在 API 层进行；不要在组件、Store、Service 重复做大小写转换
+- 新增接口必须提供对应 Converter；类型与转换保持同步更新
+- 服务端新增字段需在 Converter 与类型入口中同步维护
+
+> 设计文档参考：`docs/design/frontend-proxy-normalization-design.md`
+
+> 命名与类型对齐规范：请参见 `../standards/api-naming-type-alignment.md`，与本章节配套执行。
+
 ### 性能考虑
 - 懒加载API模块
 - 请求缓存机制

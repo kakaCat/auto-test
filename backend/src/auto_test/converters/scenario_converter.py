@@ -20,13 +20,21 @@ class ScenarioConverter:
     
     @staticmethod
     def to_scenario_stats(data: Dict[str, Any]) -> Dict[str, Any]:
-        """转换为场景统计数据"""
+        """转换为场景统计数据（对齐前端期望的键）"""
+        # 对齐前端 keys: total, active, success, failed
+        total = data.get('total', data.get('total_scenarios', 0))
+        active = data.get('active', data.get('active_scenarios', 0))
+        success = data.get('success', data.get('completed_scenarios', 0))
+        failed = data.get('failed', data.get('failed_scenarios', 0))
         return {
-            'total_scenarios': data.get('total_scenarios', 0),
-            'active_scenarios': data.get('active_scenarios', 0),
-            'completed_scenarios': data.get('completed_scenarios', 0),
-            'failed_scenarios': data.get('failed_scenarios', 0),
-            'success_rate': ScenarioConverter._calculate_success_rate(data),
+            'total': total,
+            'active': active,
+            'success': success,
+            'failed': failed,
+            'success_rate': ScenarioConverter._calculate_success_rate({
+                'total_scenarios': total,
+                'completed_scenarios': success
+            }),
             'timestamp': data.get('timestamp', datetime.now().isoformat())
         }
     
@@ -40,12 +48,12 @@ class ScenarioConverter:
     
     @staticmethod
     def to_default_scenario_stats() -> Dict[str, Any]:
-        """默认场景统计数据"""
+        """默认场景统计数据（对齐前端期望的键）"""
         return {
-            'total_scenarios': 0,
-            'active_scenarios': 0,
-            'completed_scenarios': 0,
-            'failed_scenarios': 0,
+            'total': 0,
+            'active': 0,
+            'success': 0,
+            'failed': 0,
             'success_rate': 0.0,
             'timestamp': datetime.now().isoformat()
         }
@@ -71,6 +79,14 @@ class ScenarioConverter:
             'name': scenario.get('name', ''),
             'description': scenario.get('description', ''),
             'status': scenario.get('status', 'unknown'),
+            'scenario_type': scenario.get('scenario_type', 'normal'),
+            'apiCount': scenario.get('apiCount', scenario.get('api_count', 0)),
+            'executionCount': scenario.get('executionCount', scenario.get('execution_count', 0)),
+            'successRate': scenario.get('successRate', scenario.get('success_rate', 0)),
+            'lastExecutionTime': scenario.get('lastExecutionTime', scenario.get('last_execution_time')),
+            'version': scenario.get('version', '1.0.0'),
+            'tags': scenario.get('tags', []),
+            'is_parameters_saved': scenario.get('is_parameters_saved', False),
             'created_at': scenario.get('created_at'),
             'updated_at': scenario.get('updated_at')
         }

@@ -86,6 +86,8 @@ export const tableConfig = {
   columns: tableColumns,
   pagination: {
     pageSize: 20,
+    // 兼容统一分页字段
+    size: 20,
     pageSizes: PAGE_SIZE_OPTIONS,
     layout: 'total, sizes, prev, pager, next, jumper'
   },

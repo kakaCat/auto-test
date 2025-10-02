@@ -1,14 +1,5 @@
 <template>
-  <el-dialog
-    :model-value="modelValue"
-    :title="title"
-    width="80%"
-    top="5vh"
-    :close-on-click-modal="false"
-    :destroy-on-close="true"
-    @update:modelValue="handleClose"
-    class="api-form-dialog"
-  >
+  <el-dialog :model-value="modelValue" :title="title" width="80%" top="5vh" :close-on-click-modal="false" :destroy-on-close="true" @update:modelValue="handleClose" class="api-form-dialog">
     <div class="dialog-content">
       <!-- 导航菜单 -->
       <div class="navigation-menu">
@@ -23,13 +14,7 @@
       </div>
 
       <!-- 表单内容 -->
-      <el-form
-        ref="formRef"
-        :model="localFormData"
-        :rules="rules"
-        label-position="top"
-        class="api-form-content"
-      >
+      <el-form ref="formRef" :model="localFormData" :rules="rules" label-position="top" class="api-form-content">
         <el-collapse :model-value="activeCollapse" @change="handleCollapseChange">
           <!-- 基本信息 -->
           <el-collapse-item name="basic" ref="basicSection">
@@ -43,225 +28,148 @@
            </template>
            
            <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="API名称" prop="name">
-            <el-input
-              v-model="localFormData.name"
-              placeholder="请输入API名称"
-              clearable
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="请求方法" prop="method">
-            <el-select
-              v-model="localFormData.method"
-              placeholder="选择请求方法"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="method in httpMethods"
-                :key="method.value"
-                :label="method.label"
-                :value="method.value"
-              >
-                <el-tag :type="method.type" size="small">{{ method.label }}</el-tag>
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+            <el-col :span="12">
+              <el-form-item label="API名称" prop="name">
+                <el-input v-model="localFormData.name" placeholder="请输入API名称" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="请求方法" prop="method">
+                <el-select v-model="localFormData.method" placeholder="选择请求方法" style="width: 100%">
+                  <el-option v-for="method in httpMethods" :key="method.value" :label="method.label" :value="method.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-      <el-form-item label="URL路径" prop="url">
-        <el-input
-          v-model="localFormData.url"
-          placeholder="请输入API路径，如：/api/users 或完整URL"
-          clearable
-        >
-          <template #prepend>
-            <span>{{ baseUrl }}</span>
-          </template>
-          <template #append>
-            <el-button
-              :disabled="localFormData.method !== 'GET'"
-              @click="handleParseQueryClick"
-              title="从URL中解析GET参数并填充表格"
-            >
-              解析GET参数
-            </el-button>
-          </template>
-        </el-input>
-        <div class="url-hint" v-if="localFormData.method === 'GET'">
-          <el-text type="info" size="small">
-            示例：/api/interfaces?system_id=10&enabled_only=false，点击“解析GET参数”自动生成参数表
-          </el-text>
-        </div>
-      </el-form-item>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="所属系统" prop="system_id">
-            <el-select
-              v-model="localFormData.system_id"
-              placeholder="选择所属系统"
-              style="width: 100%"
-              @change="handleSystemChange"
-            >
-              <el-option
-                v-for="system in systemList"
-                :key="system.id"
-                :label="system.name"
-                :value="system.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="所属模块" prop="module_id">
-            <el-select
-              v-model="localFormData.module_id"
-              placeholder="选择所属模块"
-              style="width: 100%"
-              :disabled="!localFormData.system_id"
-            >
-              <el-option
-                v-for="module in availableModules"
-                :key="module.id"
-                :label="module.name"
-                :value="module.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-form-item label="API描述" prop="description">
-        <el-input
-          v-model="localFormData.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入API功能描述"
-          maxlength="500"
-          show-word-limit
-        />
-      </el-form-item>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="状态">
-            <el-switch
-              v-model="localFormData.enabled"
-              active-text="启用"
-              inactive-text="禁用"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="需要登录">
-            <el-switch
-              v-model="localFormData.requireAuth"
-              active-text="需要认证"
-              inactive-text="公开访问"
-            />
-            <div class="auth-hint">
-              <el-text size="small" type="info">
-                {{ localFormData.requireAuth ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
+          <el-form-item label="URL路径" prop="url">
+            <el-input v-model="localFormData.url" placeholder="请输入API路径，如：/api/users 或完整URL" clearable>
+              <template #prepend>
+                <span>{{ baseUrl }}</span>
+              </template>
+              <template #append>
+                <el-button :disabled="localFormData.method !== 'GET'" @click="handleParseQueryClick" title="从URL中解析GET参数并填充表格">解析GET参数</el-button>
+              </template>
+            </el-input>
+            <div class="url-hint" v-if="localFormData.method === 'GET'">
+              <el-text type="info" size="small">
+                示例：/api/api-interfaces/v1/list?system_id=10&enabled_only=false，点击“解析GET参数”自动生成参数表
               </el-text>
             </div>
           </el-form-item>
-        </el-col>
-       </el-row>
-     </el-collapse-item>
 
-     <!-- 请求参数面板 -->
-     <el-collapse-item name="params" ref="paramsSection">
-       <template #title>
-         <div class="panel-title">
-           <el-icon><Setting /></el-icon>
-           <span>请求参数</span>
-           <el-tag v-if="localFormData.parameters.length > 0" type="success" size="small">
-             {{ localFormData.parameters.length }} 个参数
-           </el-tag>
-           <el-tag v-else type="info" size="small">暂无参数</el-tag>
-         </div>
-       </template>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="所属系统" prop="system_id">
+                <el-select v-model="localFormData.system_id" placeholder="选择所属系统" style="width: 100%" @change="handleSystemChange">
+                  <el-option v-for="system in systemList" :key="system.id" :label="system.name" :value="system.id" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="所属模块" prop="module_id">
+                <el-select v-model="localFormData.module_id" placeholder="选择所属模块" style="width: 100%" :disabled="!localFormData.system_id">
+                  <el-option v-for="module in availableModules" :key="module.id" :label="module.name" :value="module.id" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-       <!-- 请求参数配置 (增强版) -->
-      <el-form-item label="请求参数">
-        <ParameterConfig
-          v-model="localFormData.parameters"
-          @change="handleParametersChange"
-        />
-       </el-form-item>
-     </el-collapse-item>
+          <el-form-item label="API描述" prop="description">
+            <el-input v-model="localFormData.description" type="textarea" :rows="3" placeholder="请输入API功能描述" maxlength="500" show-word-limit />
+          </el-form-item>
 
-     <!-- 响应配置面板 -->
-     <el-collapse-item name="response" ref="responseSection">
-       <template #title>
-         <div class="panel-title">
-           <el-icon><DataAnalysis /></el-icon>
-           <span>响应配置</span>
-           <el-tag v-if="localFormData.response_parameters && localFormData.response_parameters.length > 0" type="success" size="small">{{ localFormData.response_parameters.length }} 个字段</el-tag>
-           <el-tag v-else type="info" size="small">未配置</el-tag>
-         </div>
-       </template>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="状态">
+                <el-switch v-model="localFormData.enabled" active-text="启用" inactive-text="禁用" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="需要登录">
+                <el-switch v-model="localFormData.requireAuth" active-text="需要认证" inactive-text="公开访问" />
+                <div class="auth-hint">
+                  <el-text size="small" type="info">
+                    {{ localFormData.requireAuth ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
+                  </el-text>
+                </div>
+              </el-form-item>
+            </el-col>
+           </el-row>
+         </el-collapse-item>
 
-       <!-- 响应配置 (增强版) -->
-      <el-form-item label="响应配置">
-        <ParamsEditor
-          v-model="localFormData.response_parameters"
-        />
-      </el-form-item>
-    </el-collapse-item>
+         <!-- 请求参数面板 -->
+         <el-collapse-item name="params" ref="paramsSection">
+           <template #title>
+             <div class="panel-title">
+               <el-icon><Setting /></el-icon>
+               <span>请求参数</span>
+               <el-tag v-if="localFormData.parameters.length > 0" type="success" size="small">
+                 {{ localFormData.parameters.length }} 个参数
+               </el-tag>
+               <el-tag v-else type="info" size="small">暂无参数</el-tag>
+             </div>
+           </template>
 
-    <!-- 标签管理面板 -->
-    <el-collapse-item name="tags" ref="tagsSection">
-      <template #title>
-        <div class="panel-title">
-          <el-icon><PriceTag /></el-icon>
-          <span>标签管理</span>
-          <el-tag v-if="localFormData.tags.length > 0" type="success" size="small">
-            {{ localFormData.tags.length }} 个标签
-          </el-tag>
-          <el-tag v-else type="info" size="small">无标签</el-tag>
-        </div>
-      </template>
+           <!-- 请求参数配置 (增强版) -->
+          <el-form-item label="请求参数">
+            <ParameterConfig v-model="localFormData.parameters" @change="handleParametersChange" />
+          </el-form-item>
+         </el-collapse-item>
 
-      <!-- 标签 -->
-      <el-form-item label="标签">
-        <el-select
-          v-model="localFormData.tags"
-          multiple
-          filterable
-          allow-create
-          placeholder="选择或创建标签"
-          style="width: 100%"
-        >
-          <el-option
-            v-for="tag in predefinedTags"
-            :key="tag"
-            :label="tag"
-            :value="tag"
-          />
-        </el-select>
-      </el-form-item>
-    </el-collapse-item>
+         <!-- 响应配置面板 -->
+         <el-collapse-item name="response" ref="responseSection">
+           <template #title>
+             <div class="panel-title">
+               <el-icon><DataAnalysis /></el-icon>
+               <span>响应配置</span>
+               <el-tag v-if="localFormData.response_parameters && localFormData.response_parameters.length > 0" type="success" size="small">{{ localFormData.response_parameters.length }} 个字段</el-tag>
+               <el-tag v-else type="info" size="small">未配置</el-tag>
+             </div>
+           </template>
 
-    
+           <!-- 响应配置 (增强版) -->
+          <el-form-item label="响应配置">
+            <ParamsEditor v-model="localFormData.response_parameters" />
+          </el-form-item>
+        </el-collapse-item>
 
-  </el-collapse>
-</el-form>
-</div>
+        <!-- 标签管理面板 -->
+        <el-collapse-item name="tags" ref="tagsSection">
+          <template #title>
+            <div class="panel-title">
+              <el-icon><PriceTag /></el-icon>
+              <span>标签管理</span>
+              <el-tag v-if="localFormData.tags.length > 0" type="success" size="small">
+                {{ localFormData.tags.length }} 个标签
+              </el-tag>
+              <el-tag v-else type="info" size="small">无标签</el-tag>
+            </div>
+          </template>
 
-<template #footer>
-  <div class="dialog-footer">
-    <el-button @click="handleClose">取消</el-button>
-    <el-button type="primary" @click="handleSubmit" :loading="saving">
-      {{ saving ? '保存中...' : '保存' }}
-    </el-button>
-  </div>
-</template>
-</el-dialog>
+          <!-- 标签 -->
+          <el-form-item label="标签">
+            <el-select v-model="localFormData.tags" multiple filterable allow-create placeholder="选择或创建标签" style="width: 100%">
+              <el-option v-for="tag in predefinedTags" :key="tag" :label="tag" :value="tag" />
+            </el-select>
+          </el-form-item>
+        </el-collapse-item>
+
+        
+
+      </el-collapse>
+    </el-form>
+    </div>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="handleClose">取消</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="saving">
+          {{ saving ? '保存中...' : '保存' }}
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -965,6 +873,11 @@ onMounted(() => {
   background: #ecfdf5;
   border-radius: 6px;
   border-left: 3px solid #10b981;
+}
+
+.test-hint .el-text {
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .test-hint .el-text {

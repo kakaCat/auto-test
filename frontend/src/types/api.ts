@@ -242,11 +242,13 @@ export interface ScenarioData {
   id: string
   name: string
   description?: string
-  type?: string
+  scenario_type?: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   version?: string
   config?: Record<string, any>
   variables?: Record<string, any>
-  apis?: Array<Record<string, any>>
+  tags?: string[]
+  is_parameters_saved?: boolean
+  saved_parameters_id?: string
   status?: string
   created_at?: string
   updated_at?: string
@@ -255,19 +257,24 @@ export interface ScenarioData {
 export interface ScenarioCreateRequest {
   name: string
   description?: string
-  type?: string
+  scenario_type?: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   version?: string
   config?: Record<string, any>
   variables?: Record<string, any>
-  apis?: Array<Record<string, any>>
+  tags?: string[]
+  api_id?: string
 }
 
 export interface ScenarioUpdateRequest extends ScenarioCreateRequest {}
 
-export interface ScenarioListParams extends PaginationParams {
+export interface ScenarioListParams {
+  api_id: string
   keyword?: string
-  type?: string
   status?: string
+  tags?: string[]
+  created_by?: string
+  created_time_range?: [string, string]
+  is_parameters_saved?: boolean
 }
 
 export interface ScenarioExecuteRequest {

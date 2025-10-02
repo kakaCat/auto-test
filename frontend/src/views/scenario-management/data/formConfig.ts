@@ -11,16 +11,15 @@ export interface SelectOption {
 // 搜索表单接口定义
 export interface SearchForm {
   keyword: string
-  type: string
   status: string
+  tags: string[]
+  createdBy: string
+  createdTimeRange: string[]
+  isParametersSaved: boolean
 }
 
 // 分页配置接口定义
-export interface PaginationConfig {
-  page: number
-  size: number
-  total: number
-}
+// 已移除分页配置，按方案采用无分页列表
 
 // 统计数据接口定义
 export interface StatsData {
@@ -33,7 +32,7 @@ export interface StatsData {
 // 创建表单接口定义
 export interface CreateForm {
   name: string
-  type: string
+  scenario_type: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   description: string
   tags: string[]
 }
@@ -50,10 +49,12 @@ export interface FormRules {
 }
 
 // 执行类型选项
-export const executionTypeOptions: SelectOption[] = [
-  { label: '顺序执行', value: 'sequential' },
-  { label: '并行执行', value: 'parallel' },
-  { label: '混合执行', value: 'mixed' }
+export const scenarioTypeOptions: SelectOption[] = [
+  { label: '常规', value: 'normal' },
+  { label: '异常', value: 'exception' },
+  { label: '边界', value: 'boundary' },
+  { label: '安全', value: 'security' },
+  { label: '性能', value: 'performance' }
 ]
 
 // 场景状态选项
@@ -66,16 +67,15 @@ export const scenarioStatusOptions: SelectOption[] = [
 // 搜索表单默认数据
 export const defaultSearchForm: SearchForm = {
   keyword: '',
-  type: '',
-  status: ''
+  status: '',
+  tags: [],
+  createdBy: '',
+  createdTimeRange: [],
+  isParametersSaved: false
 }
 
 // 分页默认配置
-export const defaultPagination: PaginationConfig = {
-  page: 1,
-  size: 20,
-  total: 0
-}
+// 无分页：删除默认分页配置
 
 // 统计数据默认值
 export const defaultStats: StatsData = {
@@ -88,7 +88,7 @@ export const defaultStats: StatsData = {
 // 创建表单默认数据
 export const defaultCreateForm: CreateForm = {
   name: '',
-  type: 'sequential',
+  scenario_type: 'normal',
   description: '',
   tags: []
 }
@@ -98,7 +98,7 @@ export const createFormRules: FormRules = {
   name: [
     { required: true, message: '请输入场景名称', trigger: 'blur' }
   ],
-  type: [
-    { required: true, message: '请选择执行类型', trigger: 'change' }
+  scenario_type: [
+    { required: true, message: '请选择场景类型', trigger: 'change' }
   ]
 }

@@ -12,7 +12,7 @@ export interface ScenarioItem {
   id: number
   name: string
   description: string
-  type: 'sequential' | 'parallel' | 'mixed'
+  scenario_type: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   apiCount: number
   status: 'active' | 'inactive' | 'draft'
   executionCount: number
@@ -48,23 +48,27 @@ export interface TableColumn {
 }
 
 // 获取执行类型标签
-export const getTypeLabel = (type: string): string => {
+export const getTypeLabel = (scenarioType: string): string => {
   const labelMap: Record<string, string> = {
-    sequential: '顺序执行',
-    parallel: '并行执行',
-    mixed: '混合执行'
+    normal: '常规',
+    exception: '异常',
+    boundary: '边界',
+    security: '安全',
+    performance: '性能'
   }
-  return labelMap[type] || type
+  return labelMap[scenarioType] || scenarioType
 }
 
 // 获取执行类型颜色
-export const getTypeColor = (type: string): string => {
+export const getTypeColor = (scenarioType: string): string => {
   const colorMap: Record<string, string> = {
-    sequential: 'primary',
-    parallel: 'success',
-    mixed: 'warning'
+    normal: 'primary',
+    exception: 'danger',
+    boundary: 'warning',
+    security: 'info',
+    performance: 'success'
   }
-  return colorMap[type] || 'info'
+  return colorMap[scenarioType] || 'info'
 }
 
 // 获取状态标签
@@ -119,14 +123,14 @@ export const scenarioTableColumns: TableColumn[] = [
     showOverflowTooltip: true
   },
   {
-    prop: 'type',
-    label: '执行类型',
+    prop: 'scenario_type',
+    label: '场景类型',
     width: 120,
     template: ({ row }: ColumnTemplateParams) => {
       return h(ElTag, { 
-        type: getTypeColor(row.type) as any, 
+        type: getTypeColor(row.scenario_type) as any, 
         size: 'small' 
-      }, () => getTypeLabel(row.type))
+      }, () => getTypeLabel(row.scenario_type))
     }
   },
   {

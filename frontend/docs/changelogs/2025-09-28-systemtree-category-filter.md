@@ -6,9 +6,9 @@
 - 页面管理仅展示前端应用（`frontend`）类别系统与模块。
 
 ## 变更内容
-- 更新 `docs/frontend/user-guides/04-api-management.md`：在“系统和模块树形结构”新增“仅展示 backend 类别”说明。
-- 更新 `docs/frontend/user-guides/05-page-management.md`：在“系统和模块树形结构 (SystemTree组件)”新增“仅展示 frontend 类别”说明。
-- 更新 `docs/frontend/ARCHITECTURE_GUIDE.md`：在两处 SystemTree 节点下分别补充 backend/frontend 类别过滤说明。
+- 更新 `docs/frontend/user-manuals/04-api-management.md`：在“系统和模块树形结构”新增“仅展示 backend 类别”说明。
+- 更新 `docs/frontend/user-manuals/05-page-management.md`：在“系统和模块树形结构 (SystemTree组件)”新增“仅展示 frontend 类别”说明。
+ - 更新 `docs/frontend/guides/ARCHITECTURE_GUIDE.md`：在两处 SystemTree 节点下分别补充 backend/frontend 类别过滤说明。
 - 更新 `docs/frontend/DOCUMENTATION_STANDARDS.md`：新增“小节：类别过滤原则（SystemTree）”。
 
 ## 影响范围
@@ -16,9 +16,9 @@
 - 不涉及 UI 视觉和交互改动；仅文档说明更新。
 
 ## 关联文件
-- `docs/frontend/user-guides/04-api-management.md`
-- `docs/frontend/user-guides/05-page-management.md`
-- `docs/frontend/ARCHITECTURE_GUIDE.md`
+- `docs/frontend/user-manuals/04-api-management.md`
+- `docs/frontend/user-manuals/05-page-management.md`
+- `docs/frontend/guides/ARCHITECTURE_GUIDE.md`
 - `docs/frontend/DOCUMENTATION_STANDARDS.md`
 
 ## 验证建议

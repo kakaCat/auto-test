@@ -5,6 +5,7 @@
 
 import { apiHandler } from '@/utils/apiHandler'
 import type { ApiResponse } from '@/types'
+import { request } from '@/utils/request'
 
 // 参数与数据类型
 interface RequirementListParams { [key: string]: unknown }
@@ -13,12 +14,44 @@ interface RequirementData { [key: string]: unknown }
 // 需求管理API
 export const requirementApi = {
   /**
+   * 内部工具：参数键名归一化（支持常见 camelCase→snake_case）
+   */
+  _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p = { ...params }
+    if (p.pageSize !== undefined) {
+      p.page_size = p.pageSize
+      delete p.pageSize
+    }
+    if (p.createdTime !== undefined) {
+      p.created_time = p.createdTime
+      delete p.createdTime
+    }
+    if (Array.isArray(p.createdTimeRange)) {
+      p.created_time_range = p.createdTimeRange.join(',')
+      delete p.createdTimeRange
+    }
+    if (p.updatedTime !== undefined) {
+      p.updated_time = p.updatedTime
+      delete p.updatedTime
+    }
+    if (Array.isArray(p.updatedTimeRange)) {
+      p.updated_time_range = p.updatedTimeRange.join(',')
+      delete p.updatedTimeRange
+    }
+    if (p.enabledOnly !== undefined) {
+      p.enabled_only = p.enabledOnly
+      delete p.enabledOnly
+    }
+    return p
+  },
+  /**
    * 获取需求列表
    * @param {Object} params - 查询参数
    * @returns {Promise} 需求列表
    */
   getRequirements(params: RequirementListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/requirements/v1/', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/requirements/v1/', normalized)
   },
 
   /**
@@ -73,7 +106,8 @@ export const requirementApi = {
    * @returns {Promise} 树形数据
    */
   getRequirementTree(params: RequirementListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/requirements/v1/tree', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/requirements/v1/tree', normalized)
   },
 
   /**
@@ -167,7 +201,8 @@ export const requirementApi = {
    * @returns {Promise} 覆盖率分析结果
    */
   getCoverageAnalysis(params: RequirementListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/requirements/v1/coverage-analysis', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return request.get('/api/requirements/v1/coverage-analysis', normalized)
   },
 
   /**
@@ -176,7 +211,8 @@ export const requirementApi = {
    * @returns {Promise} 报告数据
    */
   generateReport(params: RequirementListParams = {}): Promise<ApiResponse> {
-    return request.post('/api/requirements/v1/reports', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return request.post('/api/requirements/v1/reports', normalized)
   },
 
   /**
@@ -199,7 +235,8 @@ export const requirementApi = {
    */
   exportRequirements(params: RequirementListParams = {}): Promise<unknown> {
     // 注意：此处期望返回文件流（blob），因此类型为 unknown
-    return request.get('/api/requirements/v1/export', params, { responseType: 'blob' })
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return request.get('/api/requirements/v1/export', normalized, { responseType: 'blob' })
   },
 
   /**

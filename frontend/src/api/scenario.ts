@@ -5,13 +5,15 @@ import { ApiResponse } from '@/types/api'
  * 场景管理API接口
  */
 
-// 查询参数接口定义
+// 查询参数接口定义（对齐无分页与API上下文）
 export interface ScenarioListParams {
+  api_id: string
   keyword?: string
   status?: string
-  category?: string
-  page?: number
-  size?: number
+  tags?: string[]
+  created_by?: string
+  created_time_range?: [string, string]
+  is_parameters_saved?: boolean
 }
 
 export interface ExecutionHistoryParams {
@@ -30,10 +32,14 @@ export interface TagListParams {
 export interface ScenarioData {
   name: string
   description: string
-  category: string
+  scenario_type?: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   tags?: string[]
   steps?: StepData[]
   config?: Record<string, any>
+  variables?: Record<string, any>
+  is_parameters_saved?: boolean
+  saved_parameters_id?: string
+  status?: string
 }
 
 export interface StepData {
@@ -61,7 +67,11 @@ export interface ReorderData {
 export interface ScenarioCreateData {
   name: string
   description: string
-  category?: string
+  scenario_type?: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
+  tags?: string[]
+  variables?: Record<string, any>
+  config?: Record<string, any>
+  api_id?: string
 }
 
 export interface ExportData {
@@ -78,12 +88,55 @@ export interface TagData {
 // 场景管理相关接口
 export const scenarioApi = {
   /**
+   * 参数归一化：支持 camelCase → snake_case，并处理数组/空值
+   */
+  _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p: Record<string, any> = { ...params }
+
+    // camelCase → snake_case
+    if (p.createdBy !== undefined) {
+      p.created_by = p.createdBy
+      delete p.createdBy
+    }
+    if (p.createdTimeRange !== undefined) {
+      const arr = Array.isArray(p.createdTimeRange) ? p.createdTimeRange : []
+      if (arr.length === 2) {
+        p.created_time_range = [arr[0], arr[1]]
+      }
+      delete p.createdTimeRange
+    }
+    if (p.isParametersSaved !== undefined) {
+      p.is_parameters_saved = p.isParametersSaved
+      delete p.isParametersSaved
+    }
+
+    // tags 数组转逗号字符串
+    if (p.tags !== undefined) {
+      if (Array.isArray(p.tags)) {
+        p.tags = p.tags.filter((t: any) => !!t).join(',')
+      }
+    }
+
+    // 去除空字符串和空数组
+    Object.keys(p).forEach((key) => {
+      const val = p[key]
+      if (val === '' || (Array.isArray(val) && val.length === 0)) {
+        delete p[key]
+      }
+    })
+
+    // 保留 api_id，按方案要求为必填
+
+    return p
+  },
+  /**
    * 获取场景列表
    * @param params - 查询参数
    * @returns 场景列表数据
    */
-  getList(params: ScenarioListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/scenarios/v1/', params)
+  getList(params: ScenarioListParams): Promise<ApiResponse> {
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return request.get('/api/scenarios/v1/', normalized)
   },
 
   /**
@@ -100,7 +153,7 @@ export const scenarioApi = {
    * @param data - 场景数据
    * @returns 创建结果
    */
-  create(data: ScenarioData): Promise<ApiResponse> {
+  create(data: ScenarioCreateData): Promise<ApiResponse> {
     return request.post('/api/scenarios/v1/', data)
   },
 
@@ -188,6 +241,15 @@ export const scenarioApi = {
    */
   getStatistics(): Promise<ApiResponse> {
     return request.get('/api/scenarios/v1/stats')
+  }
+,
+  /**
+   * 获取场景创建人列表
+   * @param params - 查询参数，如 keyword
+   * @returns 创建人选项列表
+   */
+  getCreators(params: Record<string, any> = {}): Promise<ApiResponse> {
+    return request.get('/api/scenarios/v1/creators', params)
   }
 }
 

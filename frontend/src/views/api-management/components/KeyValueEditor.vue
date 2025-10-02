@@ -26,12 +26,7 @@
     <div v-if="showPresets && presets && presets.length > 0" class="presets-panel">
       <div class="presets-title">常用预设</div>
       <div class="presets-list">
-        <div
-          v-for="preset in presets"
-          :key="preset.key"
-          class="preset-item"
-          @click="addPreset(preset)"
-        >
+        <div class="preset-item" v-for="preset in presets" :key="preset.key" @click="addPreset(preset)">
           <span class="preset-key">{{ preset.key }}</span>
           <span class="preset-value">{{ preset.value }}</span>
         </div>
@@ -40,45 +35,28 @@
 
     <!-- 键值对列表 -->
     <div class="editor-body">
-      <draggable
-        v-model="items"
-        item-key="id"
-        handle=".drag-handle"
-        @end="handleDragEnd"
-      >
+      <draggable v-model="items" item-key="id" handle=".drag-handle" @end="handleDragEnd">
         <template #item="{ element: item, index }">
           <div class="kv-row">
             <div class="row-content">
               <div class="cell key-cell">
                 <el-icon class="drag-handle"><Rank /></el-icon>
-                <el-input
-                  v-model="item.key"
-                  :placeholder="placeholderKey || '键'"
-                  size="small"
-                  @blur="validateKey(item, index)"
-                />
+                <el-input v-model="item.key" :placeholder="placeholderKey || '键'" size="small" @blur="validateKey(item, index)" />
               </div>
               
               <div class="cell value-cell">
-                <el-input
-                  v-if="!supportFile || item.type !== 'file'"
-                  v-model="item.value"
-                  :placeholder="placeholderValue || '值'"
-                  size="small"
-                  :type="item.type === 'password' ? 'password' : 'text'"
-                />
-                <el-upload
-                  v-else
-                  :auto-upload="false"
-                  :show-file-list="false"
-                  @change="handleFileChange($event, item)"
-                >
-                  <el-button size="small">
-                    <el-icon><Upload /></el-icon>
-                    选择文件
-                  </el-button>
-                  <span v-if="item.file" class="file-name">{{ item.file.name }}</span>
-                </el-upload>
+                <template v-if="!supportFile || item.type !== 'file'">
+                  <el-input v-model="item.value" :placeholder="placeholderValue || '值'" size="small" :type="item.type === 'password' ? 'password' : 'text'" />
+                </template>
+                <template v-else>
+                  <el-upload :auto-upload="false" :show-file-list="false" @change="handleFileChange($event, item)">
+                    <el-button size="small">
+                      <el-icon><Upload /></el-icon>
+                      选择文件
+                    </el-button>
+                    <span v-if="item.file" class="file-name">{{ item.file.name }}</span>
+                  </el-upload>
+                </template>
               </div>
               
               <div class="cell actions-cell">
@@ -89,37 +67,22 @@
                     </el-button>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item command="text" :class="{ active: item.type === 'text' }">
-                          文本
-                        </el-dropdown-item>
-                        <el-dropdown-item command="password" :class="{ active: item.type === 'password' }">
-                          密码
-                        </el-dropdown-item>
-                        <el-dropdown-item command="file" :class="{ active: item.type === 'file' }">
-                          文件
-                        </el-dropdown-item>
+                        <el-dropdown-item command="text" :class="{ active: item.type === 'text' }">文本</el-dropdown-item>
+                        <el-dropdown-item command="password" :class="{ active: item.type === 'password' }">密码</el-dropdown-item>
+                        <el-dropdown-item command="file" :class="{ active: item.type === 'file' }">文件</el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
                   
-                  <el-button @click="duplicateRow(index)">
-                    <el-icon><CopyDocument /></el-icon>
-                  </el-button>
-                  
-                  <el-button type="danger" @click="removeRow(index)">
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
+                  <el-button @click="duplicateRow(index)"><el-icon><CopyDocument /></el-icon></el-button>
+                  <el-button type="danger" @click="removeRow(index)"><el-icon><Delete /></el-icon></el-button>
                 </el-button-group>
               </div>
             </div>
             
             <!-- 描述行 -->
             <div v-if="showDescription" class="description-row">
-              <el-input
-                v-model="item.description"
-                placeholder="描述（可选）"
-                size="small"
-              />
+              <el-input v-model="item.description" placeholder="描述（可选）" size="small" />
             </div>
           </div>
         </template>

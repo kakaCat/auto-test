@@ -1,153 +1,43 @@
-# 前端文档中心
+# 前端文档索引（docs/frontend）
 
-欢迎使用AI自动化测试系统前端文档中心！本文档专为**用户和AI助手**设计，提供完整的系统使用指南和AI工作提示词。
+本页是前端文档入口与导航，面向前端开发、测试与协作伙伴。目标是在 1 分钟内完成“从任务到对应指南/方案”的定位，并保持与 `docs/` 总纲领一致。
 
-## 📚 文档导航
+## 🚀 快速入口
+- 架构指南 → `./guides/ARCHITECTURE_GUIDE.md`
+- 开发指南 → `./guides/DEVELOPMENT_GUIDE.md`
+- 用户手册索引 → `./user-manuals/README.md`
+- 技术方案与计划 → `./guides/README.md`
+- 故障排查 → `./guides/TROUBLESHOOTING_GUIDE.md`
+- 标准规范 → `../standards/README.md`（通用）与 `./standards/README.md`（前端专项）
+- UI页面文档结构规范 → `./standards/DOCUMENTATION_STANDARDS.md`
 
-### 👥 用户操作指南
-> 面向系统用户的完整操作指南
+## 📁 目录总览
+- `user-manuals/`：面向用户的操作说明与功能使用路径
+ - `guides/`：前端技术方案、兼容策略与重构计划
+- `guides/ARCHITECTURE_GUIDE.md`：前端架构设计与模块说明
+- `guides/DEVELOPMENT_GUIDE.md`：前端开发流程、规范与最佳实践
+- `TROUBLESHOOTING_GUIDE.md`：常见问题定位与解决
+- `standards/`：前端专项标准索引与文档
+ - `guides/API_MANAGEMENT_TEMPLATE.md`：API管理示例与模板（非标准）
 
-📁 **[用户指南目录](./user-guides/)**
-- [01. 系统架构总览](./user-guides/01-system-overview.md) - 了解6层架构体系
-- [02. 快速入门指南](./user-guides/02-getting-started.md) - 新用户入门教程
-- [03. 系统管理指南](./user-guides/03-system-management.md) - 系统和模块管理
-- [04. API管理指南](./user-guides/04-api-management.md) - API接口管理
-- [05. 页面管理指南](./user-guides/05-page-management.md) - 页面信息管理
-- [06. 页面调用流程指南](./user-guides/06-page-call-flow.md) - 可视化页面操作流程设计
-- [07. 工作流设计器指南](./user-guides/07-workflow-designer.md) - 可视化API流程设计
-- [08. 用例场景管理指南](./user-guides/08-scenario-management.md) - 测试场景管理
-- [09. 需求管理指南](./user-guides/09-requirement-management.md) - 需求与测试用例关联管理
-- [10. AI编排执行指南](./user-guides/10-ai-orchestration-and-execution.md) - AI自动化执行
+## ✅ 常见任务
+- 新人入门 → `./user-manuals/02-getting-started.md`
+- 了解架构 → `./guides/ARCHITECTURE_GUIDE.md`
+- API层重构与兼容策略 → `./guides/README.md`
+- 文档规范与贡献 → `./standards/README.md` 与 `../standards/README.md`
 
-### 🤖 AI工作指南
-> 面向AI助手的提示词和工作指南
+## 🧑‍⚖️ 维护与规范
+- 索引与链接：各子目录以 `README.md` 为索引，统一使用相对路径。
+- 归档与清理：过时或不维护文档移至所属域的 `archived/`（如使用），并从索引移除。
+- 变更治理：新增顶层域或重大设计需先提交简短 RFC，经评审通过后更新。
+- 参考总纲领：见 `../README.md` 的“维护与治理（总纲领）”与“目录与文件创建原则”。
+- 前端专项标准索引 → `./standards/README.md`
 
-📁 **[AI提示词目录](./ai-prompts/)**
-- [AI提示词总览](./ai-prompts/README.md) - AI工作指南概述
-- [系统分析提示词](./ai-prompts/system-analysis.md) - 系统架构分析指导
-- [文档编写提示词](./ai-prompts/documentation.md) - 文档编写指导
-- [用户协助提示词](./ai-prompts/user-assistance.md) - 用户问题解决指导
-
-### 🛠️ 开发技术指南
-> 面向开发者的技术规范和架构指南
-
-- [开发指南](./DEVELOPMENT_GUIDE.md) - 前端开发完整指南
-- [架构指南](./ARCHITECTURE_GUIDE.md) - 前端架构设计指南
-- [问题解决指南](./TROUBLESHOOTING.md) - 常见问题解决方案
-
-### 🔄 重构相关文档
-> API层重构的完整方案和指南
-
-- [API重构指南](./API_REFACTORING_GUIDE.md) - 重构总体方案
-- [API重构实施方案](./API_REFACTORING_IMPLEMENTATION.md) - 详细实施步骤
-- [API重构对比分析](./API_REFACTORING_COMPARISON.md) - 重构前后对比
-- [API重构检查清单](./API_REFACTORING_CHECKLIST.md) - 执行检查清单
-
-### 📋 规范标准
-- [文档生成标准](./DOCUMENTATION_STANDARDS.md) - 文档创建和维护的标准规范
-- [文档清理计划](./DOCUMENT_CLEANUP_PLAN.md) - 文档重组清理方案
-
-## 🎯 使用指南
-
-### 👤 用户使用建议
-
-#### 新用户推荐路径
-1. **[02. 快速入门指南](./user-guides/02-getting-started.md)** - 5分钟快速体验
-2. **[01. 系统架构总览](./user-guides/01-system-overview.md)** - 理解整体架构
-3. **[03. 系统管理指南](./user-guides/03-system-management.md)** - 学习基础配置
-4. **[07. 工作流设计器指南](./user-guides/07-workflow-designer.md)** - 掌握核心功能
-
-#### 按角色学习
-- **管理员**: 系统管理 → API管理 → 页面管理
-- **测试人员**: 工作流设计器 → 用例场景管理
-- **业务用户**: 快速入门 → 系统架构总览
-
-### 🤖 AI助手使用建议
-
-#### 基础配置
-- 熟读所有AI提示词文档
-- 理解系统的5层架构体系
-- 掌握各功能模块的实际能力
-
-#### 用户协助原则
-- 基于实际系统功能提供指导
-- 使用结构化、步骤化的回答格式
-- 提供具体的配置示例和操作步骤
-- 保持友好、耐心、专业的服务态度
-
-## 🏗️ 系统架构概览
-
+### 🧩 文档元信息模板（建议粘贴到文档开头）
 ```
-AI自动化测试系统 - 6层架构
-┌─────────────────────────────────────────────────────────────────┐
-│ 第6层: 需求管理 (/requirement-management) [已实现]             │
-├─────────────────────────────────────────────────────────────────┤
-│ 第5层: 用例场景管理 (/scenario-management)                      │
-├─────────────────────────────────────────────────────────────────┤
-│ 第4层: 调用流程 (Call Flows)                                   │
-│ ├─ 4a. API调用流程 (/workflow-orchestration + /designer)       │
-│ └─ 4b. 页面调用流程 (/page-call-flow) [规划中]                 │
-├─────────────────────────────────────────────────────────────────┤
-│ 第3层: 资源管理 (/api-management + /page-management)           │
-├─────────────────────────────────────────────────────────────────┤
-│ 第2层: 系统管理 (/service-management)                          │
-├─────────────────────────────────────────────────────────────────┤
-│ 第1层: 仪表板 (/dashboard)                                     │
-└─────────────────────────────────────────────────────────────────┘
+> Status: Draft | Stable | Deprecated
+> Version: 1.0
+> Last Updated: 2025-10-01
+> Owner: @frontend-team
+> Tags: frontend, architecture, guides
 ```
-
-### 核心功能模块
-- **仪表板**: 数据概览和快捷入口
-- **系统管理**: 系统和模块的两级架构管理
-- **API管理**: API接口的分类管理和配置
-- **页面管理**: 页面信息和API调用关系管理
-- **API调用流程**: 可视化API工作流设计和执行
-  - **节点库优化**: 紧凑型网格布局，支持文字自动换行
-  - **属性配置**: NodePropertyPanel组件提供统一的节点配置界面
-  - **长方形节点**: 支持灵活尺寸的节点显示，适应更多配置信息
-- **页面调用流程**: 可视化页面操作流程设计和执行（规划中）
-- **场景管理**: 测试场景的创建和管理
-- **需求管理**: 需求与测试用例的关联管理（已实现）
-
-## 📖 文档特色
-
-### 用户友好设计
-- **ASCII图示**: 直观的界面布局和流程图
-- **详细步骤**: 完整的操作步骤说明
-- **实用示例**: 真实的配置示例和用例
-- **问题解答**: 常见问题和解决方案
-
-### AI工作支持
-- **结构化提示词**: 标准化的AI工作指南
-- **角色明确**: 清晰的AI助手角色定位
-- **实用模板**: 可直接使用的回答模板
-- **质量标准**: 明确的服务质量要求
-
-### 内容完整性
-- **功能覆盖**: 涵盖系统所有主要功能
-- **操作指导**: 从基础到高级的完整操作指南
-- **最佳实践**: 经验总结和使用建议
-- **持续更新**: 根据系统更新保持文档时效性
-
-## 🔄 文档维护
-
-### 更新原则
-- 基于实际系统功能，避免理想化描述
-- 保持用户友好的语言和格式
-- 及时反映系统功能的更新变化
-- 收集用户反馈持续优化
-
-### 贡献指南
-- 所有文档更新需要验证功能的实际实现状态
-- 保持文档格式和风格的一致性
-- 优先考虑用户体验和AI使用便利性
-
-## 📞 支持联系
-
-如有文档问题或改进建议，请联系技术支持团队。
-
----
-
-**文档版本**: v2.0 (重构版)  
-**更新时间**: 2024年1月  
-**适用系统**: AI自动化测试系统 v1.0+

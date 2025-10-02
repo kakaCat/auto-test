@@ -34,7 +34,7 @@
 **列表响应**:
 ```json
 {
-  "items": [...],
+  "list": [...],
   "total": 100,
   "page": 1,
   "size": 20,
@@ -966,3 +966,43 @@ curl -X GET "http://localhost:8003/api/v1/test-executions/exec_001" \
 ---
 
 如有问题或建议，请联系开发团队或查看项目文档。
+## 🧪 API接口测试与调试
+
+### POST /api-interfaces/v1/test
+
+测试已保存的API接口。
+
+**请求体**:
+```json
+{
+  "api_id": 123,
+  "request": {
+    "method": "GET",
+    "url": "/users",
+    "headers": {"Authorization": "Bearer token"},
+    "params": {"page": 1},
+    "body": null
+  }
+}
+```
+
+**字段说明**:
+- `api_id` (int, 必需): 已保存API的唯一ID
+- `request` (object, 必需): 测试请求的详细信息
+  - `method` (string): HTTP方法
+  - `url` (string): 路径（可相对系统`base_url`）
+  - `headers` (object): 请求头
+  - `params` (object): 查询参数
+  - `body` (any): 请求体
+
+**响应示例**:
+```json
+{
+  "success": true,
+  "status_code": 200,
+  "headers": {"content-type": "application/json"},
+  "body": {"items": [], "total": 0}
+}
+```
+
+> 说明：此接口用于后端统一执行API测试，与前端页面使用的“在线测试”功能相对应。页面文档不包含此接口细节，统一在后端参考文档维护。

@@ -184,12 +184,14 @@ service.interceptors.response.use(
         message: (data as any).message || '',
         data: (data as any).data,
         error: (data as any).error,
+        code: (data as any).code,
         timestamp: (data as any).timestamp || now
       }
       if (apiResp.success === false && !(response.config as RequestConfig).skipErrorHandler) {
         ElMessage.error(apiResp.message || '请求失败')
       }
-      return apiResp
+      // 类型断言为 AxiosResponse 以满足拦截器签名要求
+      return apiResp as unknown as AxiosResponse
     }
     const wrapped: ApiResponse<any> = {
       success: true,
@@ -197,7 +199,8 @@ service.interceptors.response.use(
       data,
       timestamp: now
     }
-    return wrapped
+    // 类型断言为 AxiosResponse 以满足拦截器签名要求
+    return wrapped as unknown as AxiosResponse
   },
   /**
    * 响应错误处理
@@ -276,6 +279,7 @@ service.interceptors.response.use(
     const apiResp: ApiResponse<any> = {
       success: false,
       message,
+      code,
       error: {
         code,
         message,
@@ -284,7 +288,7 @@ service.interceptors.response.use(
       },
       timestamp: now
     }
-    return Promise.resolve(apiResp)
+    return Promise.resolve(apiResp as unknown as AxiosResponse)
   }
 )
 

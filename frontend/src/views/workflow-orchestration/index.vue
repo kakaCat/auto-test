@@ -1350,13 +1350,18 @@ const loadWorkflowList = async () => {
       keyword: searchForm.keyword,
       status: searchForm.status,
       category: searchForm.category,
-      page: pagination.currentPage,
-      pageSize: pagination.pageSize
+      page: pagination.page,
+      // 兼容旧参数名：后端适配层会处理 page_size
+      pageSize: pagination.size
     })
     
     if (response.success) {
-      workflowList.value = response.data || []
-      pagination.total = response.total || 0
+      const list = Array.isArray(response.data) ? response.data : (response.data?.list ?? [])
+      workflowList.value = list
+      const totalVal = typeof (response?.data?.total) === 'number' 
+        ? response.data.total 
+        : list.length
+      pagination.total = totalVal
     } else {
       ElMessage.error(response.message || '加载工作流列表失败')
     }

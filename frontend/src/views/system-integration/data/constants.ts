@@ -75,5 +75,8 @@ export const MONITOR_REFRESH_INTERVAL = 30000
 export const DEFAULT_PAGINATION = {
   currentPage: 1,
   pageSize: 20,
-  total: 0
+  total: 0,
+  // 兼容统一分页字段
+  page: 1,
+  size: 20
 }

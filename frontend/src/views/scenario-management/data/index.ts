@@ -4,10 +4,9 @@
 
 // 表单配置
 export {
-  executionTypeOptions,
+  scenarioTypeOptions,
   scenarioStatusOptions,
   defaultSearchForm,
-  defaultPagination,
   defaultStats,
   defaultCreateForm,
   createFormRules
@@ -28,7 +27,6 @@ export {
 export type {
   SelectOption,
   SearchForm,
-  PaginationConfig,
   StatsData,
   CreateForm,
   FormRule,

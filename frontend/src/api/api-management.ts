@@ -52,8 +52,8 @@ export interface ApiData {
   rate_limit?: number
   timeout?: number
   tags?: string
-  request_schema?: string
-  response_schema?: string
+  request_schema?: Record<string, any>
+  response_schema?: Record<string, any>
   example_request?: string
   example_response?: string
 }
@@ -119,12 +119,93 @@ export interface StatsData {
 // API接口管理
 export const apiManagementApi = {
   /**
+   * 内部工具：参数键名归一化（支持 camelCase→snake_case）
+   */
+  _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p = { ...params }
+    if (p.systemId !== undefined) {
+      p.system_id = p.systemId
+      delete p.systemId
+    }
+    if (p.moduleId !== undefined) {
+      p.module_id = p.moduleId
+      delete p.moduleId
+    }
+    if (p.enabledOnly !== undefined) {
+      p.enabled_only = p.enabledOnly
+      delete p.enabledOnly
+    }
+    // 统一字符串数字 -> 数字（后端偏好数字类型）
+    if (typeof p.system_id === 'string' && p.system_id && !isNaN(Number(p.system_id))) {
+      p.system_id = Number(p.system_id)
+    }
+    if (typeof p.module_id === 'string' && p.module_id && !isNaN(Number(p.module_id))) {
+      p.module_id = Number(p.module_id)
+    }
+    return p
+  },
+
+  /**
+   * 内部工具：API数据归一化（支持 camelCase→snake_case，并处理 url→path）
+   */
+  _normalizeApiPayload(data: Record<string, any>): ApiData | Partial<ApiData> {
+    const d = { ...data }
+    // id字段不在此层处理（由调用者决定 create/update）
+    if (d.systemId !== undefined) {
+      d.system_id = d.systemId
+      delete d.systemId
+    }
+    if (d.moduleId !== undefined) {
+      d.module_id = d.moduleId
+      delete d.moduleId
+    }
+    // url 与 path 映射
+    if (d.url && !d.path) {
+      d.path = d.url
+      delete d.url
+    }
+    // 格式字段映射
+    if (d.requestFormat !== undefined) {
+      d.request_format = d.requestFormat
+      delete d.requestFormat
+    }
+    if (d.responseFormat !== undefined) {
+      d.response_format = d.responseFormat
+      delete d.responseFormat
+    }
+    if (d.authRequired !== undefined) {
+      d.auth_required = d.authRequired
+      delete d.authRequired
+    }
+    if (d.rateLimit !== undefined) {
+      d.rate_limit = d.rateLimit
+      delete d.rateLimit
+    }
+    if (d.exampleRequest !== undefined) {
+      d.example_request = d.exampleRequest
+      delete d.exampleRequest
+    }
+    if (d.exampleResponse !== undefined) {
+      d.example_response = d.exampleResponse
+      delete d.exampleResponse
+    }
+    // 数字化 ID 字段
+    if (typeof d.system_id === 'string' && d.system_id && !isNaN(Number(d.system_id))) {
+      d.system_id = Number(d.system_id)
+    }
+    if (typeof d.module_id === 'string' && d.module_id && !isNaN(Number(d.module_id))) {
+      d.module_id = Number(d.module_id)
+    }
+    return d as Partial<ApiData>
+  },
+  /**
    * 获取服务列表（系统列表）
    * @param params - 查询参数
    * @returns 服务列表数据
    */
   getServiceList(params: ServiceListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/systems/v1/', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/systems/v1/', normalized)
   },
 
   /**
@@ -133,7 +214,8 @@ export const apiManagementApi = {
    * @returns 模块列表数据
    */
   getModuleList(params: ModuleListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/modules/v1/', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/modules/v1/', normalized)
   },
 
   /**
@@ -142,7 +224,7 @@ export const apiManagementApi = {
    * @returns API详情数据
    */
   getApiDetail(apiId: string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/interfaces/${apiId}`)
+    return apiHandler.get(`/api/api-interfaces/v1/${apiId}`)
   },
 
   /**
@@ -151,7 +233,8 @@ export const apiManagementApi = {
    * @returns API列表数据
    */
   getApis(params: ApiListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/interfaces', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/api-interfaces/v1/', normalized)
   },
 
   /**
@@ -169,7 +252,8 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createApi(data: ApiData): Promise<ApiResponse> {
-    return apiHandler.post('/api/api-interfaces/v1/', data)
+    const payload = (this as any)._normalizeApiPayload(data)
+    return apiHandler.post('/api/api-interfaces/v1/', payload)
   },
 
   /**
@@ -189,7 +273,8 @@ export const apiManagementApi = {
    * @returns 更新结果
    */
   updateApi(apiId: string, data: Partial<ApiData>): Promise<ApiResponse> {
-    return apiHandler.put(`/api/interfaces/${apiId}`, data)
+    const payload = (this as any)._normalizeApiPayload(data)
+    return apiHandler.put(`/api/api-interfaces/v1/${apiId}`, payload)
   },
 
   /**
@@ -207,7 +292,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteApi(apiId: string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/interfaces/${apiId}`)
+    return apiHandler.delete(`/api/api-interfaces/v1/${apiId}`)
   },
 
   /**
@@ -217,7 +302,7 @@ export const apiManagementApi = {
    * @returns 测试结果
    */
   testApi(apiId: string, testData: TestData = {}): Promise<ApiResponse> {
-    return apiHandler.post(`/api/interfaces/${apiId}/test`, testData)
+    return apiHandler.post(`/api/api-interfaces/v1/${apiId}/test`, testData)
   },
 
 
@@ -228,7 +313,7 @@ export const apiManagementApi = {
    * @returns 批量测试结果
    */
   batchTestApis(apiIds: string[], testConfig: TestConfig = {}): Promise<ApiResponse> {
-    return apiHandler.post('/api/interfaces/batch-test', { api_ids: apiIds, ...testConfig })
+    return apiHandler.post('/api/api-interfaces/v1/batch/test', { api_ids: apiIds, ...testConfig })
   },
 
   /**
@@ -236,7 +321,7 @@ export const apiManagementApi = {
    * @returns API统计数据
    */
   getApiStatistics(): Promise<ApiResponse<ApiStatistics>> {
-    return apiHandler.get('/api/interfaces/stats/summary')
+    return apiHandler.get('/api/api-interfaces/v1/stats/summary')
   },
 
   /**

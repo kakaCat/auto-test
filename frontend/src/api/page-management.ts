@@ -18,12 +18,44 @@ interface PageData {
 // 页面管理API
 export const pageApi = {
   /**
+   * 内部工具：参数键名归一化（支持常见 camelCase→snake_case）
+   */
+  _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p = { ...params }
+    if (p.pageSize !== undefined) {
+      p.page_size = p.pageSize
+      delete p.pageSize
+    }
+    if (p.createdTime !== undefined) {
+      p.created_time = p.createdTime
+      delete p.createdTime
+    }
+    if (p.updatedTime !== undefined) {
+      p.updated_time = p.updatedTime
+      delete p.updatedTime
+    }
+    if (Array.isArray(p.createdTimeRange)) {
+      p.created_time_range = p.createdTimeRange.join(',')
+      delete p.createdTimeRange
+    }
+    if (Array.isArray(p.updatedTimeRange)) {
+      p.updated_time_range = p.updatedTimeRange.join(',')
+      delete p.updatedTimeRange
+    }
+    if (p.enabledOnly !== undefined) {
+      p.enabled_only = p.enabledOnly
+      delete p.enabledOnly
+    }
+    return p
+  },
+  /**
    * 获取页面列表
    * @param {Object} params - 查询参数
    * @returns {Promise} 页面列表
    */
   getPages(params: PageListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/pages/v1/', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/pages/v1/', normalized)
   },
 
   /**
@@ -78,7 +110,8 @@ export const pageApi = {
    * @returns {Promise} 搜索结果
    */
   searchPagesSimple(params: PageListParams = {}): Promise<ApiResponse> {
-    return apiHandler.get('/api/pages/v1/search/simple', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return apiHandler.get('/api/pages/v1/search/simple', normalized)
   },
 
   /**
@@ -218,7 +251,7 @@ export const pageUtils = {
    * @returns {string} 显示文本
    */
   formatPageType(type: string): string {
-    const typeMap = {
+    const typeMap: Record<string, string> = {
       page: '页面',
       modal: '弹框',
       drawer: '抽屉',
@@ -234,7 +267,7 @@ export const pageUtils = {
    * @returns {string} 显示文本
    */
   formatPageStatus(status: string): string {
-    const statusMap = {
+    const statusMap: Record<string, string> = {
       active: '活跃',
       inactive: '非活跃',
       draft: '草稿'
@@ -248,7 +281,7 @@ export const pageUtils = {
    * @returns {string} 显示文本
    */
   formatExecutionType(type: string): string {
-    const typeMap = {
+    const typeMap: Record<string, string> = {
       parallel: '并行',
       serial: '串行'
     }
@@ -261,7 +294,7 @@ export const pageUtils = {
    * @returns {string} 颜色类型
    */
   getPageTypeColor(type: string): string {
-    const colorMap = {
+    const colorMap: Record<string, string> = {
       page: '',
       modal: 'warning',
       drawer: 'info',
@@ -277,7 +310,7 @@ export const pageUtils = {
    * @returns {string} 颜色类型
    */
   getPageStatusColor(status: string): string {
-    const colorMap = {
+    const colorMap: Record<string, string> = {
       active: 'success',
       inactive: 'info',
       draft: 'warning'
@@ -291,7 +324,7 @@ export const pageUtils = {
    * @returns {string} 颜色类型
    */
   getMethodColor(method: string): string {
-    const colorMap = {
+    const colorMap: Record<string, string> = {
       GET: 'success',
       POST: 'primary',
       PUT: 'warning',
@@ -333,17 +366,17 @@ export const pageUtils = {
    * @returns {Array} 树形数据
    */
   buildPageTree(pages: Array<Record<string, any>>, systems: Array<Record<string, any>>): Array<Record<string, any>> {
-    const tree = []
+    const tree: Array<Record<string, any>> = []
     
     systems.forEach(system => {
       const systemPages = pages.filter(page => page.system_id === system.id)
       
-      const systemNode = {
+      const systemNode: Record<string, any> = {
         id: `system-${system.id}`,
         label: system.name,
         type: 'system',
         system_id: system.id,
-        children: []
+        children: [] as Array<Record<string, any>>
       }
       
       systemPages.forEach(page => {

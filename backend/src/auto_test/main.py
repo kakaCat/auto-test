@@ -29,6 +29,8 @@ from .api.api_interfaces import router as api_interfaces_router
 from .api.logs import router as logs_router
 from .api.pages import router as pages_router
 from .api.orchestration import router as orchestration_router
+from .api.test_apis_page import router as test_apis_page_router
+from .api.test_apis_dialog import router as test_apis_dialog_router
 
 # 设置日志
 logger = get_logger(__name__)
@@ -79,6 +81,8 @@ def create_app() -> FastAPI:
     app.include_router(logs_router, prefix="/api", tags=["Log Management"])
     app.include_router(pages_router, prefix="/api", tags=["Page Management"])
     app.include_router(orchestration_router, prefix="/api", tags=["AI Orchestration"])
+    app.include_router(test_apis_page_router, prefix="/api", tags=["Test APIs Management - Page"])
+    app.include_router(test_apis_dialog_router, prefix="/api", tags=["Test APIs Management - Dialog"])
     
     # 根路径
     @app.get("/")

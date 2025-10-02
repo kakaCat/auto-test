@@ -1,53 +1,69 @@
-# AI自动化测试系统 - 文档导航中心
+# AI自动化测试系统 · 文档索引
 
-## 📋 项目概述
+本页是 `docs/` 顶层索引与治理总览，面向全体协作者（产品/后端/前端/设计/测试/文档维护者）。目标是在 1 分钟内完成“从要做的事到对应规范/设计/实现”的定位。
 
-本项目是一个现代化的自动化测试平台，采用前后端分离架构，提供智能化的API测试和工作流编排功能。
+概述
+- 覆盖范围：仅针对 `docs/` 目录的文档、标准与索引，不涉及代码实现细节。
+- 内容构成：统一入口、目录总览、常见任务导航、创建/维护规范、版本与归档策略。
+- 使用方式：从“快速入口”进入子目录 `README.md`；跨域内容回到此页或访问 `standards/README.md`。
+- 命名与链接：统一相对路径与 `README.md` 为索引；废弃文档迁移至域内 `archived/`。
+- 适用角色：产品、研发、设计、测试、运维、文档维护者与 AI 助手。
+- 变更规则：新增顶层域或重大设计需先提交简短 RFC，经评审通过后更新索引。
 
-## 📚 文档组织结构
+## ⏩ 快速入口
+- 后端入口 → [backend/README.md](./backend/README.md)
+- 前端入口 → [frontend/README.md](./frontend/README.md)
+- 设计入口 → [design/ai-platform/README.md](./design/ai-platform/README.md)
+- 规范入口 → [standards/README.md](./standards/README.md)
 
-### 🎯 **项目级文档** (当前目录)
-- **[系统架构](./SYSTEM_ARCHITECTURE.md)** - 整体系统设计和技术架构
-- **[数据库设计](./DATABASE_DESIGN.md)** - 数据库表结构和关系设计
-- **[变更记录](./CHANGELOG.md)** - 项目重要功能更新和修复记录
-- **[文档规范](./DOCUMENTATION_STANDARDS.md)** - 文档组织标准
-- **[AI协作习惯](./AI_ASSISTANT_GUIDE.md)** - AI助手工作流程与执行准则
-- **[临时文件夹使用指南](./TEMP_FOLDER_USAGE_GUIDE.md)** - 文件生成和组织的规范指南
-- **[文档映射关系指南](./DOCUMENT_MAPPING_GUIDE.md)** - 代码变更与文档更新的映射关系
+## 🧰 如何使用本索引
+- 先看“目录总览”确定归属域（后端、前端、设计、规范）。
+- 做具体事情时，直接用“常用任务”里的直达链接与命令。
+- 查跨域方案与专题设计，进入 `design/`；查现状实现与接口，进入 `backend/` 或 `frontend/`；查协作与规范，进入 `standards/`。
 
-### 🎨 **前端项目文档** → [frontend/docs/](../frontend/docs/)
-- **[API文档](../frontend/docs/api/)** - 前端API接口层文档
-- **[开发指南](../frontend/docs/guides/)** - 前端开发规范和指南
-- **[组件文档](../frontend/docs/components/)** - UI组件文档
-- **[变更记录](../frontend/docs/changelogs/)** - 前端版本变更
+## 🔎 目录总览（快速定位）
+- `backend/` — 后端现状与实现：接口、架构、指南、变更。
+  - 入口：
+    - [backend/README.md](./backend/README.md)
+    - [backend/api/README.md](./backend/api/README.md)
+    - [backend/architecture/README.md](./backend/architecture/README.md)
+    - [backend/quick_start.md](./backend/quick_start.md)
+- `frontend/` — 前端现状与实现：架构、开发指南、用户手册与兼容策略。
+  - 入口：
+    - [frontend/README.md](./frontend/README.md)
+    - [frontend/guides/ARCHITECTURE_GUIDE.md](./frontend/guides/ARCHITECTURE_GUIDE.md)
+    - [frontend/guides/DEVELOPMENT_GUIDE.md](./frontend/guides/DEVELOPMENT_GUIDE.md)
+- [frontend/user-manuals/README.md](./frontend/user-manuals/README.md)
+- `design/` — 新增/修改/删除的方案设计与跨域专题，按项目归档。
+  - 项目入口：
+    - [design/ai-platform/README.md](./design/ai-platform/README.md)
+  - 变更索引：
+    - [design/changelogs/CHANGELOG.md](./design/changelogs/CHANGELOG.md)
+- `standards/` — 通用规范与协作指南：
+  - 入口：
+    - [standards/README.md](./standards/README.md)
 
-### 🐍 **后端项目文档** → [backend/docs/](../backend/docs/)
-- **[API文档](../backend/docs/api/)** - 后端API接口文档
-- **[架构文档](../backend/docs/architecture/)** - 后端架构设计
-- **[开发指南](../backend/docs/guides/)** - 后端开发规范
-- **[变更记录](../backend/docs/changelogs/)** - 后端版本变更
-
-### 🤖 **AI平台设计文档** → [ai-platform/](./ai-platform/)
-- **[AI平台PRD](./ai-platform/01_AI_DRIVEN_TESTING_PLATFORM_PRD.md)** - 平台整体架构和愿景
-- **[系统重构设计](./ai-platform/02_SYSTEM_REFACTORING_DESIGN.md)** - 向AI驱动平台的重构方案
-- **[第一阶段：API编排](./ai-platform/03_PHASE1_API_ORCHESTRATION_DESIGN.md)** - API编排详细设计
-- **[第一阶段：实施指南](./ai-platform/04_PHASE1_IMPLEMENTATION_GUIDE.md)** - 详细开发指南和代码示例
-- **[第二阶段：UI自动化](./ai-platform/05_PHASE2_UI_AUTOMATION_DESIGN.md)** - UI测试的AI驱动设计
-- **[第三阶段：需求管理](./ai-platform/06_PHASE3_REQUIREMENT_MANAGEMENT_DESIGN.md)** - 需求到测试闭环设计
-
-### 📋 **技术文档** (当前目录)
-- **[后端技术文档](./backend/)** - 后端开发指南和API文档
-- **[前端技术文档](./frontend/)** - 前端开发指南和用户文档
+## 🧭 常用任务（一键直达）
+- 启动后端服务 → [backend/quick_start.md](./backend/quick_start.md)
+  - 命令：
+    - `cd backend && pip install -r requirements.txt && python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000`
+- 启动前端开发环境 → [frontend/guides/DEVELOPMENT_GUIDE.md](./frontend/guides/DEVELOPMENT_GUIDE.md)
+  - 命令：
+    - `cd frontend && npm install && npm run dev`
+- 查看后端 API → [backend/api/README.md](./backend/api/README.md)
+- 查数据库设计（现状） → [backend/architecture/DATABASE_DESIGN.md](./backend/architecture/DATABASE_DESIGN.md)
+- 查跨项目变更记录 → [design/changelogs/CHANGELOG.md](./design/changelogs/CHANGELOG.md)
+- 查看平台设计方案 → [design/ai-platform/README.md](./design/ai-platform/README.md)
+- 查看通用规范与协作指南 → [standards/README.md](./standards/README.md)
 
 ## 🚀 快速开始
-
 ### 前端开发
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-📖 详细指南: [前端开发文档](../frontend/docs/README.md)
+📖 详细指南: [frontend/guides/DEVELOPMENT_GUIDE.md](./frontend/guides/DEVELOPMENT_GUIDE.md)
 
 ### 后端开发
 ```bash
@@ -55,153 +71,76 @@ cd backend
 pip install -r requirements.txt
 python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
 ```
-📖 详细指南: [后端开发文档](../backend/docs/README.md)
+📖 详细指南: [backend/quick_start.md](./backend/quick_start.md)
 
-## 📚 文档分类
+## 🎯 项目级入口（当前目录）
+- 数据库设计 → [backend/architecture/DATABASE_DESIGN.md](./backend/architecture/DATABASE_DESIGN.md)
+- 变更记录 → [design/changelogs/CHANGELOG.md](./design/changelogs/CHANGELOG.md)
+- 文档规范 → [standards/DOCUMENTATION_STANDARDS.md](./standards/DOCUMENTATION_STANDARDS.md)
+- 前端页面文档结构规范 → [frontend/standards/DOCUMENTATION_STANDARDS.md](./frontend/standards/DOCUMENTATION_STANDARDS.md)
+- AI协作习惯 → [standards/AI_ASSISTANT_STANDARD.md](./standards/AI_ASSISTANT_STANDARD.md)
+- 临时文件夹使用 → [standards/TEMP_FOLDER_USAGE_STANDARD.md](./standards/TEMP_FOLDER_USAGE_STANDARD.md)
+- 文档映射关系 → [standards/DOCUMENT_MAPPING_STANDARD.md](./standards/DOCUMENT_MAPPING_STANDARD.md)
 
-## 🐍 后端文档 (Python)
+## 📐 文档操作原则（/docs 下）
+- 职责分域：实现类→`backend/`、`frontend/`；方案/设计→`design/`；协作/规范→`standards/`。
+- 就近归档：文档靠近其所有者与落地代码，降低维护成本。
+- 入口统一：各目录入口文件一律为 `README.md`。
+- 链接健康：文件移动/重命名后，立即更新索引与所有引用。
+- 原子改动：每次只做一种类型变更，便于回溯与审阅。
+- 变更可追踪：在变更摘要中说明来源→去向与理由。
+- 主题单一：一个文档只聚焦一个主题，避免混装。
+- 粒度管理：`design/` 中如含需求/计划/待办，按需细分 `requirements/`、`planning/`、`todos/`。
+- 索引职责：`docs/README.md` 提供“目录总览/快速链接/常用任务/场景导航”。
+- 收尾清理：删除空目录、去重冗余段落，保持结构干净。
+- 术语一致：统一使用“入口/索引/规范”等术语，路径风格一致。
 
-### 核心模块使用指南
-面向后端开发者和系统集成人员，提供Python模块的使用方法、配置说明和API调用示例：
+### 📁 目录与文件创建原则（如何新增/维护）
+- 放置规则：
+  - 实现与接口说明 → 放到 `docs/backend/` 或 `docs/frontend/` 相应子目录。
+  - 方案/专题设计 → 放到 `docs/design/`，按项目建立子目录（如 `design/ai-platform/`）。
+  - 通用规范/协作流程 → 放到 `docs/standards/`。
+- 目录要求：
+  - 新建任何目录必须包含 `README.md`，说明目的、范围、结构与出口链接。
+  - 目录层级不超过 3 层；新增顶层域需经评审与简短 RFC。
+- 命名规范：
+  - 主题文档用 `kebab-case`（例：`frontend-proxy-normalization-design.md`）。
+  - 标准/规范类用 `UPPER_SNAKE_CASE`，统一以 `*_STANDARD.md` 结尾（例：`AI_ASSISTANT_STANDARD.md`、`TEMP_FOLDER_USAGE_STANDARD.md`）。
+  - 连载/阶段性文档在项目目录中用数字前缀（例：`01_...`, `02_...`）。
+  - 文件名避免空格与非 ASCII；中文作为文内标题，不用于文件名。
 
-| 模块 | 文档 | 功能描述 |
-|------|------|----------|
-| **API管理** | [api_management_guide.md](./backend/api_management_guide.md) | 接口信息录入、存储和调用功能 |
-| **场景管理** | [scenario_management_guide.md](./backend/scenario_management_guide.md) | 接口流程编排和执行策略配置 |
-| **工作流编排** | [workflow_orchestration_guide.md](./backend/workflow_orchestration_guide.md) | 复杂API调用流程管理 |
-| **AI执行代理** | [ai_scenario_execution_guide.md](./backend/ai_scenario_execution_guide.md) | 智能化自动化测试执行 |
-| **系统集成** | [integration_guide.md](./backend/integration_guide.md) | 统一的接口流程自动化解决方案 |
+#### 🏷️ 命名约定补充（标准 vs 指南）
+- 标准（强约束、稳定执行）：
+  - 位置：`docs/standards/` 或各域 `*/standards/`
+  - 命名：`UPPER_SNAKE_CASE + _STANDARD.md`
+  - 示例：`AI_ASSISTANT_STANDARD.md`、`DOCUMENT_MAPPING_STANDARD.md`
+- 指南/模板（可演进、提供方法）：
+  - 位置：域内 `*/guides/`（如 `docs/frontend/guides/`、`docs/backend/guides/`）
+  - 命名：`UPPER_SNAKE_CASE + _GUIDE.md` 或 `*_TEMPLATE.md`
+  - 示例：`ARCHITECTURE_GUIDE.md`、`DEVELOPMENT_GUIDE.md`、`API_MANAGEMENT_TEMPLATE.md`
+- 用户手册（面向终端用户）：
+- 位置：`docs/frontend/user-manuals/`
+  - 命名：`两位编号 + kebab-case`（例：`02-getting-started.md`、`10-ai-orchestration-and-execution.md`）
+- 链接与索引：
+  - 所有目录的入口文件为 `README.md`；跨文件引用使用相对路径。
+  - 文件重命名或迁移后，需同步更新索引页与所有引用链接。
+- 创建流程（四步走）：
+  1) 选择归属域并创建（或复用）目录；补上目录 `README.md`。
+  2) 按命名规范创建文档，内容聚焦单一主题。
+  3) 在 `docs/README.md` 更新入口与导航（如适用）。
+  4) 若涉及跨文件引用，统一更新所有链接并自测。
+- 禁止事项：
+  - 随意新增顶层平行目录；不在无 `README.md` 的目录中堆文档。
+  - 一个文件混装多主题；命名风格混乱（大小写/分隔不一致）。
+- 提交前自检：
+  - 新目录是否有 `README.md` 且写明目的/范围/结构？
+  - 新文档是否命名规范、聚焦单主题、包含上下文链接？
+  - 主索引是否已更新并正确跳转？
+  - 是否清理了空目录、重复链接或过时引用？
 
-### 后端技术栈
-- **语言**: Python 3.8+
-- **框架**: FastAPI / Flask
-- **数据库**: SQLite / PostgreSQL
-- **AI框架**: LangChain, LangGraph
-- **测试**: pytest
 
----
+## 📞 支持与贡献
+- 问题反馈：先查对应文档与示例；若仍有问题，创建 Issue 说明复现步骤。
+- 文档贡献：补充示例、最佳实践、常见问题；改进结构、修正错误、增加图表。
 
-## 🎨 前端文档 (Vue.js)
-
-### 项目开发文档
-面向前端开发者，提供Vue项目的技术架构、开发规范和维护指南：
-
-| 类型 | 文档 | 功能描述 |
-|------|------|----------|
-| **项目概览** | [project_guide.md](./frontend/project_guide.md) | 项目架构、技术栈和核心功能 |
-| **路由配置** | [routing_guide.md](./frontend/routing_guide.md) | 路由结构、菜单系统和权限控制 |
-| **组件功能** | [components_guide.md](./frontend/components_guide.md) | 业务组件分析和开发规范 |
-| **开发环境** | [development_guide.md](./frontend/development_guide.md) | 环境配置、启动流程和构建部署 |
-| **API接口** | [api_guide.md](./frontend/api_guide.md) | HTTP请求配置、数据流和状态管理 |
-
-### 前端技术栈
-- **框架**: Vue 3 + Composition API
-- **构建工具**: Vite
-- **路由**: Vue Router 4
-- **状态管理**: Pinia
-- **UI组件**: Element Plus
-- **HTTP客户端**: Axios
-
-## 🚀 快速开始
-
-### 🐍 后端开发流程
-```bash
-# 1. 进入后端目录
-cd backend
-
-# 2. 环境准备
-pip install -r requirements.txt
-
-# 3. 配置环境变量（可选）
-cp .env.example .env
-
-# 4. 启动后端服务
-# 通用启动（推荐）
-python -m uvicorn src.auto_test.main:app --reload --host 0.0.0.0 --port 8000
-
-# 备用：脚本入口
-python start_api_v2.py --debug --port 8000
-```
-
-**推荐阅读顺序**:
-1. [API管理模块使用指南](./backend/api_management_guide.md) - 了解基础功能
-2. [场景管理系统使用指南](./backend/scenario_management_guide.md) - 配置测试场景  
-3. [工作流编排模块使用指南](./backend/workflow_orchestration_guide.md) - 设计复杂流程
-4. [AI场景执行代理使用指南](./backend/ai_scenario_execution_guide.md) - 实现智能化测试
-
-### 🎨 前端开发流程
-```bash
-# 1. 进入前端目录
-cd frontend
-
-# 2. 安装依赖
-npm install
-
-# 3. 启动开发服务器
-npm run dev
-```
-
-**推荐阅读顺序**:
-1. [前端项目概览指南](./frontend/project_guide.md) - 了解整体架构
-2. [前端开发环境指南](./frontend/development_guide.md) - 配置开发环境
-3. [前端组件功能指南](./frontend/components_guide.md) - 了解业务组件
-4. [前端API接口指南](./frontend/api_guide.md) - 掌握数据交互
-
-### 🔗 全栈集成
-1. **系统整合**: [接口流程编排集成模块使用指南](./backend/integration_guide.md)
-2. **前后端联调**: 确保前端API配置与后端接口一致
-3. **部署上线**: 参考各自的部署文档进行生产环境配置
-
-## 📋 文档索引
-
-### 🐍 后端文档列表
-| 文档名称 | 文件路径 | 更新频率 |
-|---------|---------|----------|
-| API管理模块 | `backend/api_management_guide.md` | 随功能更新 |
-| 场景管理系统 | `backend/scenario_management_guide.md` | 随功能更新 |
-| 工作流编排模块 | `backend/workflow_orchestration_guide.md` | 随功能更新 |
-| AI场景执行代理 | `backend/ai_scenario_execution_guide.md` | 随AI模型更新 |
-| 系统集成模块 | `backend/integration_guide.md` | 随架构变更 |
-
-### 🎨 前端文档列表
-| 文档名称 | 文件路径 | 更新频率 |
-|---------|---------|----------|
-| 项目概览指南 | `frontend/project_guide.md` | 随架构变更 |
-| 路由配置指南 | `frontend/routing_guide.md` | 随路由变更 |
-| 组件功能指南 | `frontend/components_guide.md` | 随组件更新 |
-| 开发环境指南 | `frontend/development_guide.md` | 随工具链更新 |
-| API接口指南 | `frontend/api_guide.md` | 随接口变更 |
-
-## 🔄 维护规范
-
-### 文档更新原则
-1. **🎯 准确性**: 确保文档与代码实现一致
-2. **📖 完整性**: 覆盖所有核心功能和使用场景  
-3. **✨ 易读性**: 使用清晰的结构和示例说明
-4. **⏰ 时效性**: 及时更新过时的信息和配置
-
-### 更新触发条件
-- **后端文档**: 模块功能变更、API接口调整、配置参数修改
-- **前端文档**: 组件结构变化、路由调整、开发工具升级
-- **通用文档**: 项目架构重构、部署方式变更
-
-## 📞 支持与反馈
-
-### 🐛 问题反馈
-如果您在使用过程中遇到问题：
-
-1. **📚 查阅文档**: 先检查对应的技术文档
-2. **💡 查看示例**: 参考 `examples/` 目录下的示例代码
-3. **🔍 搜索问题**: 在项目中搜索类似问题的解决方案
-4. **📝 提交反馈**: 创建Issue描述具体问题和复现步骤
-
-### 🚀 贡献指南
-欢迎为文档贡献内容：
-
-- **🐍 后端文档**: 补充使用示例、最佳实践、常见问题
-- **🎨 前端文档**: 完善组件说明、开发技巧、UI规范
-- **📖 通用文档**: 改进文档结构、修正错误、增加图表
-
----
-
-*📚 本文档中心将持续更新，为AI自动化测试平台的全栈开发提供完整的技术支持。*
+— 本索引将持续更新，保障团队在 `docs/` 下的高效协作与维护 —

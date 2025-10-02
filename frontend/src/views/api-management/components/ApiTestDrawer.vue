@@ -1,12 +1,11 @@
 <template>
-  <el-drawer
+  <el-drawer>
     v-model="visible"
     :title="drawerTitle"
     :size="isFullscreen ? '100%' : '80%'"
     direction="rtl"
     :before-close="handleClose"
     class="api-test-drawer"
-  >
     <!-- 工具栏 -->
     <div class="test-toolbar">
       <div class="toolbar-left">
@@ -54,7 +53,7 @@
           <div class="request-basic">
             <el-row :gutter="12">
               <el-col :span="6">
-                <el-select v-model="requestConfig.method" size="small">
+                <el-select v-model="requestConfig.method" placeholder="请求方法" size="small">
                   <el-option
                     v-for="method in httpMethods"
                     :key="method.value"
@@ -66,13 +65,9 @@
                 </el-select>
               </el-col>
               <el-col :span="18">
-                <el-input
-                    v-model="testForm.url"
-                    placeholder="请求URL"
-                    size="small"
-                  >
-                    <template #prepend><span>{{ baseUrl }}</span></template>
-                  </el-input>
+                <el-input v-model="requestConfig.url" placeholder="请求URL" size="small">
+                  <template #prepend><span>{{ baseUrl }}</span></template>
+                </el-input>
               </el-col>
             </el-row>
           </div>
@@ -89,12 +84,7 @@
                 </el-radio-group>
 
                 <div v-if="authConfig.type === 'bearer'" class="auth-form">
-                  <el-input
-                    v-model="authConfig.token"
-                    placeholder="请输入Bearer Token"
-                    type="textarea"
-                    :rows="2"
-                  />
+                  <el-input v-model="authConfig.token" placeholder="请输入Bearer Token" type="textarea" :rows="2" />
                 </div>
 
                 <div v-if="authConfig.type === 'basic'" class="auth-form">
@@ -194,12 +184,7 @@
                       <el-option label="XML" value="xml" />
                       <el-option label="HTML" value="html" />
                     </el-select>
-                    <el-input
-                      v-model="requestConfig.body"
-                      type="textarea"
-                      :rows="8"
-                      placeholder="请输入原始数据"
-                    />
+                    <el-input v-model="requestConfig.body" type="textarea" :rows="8" placeholder="请输入原始数据" />
                   </div>
                 </div>
               </el-tab-pane>
@@ -208,27 +193,17 @@
 
           <!-- 发送按钮 -->
           <div class="send-section">
-            <el-button
-              type="primary"
-              size="large"
-              @click="sendRequest"
-              :loading="isRequesting"
-              :disabled="!hasValidRequest"
-            >
+            <el-button type="primary" size="large" @click="sendRequest" :loading="isRequesting" :disabled="!hasValidRequest">
               <el-icon><VideoPlay /></el-icon>
               {{ isRequesting ? '请求中...' : '发送请求' }}
             </el-button>
             
             <div class="send-options">
               <el-checkbox v-model="requestOptions.followRedirects">跟随重定向</el-checkbox>
-              <el-input-number
-                v-model="requestOptions.timeout"
-                :min="1"
-                :max="300"
-                size="small"
-                style="width: 100px"
-              />
-              <span>秒超时</span>
+              <div class="timeout-setting">
+                <el-input-number v-model="requestOptions.timeout" :min="1" :max="300" size="small" style="width: 100px" />
+                <span>秒超时</span>
+              </div>
             </div>
           </div>
         </el-card>
@@ -260,11 +235,10 @@
           <!-- 响应状态 -->
           <div v-if="responseData" class="response-status">
             <div class="status-line">
-              <el-tag
+              <el-tag>
                 :type="getStatusType(responseData.status)"
                 size="large"
                 effect="dark"
-              >
                 {{ responseData.status }} {{ responseData.statusText }}
               </el-tag>
               <span class="response-time">{{ responseData.time }}ms</span>
@@ -291,21 +265,17 @@
                       </el-button>
                     </el-button-group>
                   </div>
-                  <pre
-                    :class="['response-text', { 'wrap-text': responseWrap }]"
-                    v-html="highlightedResponse"
-                  ></pre>
+                  <pre :class="['response-text', { 'wrap-text': responseWrap }]" v-html="highlightedResponse"></pre>
                 </div>
               </el-tab-pane>
 
               <!-- 响应头 -->
               <el-tab-pane label="Headers" name="headers">
                 <div class="response-headers">
-                  <div
+                  <div>
                     v-for="(value, key) in responseData.headers"
                     :key="key"
                     class="header-item"
-                  >
                     <span class="header-key">{{ key }}:</span>
                     <span class="header-value">{{ value }}</span>
                   </div>
@@ -315,11 +285,10 @@
               <!-- Cookies -->
               <el-tab-pane label="Cookies" name="cookies">
                 <div class="response-cookies">
-                  <div
+                  <div>
                     v-for="cookie in responseData.cookies"
                     :key="cookie.name"
                     class="cookie-item"
-                  >
                     <el-descriptions :column="1" size="small">
                       <el-descriptions-item label="Name">{{ cookie.name }}</el-descriptions-item>
                       <el-descriptions-item label="Value">{{ cookie.value }}</el-descriptions-item>
@@ -361,21 +330,20 @@
       <el-card shadow="never">
         <template #header>
           <div class="card-header">
-            <span>测试用例</span>
+            <span>API测试场景</span>
             <el-button size="small" @click="showTestCaseDialog = true">
               <el-icon><Plus /></el-icon>
-              新建用例
+              新建场景
             </el-button>
           </div>
         </template>
 
         <div class="test-cases-list">
-          <div
+          <div>
             v-for="testCase in testCases"
             :key="testCase.id"
             :class="['test-case-item', { active: currentTestCase?.id === testCase.id }]"
             @click="loadTestCaseData(testCase)"
-          >
             <div class="case-info">
               <span class="case-name">{{ testCase.name }}</span>
               <span class="case-method">{{ testCase.method }}</span>
@@ -394,22 +362,16 @@
     </div>
 
     <!-- 测试用例对话框 -->
-    <el-dialog
+    <el-dialog>
       v-model="showTestCaseDialog"
-      title="保存测试用例"
+      title="保存API测试场景"
       width="500px"
-    >
       <el-form :model="testCaseForm" label-width="80px">
-        <el-form-item label="用例名称" required>
-          <el-input v-model="testCaseForm.name" placeholder="请输入用例名称" />
+        <el-form-item label="场景名称" required>
+          <el-input v-model="testCaseForm.name" placeholder="请输入场景名称" />
         </el-form-item>
         <el-form-item label="描述">
-          <el-input
-            v-model="testCaseForm.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入用例描述"
-          />
+          <el-input v-model="testCaseForm.description" type="textarea" :rows="3" placeholder="请输入场景描述" />
         </el-form-item>
       </el-form>
       
@@ -879,7 +841,7 @@ const saveTestCase = () => {
 
 const saveTestCaseData = () => {
   if (!testCaseForm.name.trim()) {
-    ElMessage.warning('请输入用例名称')
+    ElMessage.warning('请输入场景名称')
     return
   }
   
@@ -900,7 +862,7 @@ const saveTestCaseData = () => {
   // 保存到本地存储
   localStorage.setItem('api-test-cases', JSON.stringify(testCases.value))
   
-  ElMessage.success('测试用例保存成功')
+  ElMessage.success('API测试场景保存成功')
 }
 
 const loadTestCase = () => {
@@ -909,12 +871,12 @@ const loadTestCase = () => {
   if (saved) {
     try {
       testCases.value = JSON.parse(saved)
-      ElMessage.success('测试用例加载成功')
+      ElMessage.success('API测试场景加载成功')
     } catch {
-      ElMessage.error('测试用例数据格式错误')
+      ElMessage.error('API测试场景数据格式错误')
     }
   } else {
-    ElMessage.info('暂无保存的测试用例')
+    ElMessage.info('暂无保存的API测试场景')
   }
 }
 
@@ -923,7 +885,7 @@ const loadTestCaseData = (testCase) => {
   Object.assign(requestConfig, testCase.config)
   Object.assign(authConfig, testCase.auth)
   Object.assign(requestOptions, testCase.options)
-  ElMessage.success(`已加载测试用例: ${testCase.name}`)
+  ElMessage.success(`已加载API测试场景: ${testCase.name}`)
 }
 
 const editTestCase = (testCase) => {
@@ -935,7 +897,7 @@ const editTestCase = (testCase) => {
 const deleteTestCase = async (testCase) => {
   try {
     await ElMessageBox.confirm(
-      `确认删除测试用例 "${testCase.name}" 吗？`,
+      `确认删除API测试场景 "${testCase.name}" 吗？`,
       '确认删除',
       {
         confirmButtonText: '确认',
@@ -948,7 +910,7 @@ const deleteTestCase = async (testCase) => {
     if (index > -1) {
       testCases.value.splice(index, 1)
       localStorage.setItem('api-test-cases', JSON.stringify(testCases.value))
-      ElMessage.success('测试用例删除成功')
+      ElMessage.success('API测试场景删除成功')
     }
   } catch {
     // 用户取消

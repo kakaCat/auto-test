@@ -502,7 +502,7 @@ const loadAvailableApis = async () => {
 
     const response = await unifiedApi.apiManagementApi.getApis(params)
     if (response.success) {
-      const data = Array.isArray(response.data) ? response.data : (response.data?.items ?? [])
+      const data = Array.isArray(response.data) ? response.data : (response.data?.list ?? [])
       availableApis.value = data.map(api => ({
         ...api,
         url: api.url ?? api.path ?? ''

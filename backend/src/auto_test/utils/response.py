@@ -5,7 +5,7 @@ Response Utils - Simplified
 提供统一的API响应格式
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 def success_response(data: Any = None, message: str = "操作成功") -> dict:
     """成功响应"""
@@ -17,7 +17,7 @@ def success_response(data: Any = None, message: str = "操作成功") -> dict:
         response["data"] = data
     return response
 
-def error_response(message: str = "操作失败", code: int = 500) -> dict:
+def error_response(message: str = "操作失败", code: Optional[Union[int, str]] = 500) -> dict:
     """错误响应"""
     return {
         "success": False,

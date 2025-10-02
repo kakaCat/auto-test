@@ -76,6 +76,45 @@
 | **Repository** | **基础设施层**，数据库访问，SQL执行，事务管理 | 业务逻辑、业务规则 |
 | **Wrapper** | **防腐层**，权限包装静态工具类，权限控制、敏感信息过滤、缓存友好处理 | 数据收集、外部调用、业务流程 |
 
+## 📦 响应数据与分页规范（强制）
+
+为统一前后端契约、降低页面适配成本，所有“列表型”接口的响应必须遵循以下命名与结构规范：
+
+- 列表字段：使用 `list`（不使用 `items`/`apis`/`data` 等混合命名）
+- 统计字段：使用 `total` 表示总条数
+- 分页字段：使用 `page` 表示当前页码，使用 `size` 表示每页数量
+- 推荐包装：统一使用通用响应包装 `WebResponse[T]`/`ApiResponseGeneric[T]`
+
+示例（FastAPI）：
+
+```python
+from pydantic import BaseModel
+from typing import List
+
+class User(BaseModel):
+    id: int
+    name: str
+
+class ListResponse(BaseModel):
+    list: List[User] = []
+    total: int = 0
+    page: int = 1
+    size: int = 20
+
+@router.get("/users", response_model=WebResponse[ListResponse])
+async def list_users(page: int = 1, size: int = 20):
+    users = await service.list_users(page, size)
+    resp = ListResponse(list=[User(**u) for u in users], total=len(users), page=page, size=size)
+    return WebResponse.success(resp)
+```
+
+### 迁移与兼容建议
+- 旧接口若已返回 `items`/`apis` 等字段，应在控制器或 Converter 层添加兼容映射，额外填充 `list` 字段，逐步废弃旧命名。
+- 文档与类型定义必须以 `list/total/page/size` 为准，变更需在 `docs/backend/changelogs/` 中记录并关联前端文档映射。
+- 前端建议在统一的 `apiHandler` 适配层只消费 `list/total/page/size`，避免页面出现多格式判断。
+
+> 说明：该规范为强制项，任何新增列表接口必须按此命名；存量接口需在迭代中完成迁移，以减少技术债。
+
 ## 📝 Python FastAPI 控制器模板
 
 ### 基础控制器模板

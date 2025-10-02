@@ -14,21 +14,11 @@
       </el-radio-group>
       
       <div class="mode-actions">
-        <el-button 
-          v-if="currentMode === 'json'" 
-          size="small" 
-          @click="generateFromJson"
-          :disabled="!jsonContent.trim()"
-        >
+        <el-button v-if="currentMode === 'json'" size="small" @click="generateFromJson" :disabled="!jsonContent.trim()">
           <el-icon><Upload /></el-icon>
           从JSON生成表格
         </el-button>
-        <el-button 
-          v-if="currentMode === 'table'" 
-          size="small" 
-          @click="exportToJson"
-          :disabled="!parameters.length"
-        >
+        <el-button v-if="currentMode === 'table'" size="small" @click="exportToJson" :disabled="!parameters.length">
           <el-icon><Download /></el-icon>
           导出JSON
         </el-button>
@@ -42,22 +32,12 @@
           <el-icon><Plus /></el-icon>
           添加参数
         </el-button>
-        <el-button 
-          v-if="parameters.length > 0" 
-          size="small" 
-          @click="clearAll"
-        >
+        <el-button v-if="parameters.length > 0" size="small" @click="clearAll">
           <el-icon><Delete /></el-icon>
           清空所有
         </el-button>
         <div class="table-search">
-          <el-input
-            v-model="searchText"
-            size="small"
-            clearable
-            placeholder="搜索参数名/描述（自动展开匹配路径）"
-            @input="handleSearchInput"
-          >
+          <el-input v-model="searchText" size="small" clearable placeholder="搜索参数名/描述（自动展开匹配路径）" @input="handleSearchInput">
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
@@ -74,55 +54,25 @@
           <div class="header-cell actions">操作</div>
         </div>
         
-        <draggable 
-          v-model="parameters" 
-          item-key="id"
-          handle=".drag-handle"
-          @end="handleDragEnd"
-        >
+        <draggable v-model="parameters" item-key="id" handle=".drag-handle" @end="handleDragEnd">
           <template #item="{ element: param, index }">
-            <div 
-              :class="['parameter-row', { 'is-child': param.level > 0 }]"
-              :style="{ paddingLeft: `${param.level * 20}px` }"
-              v-show="isRowVisible(param)"
-            >
+            <div :class="['parameter-row', { 'is-child': param.level > 0 }]" :style="{ paddingLeft: `${param.level * 20}px` }" v-show="isRowVisible(param)">
               <div class="row-content">
                 <div class="cell name">
                   <el-icon class="drag-handle"><Rank /></el-icon>
-                  <el-button
-                    v-if="param.type === 'object' || param.type === 'array'"
-                    class="collapse-toggle"
-                    text
-                    size="small"
-                    aria-label="展开/折叠子参数"
-                    @click="toggleCollapse(param)"
-                  >
+                  <el-button v-if="param.type === 'object' || param.type === 'array'" class="collapse-toggle" text size="small" aria-label="展开/折叠子参数" @click="toggleCollapse(param)">
                     <el-icon>
                       <component :is="isCollapsed(param.id) ? 'CaretRight' : 'CaretBottom'" />
                     </el-icon>
                   </el-button>
-                  <el-input
-                    v-model="param.name"
-                    placeholder="参数名"
-                    size="small"
-                    @blur="validateParameterName(param, index)"
-                  />
-                  <el-button
-                    v-if="param.type === 'object' || param.type === 'array'"
-                    size="small"
-                    text
-                    @click="addChildParameter(index)"
-                  >
+                  <el-input v-model="param.name" placeholder="参数名" size="small" @blur="validateParameterName(param, index)" />
+                  <el-button v-if="param.type === 'object' || param.type === 'array'" size="small" text @click="addChildParameter(index)">
                     <el-icon><Plus /></el-icon>
                   </el-button>
                 </div>
                 
                 <div class="cell type">
-                  <el-select
-                    v-model="param.type"
-                    size="small"
-                    @change="handleTypeChange(param, index)"
-                  >
+                  <el-select v-model="param.type" size="small" @change="handleTypeChange(param, index)">
                     <el-option label="string" value="string" />
                     <el-option label="number" value="number" />
                     <el-option label="boolean" value="boolean" />
@@ -133,18 +83,11 @@
                 </div>
                 
                 <div class="cell required">
-                  <el-switch
-                    v-model="param.required"
-                    size="small"
-                  />
+                  <el-switch v-model="param.required" size="small" />
                 </div>
                 
                 <div class="cell description">
-                  <el-input
-                    v-model="param.description"
-                    placeholder="参数描述"
-                    size="small"
-                  />
+                  <el-input v-model="param.description" placeholder="参数描述" size="small" />
                 </div>
                 
                 <div class="cell actions">
@@ -193,22 +136,11 @@
       </div>
       
       <div class="json-editor">
-        <el-input
-          v-model="jsonContent"
-          type="textarea"
-          :rows="15"
-          placeholder="请输入JSON Schema或参数示例..."
-          @blur="validateJson"
-        />
+        <el-input v-model="jsonContent" type="textarea" :rows="15" placeholder="请输入JSON Schema或参数示例..." @blur="validateJson" />
       </div>
       
       <div v-if="jsonError" class="json-error">
-        <el-alert
-          :title="jsonError"
-          type="error"
-          show-icon
-          :closable="false"
-        />
+        <el-alert :title="jsonError" type="error" show-icon :closable="false" />
       </div>
     </div>
 

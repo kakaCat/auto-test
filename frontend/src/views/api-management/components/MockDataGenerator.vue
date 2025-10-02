@@ -1,11 +1,5 @@
 <template>
-  <el-drawer
-    v-model="visible"
-    title="Mock数据生成器"
-    size="60%"
-    direction="rtl"
-    :before-close="handleClose"
-  >
+  <el-drawer v-model="visible" title="Mock数据生成器" size="60%" direction="rtl" :before-close="handleClose">
     <div class="mock-generator">
       <!-- API信息展示 -->
       <div class="api-info">
@@ -41,16 +35,8 @@
           <el-form-item label="字段配置" v-if="['object', 'array'].includes(mockConfig.dataType)">
             <div class="field-config">
               <div v-for="(field, index) in mockConfig.fields" :key="index" class="field-item">
-                <el-input
-                  v-model="field.name"
-                  placeholder="字段名"
-                  style="width: 150px; margin-right: 10px;"
-                />
-                <el-select
-                  v-model="field.type"
-                  placeholder="字段类型"
-                  style="width: 120px; margin-right: 10px;"
-                >
+                <el-input v-model="field.name" placeholder="字段名" style="width: 150px; margin-right: 10px;" />
+                <el-select v-model="field.type" placeholder="字段类型" style="width: 120px; margin-right: 10px;">
                   <el-option label="字符串" value="string" />
                   <el-option label="数字" value="number" />
                   <el-option label="布尔值" value="boolean" />
@@ -60,19 +46,8 @@
                   <el-option label="URL" value="url" />
                   <el-option label="UUID" value="uuid" />
                 </el-select>
-                <el-input
-                  v-model="field.description"
-                  placeholder="字段描述"
-                  style="width: 150px; margin-right: 10px;"
-                />
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="removeField(index)"
-                  :disabled="mockConfig.fields.length <= 1"
-                >
-                  删除
-                </el-button>
+                <el-input v-model="field.description" placeholder="字段描述" style="width: 150px; margin-right: 10px;" />
+                <el-button type="danger" size="small" @click="removeField(index)" :disabled="mockConfig.fields.length <= 1">删除</el-button>
               </div>
               <el-button type="primary" size="small" @click="addField">添加字段</el-button>
             </div>
@@ -96,13 +71,7 @@
             重新生成
           </el-button>
         </h3>
-        <el-input
-          v-model="generatedMockData"
-          type="textarea"
-          :rows="15"
-          readonly
-          placeholder="点击生成按钮查看Mock数据"
-        />
+        <el-input v-model="generatedMockData" type="textarea" :rows="15" readonly placeholder="点击生成按钮查看Mock数据" />
       </div>
 
       <!-- 操作按钮 -->

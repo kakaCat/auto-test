@@ -128,14 +128,17 @@ class RequestCache {
 
     // 设置自动清理定时器
     if (this.timers.has(key)) {
-      clearTimeout(this.timers.get(key))
+      const existing = this.timers.get(key)
+      if (existing !== undefined) {
+        window.clearTimeout(existing)
+      }
     }
     
-    const timer = setTimeout(() => {
+    const timerId = window.setTimeout(() => {
       this.delete(key)
     }, cacheTime)
     
-    this.timers.set(key, timer)
+    this.timers.set(key, timerId)
   }
 
   /**
@@ -145,8 +148,11 @@ class RequestCache {
   delete(key: string): void {
     this.cache.delete(key)
     if (this.timers.has(key)) {
-      clearTimeout(this.timers.get(key))
-      this.timers.delete(key)
+      const timerId = this.timers.get(key)
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId)
+        this.timers.delete(key)
+      }
     }
   }
 
@@ -155,7 +161,7 @@ class RequestCache {
    */
   clear(): void {
     this.cache.clear()
-    this.timers.forEach(timer => clearTimeout(timer))
+    this.timers.forEach(timerId => window.clearTimeout(timerId))
     this.timers.clear()
   }
 
@@ -224,6 +230,32 @@ class ApiHandler {
 
       // 执行请求
       let result = await this.executeWithRetry<T>(requestFn, config)
+
+      // 列表数据适配：统一为 data.list/total/page/size（兼容期保留 pageSize）
+      if (result?.success && result?.data && typeof result.data === 'object') {
+        const dataObj: any = result.data as any
+        const hasList = Array.isArray(dataObj.list)
+        const hasItems = Array.isArray(dataObj.items)
+        const hasApis = Array.isArray(dataObj.apis)
+        if (hasList || hasItems || hasApis) {
+          const listArr = hasList ? dataObj.list : (hasItems ? dataObj.items : dataObj.apis)
+          const pageVal = typeof dataObj.page === 'number' ? dataObj.page : 1
+          const sizeVal = typeof dataObj.size === 'number' 
+            ? dataObj.size 
+            : (typeof dataObj.pageSize === 'number' ? dataObj.pageSize : (Array.isArray(listArr) ? listArr.length : 0))
+          const totalVal = typeof dataObj.total === 'number' ? dataObj.total : (Array.isArray(listArr) ? listArr.length : 0)
+          const adapted = {
+            ...dataObj,
+            list: listArr ?? [],
+            total: totalVal,
+            page: pageVal,
+            size: sizeVal,
+            // 兼容旧字段，逐步废弃
+            pageSize: typeof dataObj.pageSize === 'number' ? dataObj.pageSize : sizeVal
+          }
+          result = { ...result, data: adapted as any }
+        }
+      }
       
       // 数据转换
       if (config.transform) {
@@ -639,4 +671,26 @@ export const apiUtils: ApiUtils = {
 
 // 导出API处理器和工具方法
 export { apiHandler, requestCache }
+
+// 统一列表响应归一化（提供独立工具函数，页面可选直接使用）
+export function normalizeList<T = any>(resp: ApiResponse<any>) {
+  const dataObj: any = resp?.data ?? {}
+  const listArr = Array.isArray(dataObj.list)
+    ? dataObj.list
+    : (Array.isArray(dataObj.items) ? dataObj.items : (Array.isArray(dataObj.apis) ? dataObj.apis : []))
+  const pageVal = typeof dataObj.page === 'number' ? dataObj.page : 1
+  const sizeVal = typeof dataObj.size === 'number' 
+    ? dataObj.size 
+    : (typeof dataObj.pageSize === 'number' ? dataObj.pageSize : (Array.isArray(listArr) ? listArr.length : 0))
+  const totalVal = typeof dataObj.total === 'number' ? dataObj.total : (Array.isArray(listArr) ? listArr.length : 0)
+  return {
+    success: !!resp?.success,
+    message: resp?.message,
+    code: typeof resp?.code === 'number' ? resp.code : 0,
+    list: listArr,
+    total: totalVal,
+    page: pageVal,
+    size: sizeVal
+  }
+}
 export default apiUtils

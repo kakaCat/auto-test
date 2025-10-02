@@ -9,7 +9,6 @@ import { NodeStatus, WorkflowNode, NodeConnection, ExecutionContext, NodeExecuti
 
 // 执行模式枚举
 export enum ExecutionMode {
-  SEQUENTIAL = 'SEQUENTIAL',   // 顺序执行
   PARALLEL = 'PARALLEL',       // 并行执行
   MIXED = 'MIXED'              // 混合执行
 }

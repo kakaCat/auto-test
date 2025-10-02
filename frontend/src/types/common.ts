@@ -12,7 +12,8 @@ export interface Result<T = unknown> {
   message: string
   data?: T
   error?: ApiError
-  timestamp: string
+  code?: number | string
+  timestamp?: string
 }
 
 // 兼容旧命名：保持ApiResponse与Result一致
@@ -21,6 +22,7 @@ export interface ApiResponse<T = any> extends Result<T> {}
 // ============= 分页相关类型 =============
 export interface PaginationParams {
   page?: number
+  size?: number
   pageSize?: number
 }
 
@@ -28,6 +30,9 @@ export interface PaginationData<T> {
   list: T[]
   total: number
   page: number
+  // 新规范字段
+  size: number
+  // 兼容旧字段（逐步废弃）
   pageSize: number
 }
 

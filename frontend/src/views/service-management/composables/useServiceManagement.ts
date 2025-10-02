@@ -111,6 +111,8 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   const debouncedSearch = debounce(() => {
     // 搜索逻辑在计算属性中处理，这里可以添加额外的搜索逻辑
     pagination.currentPage = 1
+    // 同步统一字段
+    ;(pagination as any).page = 1
   }, 300)
   
   // 监听搜索表单变化
@@ -173,9 +175,11 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   const paginatedData = computed(() => {
     const data = treeTableData.value
     pagination.total = data.length
-    
-    const start = (pagination.currentPage - 1) * pagination.pageSize
-    const end = start + pagination.pageSize
+    // 兼容统一分页字段 page/size
+    const page = (pagination as any).page ?? pagination.currentPage
+    const size = (pagination as any).size ?? pagination.pageSize
+    const start = (page - 1) * size
+    const end = start + size
     
     return data.slice(start, end)
   })
@@ -237,8 +241,9 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
       }
       
       if (systemForm.id) {
-        // 编辑模式
-        await systemApiProxy.update(systemForm.id, saveData)
+        // 编辑模式（后端期望数字ID，进行转换）
+        const systemIdNum = Number(systemForm.id)
+        await systemApiProxy.update(systemIdNum, saveData)
         ElMessage.success('系统更新成功')
       } else {
         // 新增模式
@@ -281,7 +286,9 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
           }
         }
         
-        await moduleApiProxy.update(moduleForm.id, updateData)
+        // 后端期望数字ID，进行转换
+        const moduleIdNum = Number(moduleForm.id)
+        await moduleApiProxy.update(moduleIdNum, updateData)
         ElMessage.success('模块更新成功')
       } else {
         // 新增模式 - 需要发送system_id字段
@@ -353,7 +360,9 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
       case 'toggle':
         try {
           const newStatus = !system.enabled
-          await systemApiProxy.toggleEnabled(systemId, newStatus)
+          // 后端期望数字ID，进行转换
+          const systemIdNum = Number(systemId)
+          await systemApiProxy.toggleEnabled(systemIdNum, newStatus)
           
           // 更新本地状态
           system.enabled = newStatus
@@ -430,7 +439,9 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
       case 'toggle':
         try {
           const newStatus = !targetModule.enabled
-          const response = await moduleApiProxy.toggleEnabled(moduleId, newStatus)
+          // 后端期望数字ID，进行转换
+          const moduleIdNum = Number(moduleId)
+          const response = await moduleApiProxy.toggleEnabled(moduleIdNum, newStatus)
           
           // 更新本地状态
           targetModule.enabled = newStatus
@@ -470,11 +481,16 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   
   const handleCurrentChange = (page: number): void => {
     pagination.currentPage = page
+    // 同步统一字段
+    ;(pagination as any).page = page
   }
   
   const handleSizeChange = (size: number): void => {
     pagination.pageSize = size
     pagination.currentPage = 1
+    // 同步统一字段
+    ;(pagination as any).size = size
+    ;(pagination as any).page = 1
   }
   
   const refreshData = async (): Promise<void> => {

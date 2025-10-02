@@ -5,8 +5,8 @@
 ## 模块列表
 
 ### 核心业务模块
-- [AI 场景执行](./ai_scenario_execution.md) - AI 驱动的测试场景执行
-- [场景管理](./scenario_management.md) - 测试场景的创建、编辑和管理
+- [AI 场景执行](./ai_scenario_execution.md) - （历史）AI 驱动的测试场景执行
+- （已废弃）场景管理 - 请使用“测试API管理”，参见相关 API 管理与测试用例文档
 - [API 管理](./api_management.md) - API 接口的管理和配置
 - [工作流编排](./workflow_orchestration.md) - 复杂测试流程的编排
 

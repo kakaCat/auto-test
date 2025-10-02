@@ -14,21 +14,11 @@
       </el-radio-group>
       
       <div class="mode-actions">
-        <el-button 
-          v-if="currentMode === 'json'" 
-          size="small" 
-          @click="generateFromJson"
-          :disabled="!jsonContent.trim()"
-        >
+        <el-button v-if="currentMode === 'json'" size="small" @click="generateFromJson" :disabled="!jsonContent.trim()">
           <el-icon><Upload /></el-icon>
           从JSON生成表格
         </el-button>
-        <el-button 
-          v-if="currentMode === 'table'" 
-          size="small" 
-          @click="exportToJson"
-          :disabled="!responses.length"
-        >
+        <el-button v-if="currentMode === 'table'" size="small" @click="exportToJson" :disabled="!responses.length">
           <el-icon><Download /></el-icon>
           导出JSON
         </el-button>
@@ -39,21 +29,15 @@
     <div v-if="currentMode === 'table'" class="table-mode">
       <!-- 状态码标签页 -->
       <el-tabs v-model="activeStatusCode" @tab-click="handleTabClick">
-        <el-tab-pane
+        <el-tab-pane>
           v-for="response in responses"
           :key="response.statusCode"
           :label="`${response.statusCode} ${getStatusText(response.statusCode)}`"
           :name="response.statusCode"
-        >
           <template #label>
             <span :class="['status-tab', getStatusType(response.statusCode)]">
               {{ response.statusCode }} {{ getStatusText(response.statusCode) }}
-              <el-button
-                v-if="responses.length > 1"
-                size="small"
-                text
-                @click.stop="removeStatusCode(response.statusCode)"
-              >
+              <el-button v-if="responses.length > 1" size="small" text @click.stop="removeStatusCode(response.statusCode)">
                 <el-icon><Close /></el-icon>
               </el-button>
             </span>
@@ -62,21 +46,13 @@
           <!-- 响应字段配置 -->
           <div class="response-fields">
             <div class="fields-header">
-              <el-input
-                v-model="response.description"
-                placeholder="响应描述"
-                style="width: 300px"
-              />
+              <el-input v-model="response.description" placeholder="响应描述" style="width: 300px" />
               <div class="field-actions">
                 <el-button size="small" @click="addField(response.statusCode)">
                   <el-icon><Plus /></el-icon>
                   添加字段
                 </el-button>
-                <el-button 
-                  v-if="response.fields.length > 0" 
-                  size="small" 
-                  @click="clearFields(response.statusCode)"
-                >
+                <el-button v-if="response.fields.length > 0" size="small" @click="clearFields(response.statusCode)">
                   <el-icon><Delete /></el-icon>
                   清空字段
                 </el-button>
@@ -92,40 +68,20 @@
                 <div class="header-cell actions">操作</div>
               </div>
               
-              <draggable 
-                v-model="response.fields" 
-                item-key="id"
-                handle=".drag-handle"
-              >
+              <draggable v-model="response.fields" item-key="id" handle=".drag-handle">
                 <template #item="{ element: field, index }">
-                  <div 
-                    :class="['field-row', { 'is-child': field.level > 0 }]"
-                    :style="{ paddingLeft: `${field.level * 20}px` }"
-                  >
+                  <div :class="['field-row', { 'is-child': field.level > 0 }]" :style="{ paddingLeft: `${field.level * 20}px` }">
                     <div class="row-content">
                       <div class="cell name">
                         <el-icon class="drag-handle"><Rank /></el-icon>
-                        <el-input
-                          v-model="field.name"
-                          placeholder="字段名"
-                          size="small"
-                        />
-                        <el-button
-                          v-if="field.type === 'object' || field.type === 'array'"
-                          size="small"
-                          text
-                          @click="addChildField(response.statusCode, index)"
-                        >
+                        <el-input v-model="field.name" placeholder="字段名" size="small" />
+                        <el-button v-if="field.type === 'object' || field.type === 'array'" size="small" text @click="addChildField(response.statusCode, index)">
                           <el-icon><Plus /></el-icon>
                         </el-button>
                       </div>
                       
                       <div class="cell type">
-                        <el-select
-                          v-model="field.type"
-                          size="small"
-                          @change="handleFieldTypeChange(field, index, response.statusCode)"
-                        >
+                        <el-select v-model="field.type" size="small" @change="handleFieldTypeChange(field, index, response.statusCode)">
                           <el-option label="string" value="string" />
                           <el-option label="number" value="number" />
                           <el-option label="boolean" value="boolean" />
@@ -136,18 +92,11 @@
                       </div>
                       
                       <div class="cell required">
-                        <el-switch
-                          v-model="field.required"
-                          size="small"
-                        />
+                        <el-switch v-model="field.required" size="small" />
                       </div>
                       
                       <div class="cell description">
-                        <el-input
-                          v-model="field.description"
-                          placeholder="字段描述"
-                          size="small"
-                        />
+                        <el-input v-model="field.description" placeholder="字段描述" size="small" />
                       </div>
                       
                       <div class="cell actions">
@@ -183,12 +132,7 @@
                   自动生成
                 </el-button>
               </div>
-              <el-input
-                v-model="response.example"
-                type="textarea"
-                :rows="6"
-                placeholder="请输入响应示例（JSON格式）"
-              />
+              <el-input v-model="response.example" type="textarea" :rows="6" placeholder="请输入响应示例（JSON格式）" />
             </div>
           </div>
         </el-tab-pane>
@@ -232,22 +176,11 @@
       </div>
       
       <div class="json-editor">
-        <el-input
-          v-model="jsonContent"
-          type="textarea"
-          :rows="20"
-          placeholder="请输入响应示例JSON..."
-          @blur="validateJson"
-        />
+        <el-input v-model="jsonContent" type="textarea" :rows="20" placeholder="请输入响应示例JSON..." @blur="validateJson" />
       </div>
       
       <div v-if="jsonError" class="json-error">
-        <el-alert
-          :title="jsonError"
-          type="error"
-          show-icon
-          :closable="false"
-        />
+        <el-alert :title="jsonError" type="error" show-icon :closable="false" />
       </div>
     </div>
   </div>

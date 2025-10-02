@@ -66,7 +66,10 @@ export const defaultPagination: PaginationConfig = {
   currentPage: 1,
   pageSize: 10,
   total: 0,
-  pageSizes: [10, 20, 50, 100]
+  pageSizes: [10, 20, 50, 100],
+  // 兼容统一分页字段
+  page: 1,
+  size: 10
 }
 
 // 系统表单默认数据

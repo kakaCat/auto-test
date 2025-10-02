@@ -17,7 +17,7 @@
       <div v-if="mode === 'url'">
         <el-form label-width="120px" class="runner-form">
           <el-form-item label="请求URL">
-            <el-input v-model="apiUrl" placeholder="输入一个GET接口URL，例如 /api/interfaces/6" />
+            <el-input v-model="apiUrl" placeholder="输入一个GET接口URL，例如 /api/api-interfaces/v1/6" />
           </el-form-item>
 
           <el-form-item label="Extract映射(JSON)">
@@ -66,17 +66,17 @@
           <el-table :data="records" size="small" style="width: 100%">
             <el-table-column label="名称" prop="name" width="160" />
             <el-table-column label="方法" width="100">
-              <template #default="{ row }">
-                <el-tag size="small" :type="getMethodTag(row.method)">{{ row.method }}</el-tag>
+              <template #default="scope">
+                <el-tag size="small" :type="getMethodTag(scope.row.method)">{{ scope.row.method }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="路径">
-              <template #default="{ row }"><code>{{ row.path }}</code></template>
+              <template #default="scope"><code>{{ scope.row.path }}</code></template>
             </el-table-column>
             <el-table-column label="耗时(ms)" prop="durationMs" width="100" />
             <el-table-column label="结果" width="120">
-              <template #default="{ row }">
-                <el-tag :type="row.success ? 'success' : 'danger'" size="small">{{ row.success ? '成功' : '失败' }}</el-tag>
+              <template #default="scope">
+                <el-tag :type="scope.row.success ? 'success' : 'danger'" size="small">{{ scope.row.success ? '成功' : '失败' }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="消息" prop="message" />
@@ -121,7 +121,7 @@ const pageRuntime = usePageRuntimeStore()
 const mode = ref<'url' | 'config'>('url')
 
 // 默认演示URL与映射（可根据接口结构调整）
-const apiUrl = ref('/api/interfaces/6')
+const apiUrl = ref('/api/api-interfaces/v1/6')
 const mappingText = ref('{\n  "id": "apiId",\n  "name": "apiName"\n}')
 const configText = ref(defaultConfigText())
 const loading = ref(false)
@@ -129,6 +129,18 @@ const { running: executorRunning, records, runSerial, clear } = usePageRuntimeEx
 
 const runtimeData = computed(() => pageRuntime.data)
 const lastResponse = computed(() => pageRuntime.lastResponse)
+
+// 方法映射到 Element Plus Tag 类型
+function getMethodTag(method: string): string {
+  const types: Record<string, string> = {
+    GET: 'success',
+    POST: 'primary',
+    PUT: 'warning',
+    DELETE: 'danger',
+    PATCH: 'info'
+  }
+  return types[method] || 'info'
+}
 
 function parseMapping(): ApiResponseMapping | null {
   try {
@@ -230,11 +242,16 @@ function defaultConfigText(): string {
     apis: [
       {
         id: 'demo-interfaces-6',
+        apiId: 6,
         name: '接口详情',
         method: 'GET',
-        path: '/api/interfaces/6',
+        path: '/api/api-interfaces/v1/6',
+        callType: 'serial',
         order: 1,
+        params: { static: {}, dynamic: {} },
         response: { extract: { id: 'apiId', name: 'apiName' } }
+        ,
+        error: {}
       }
     ],
     flowChart: { nodes: [], edges: [] }

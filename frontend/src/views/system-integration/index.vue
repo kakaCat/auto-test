@@ -54,7 +54,8 @@ import ActionPanel from './components/ActionPanel.vue'
 
 // 导入数据配置
 import { pageConfig, batchActions, DEFAULT_PAGINATION } from './data/constants'
-import { searchFormConfig, tableConfig, type Integration } from './data/table-config'
+import { searchFormConfig, tableConfig } from './data/table-config'
+import type { Integration } from './data/table-config'
 import { mockIntegrations, mockStatistics } from './data/mock-data'
 
 // 响应式数据
@@ -217,12 +218,17 @@ const handleClearSelection = (): void => {
 const handleSizeChange = (size: number): void => {
   pagination.pageSize = size
   pagination.currentPage = 1
+  // 同步统一字段
+  ;(pagination as any).size = size
+  ;(pagination as any).page = 1
   loadIntegrationList()
 }
 
 // 当前页变化
 const handleCurrentChange = (page: number): void => {
   pagination.currentPage = page
+  // 同步统一字段
+  ;(pagination as any).page = page
   loadIntegrationList()
 }
 

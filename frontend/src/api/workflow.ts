@@ -78,12 +78,44 @@ export interface ExportParams {
 // 工作流管理
 export const workflowApi = {
   /**
+   * 内部工具：参数键名归一化（支持常见 camelCase→snake_case）
+   */
+  _normalizeQueryParams(params: Record<string, any> = {}): Record<string, any> {
+    const p = { ...params }
+    if (p.pageSize !== undefined) {
+      p.page_size = p.pageSize
+      delete p.pageSize
+    }
+    if (p.createdTime !== undefined) {
+      p.created_time = p.createdTime
+      delete p.createdTime
+    }
+    if (Array.isArray(p.createdTimeRange)) {
+      p.created_time_range = p.createdTimeRange.join(',')
+      delete p.createdTimeRange
+    }
+    if (p.updatedTime !== undefined) {
+      p.updated_time = p.updatedTime
+      delete p.updatedTime
+    }
+    if (Array.isArray(p.updatedTimeRange)) {
+      p.updated_time_range = p.updatedTimeRange.join(',')
+      delete p.updatedTimeRange
+    }
+    if (p.enabledOnly !== undefined) {
+      p.enabled_only = p.enabledOnly
+      delete p.enabledOnly
+    }
+    return p
+  },
+  /**
    * 获取工作流列表
    * @param params - 查询参数
    * @returns 工作流列表数据
    */
   getWorkflowList(params: WorkflowListParams = {}): Promise<ApiResponse> {
-    return request.get('/api/workflows/v1/', params)
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return request.get('/api/workflows/v1/', normalized)
   },
 
   /**
@@ -160,7 +192,8 @@ export const workflowApi = {
    * @returns 执行历史
    */
   getExecutionHistory(workflowId: string, params: ExecutionHistoryParams = {}): Promise<ApiResponse> {
-    return request.get(`/api/workflows/v1/${workflowId}/executions`, { params })
+    const normalized = (this as any)._normalizeQueryParams(params)
+    return request.get(`/api/workflows/v1/${workflowId}/executions`, { params: normalized })
   },
 
   /**
