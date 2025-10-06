@@ -32,22 +32,36 @@ async def get_enabled_systems():
 @router.get("/systems/v1/enabled/{category}", response_model=dict, summary="根据分类获取启用系统列表")
 async def get_enabled_systems_by_category(category: str):
     """
-    根据分类获取启用状态的系统列表
+    根据分类获取启用状态的系统列表（仅系统信息）
     
     Args:
         category: 系统分类 ('backend' 或 'frontend')
     """
     try:
-        # 验证分类参数
         if category not in ['backend', 'frontend']:
             raise HTTPException(status_code=400, detail="分类参数无效，只支持 'backend' 或 'frontend'")
-            
         systems = SystemService.get_enabled_systems_by_category(category)
         return success_response(data=systems, message=f"获取分类为 '{category}' 的启用系统列表成功")
     except HTTPException:
         raise
     except Exception as e:
         return error_response(message=f"获取分类系统列表失败: {str(e)}")
+
+@router.get("/systems/v1/enabled_tree", response_model=dict, summary="获取启用系统及其启用模块的树状数据")
+async def get_enabled_systems_tree(category: str = None):
+    """
+    获取启用系统及其启用模块的树状数据，支持按分类筛选
+    """
+    try:
+        # 如果提供了分类参数，进行基本校验
+        if category is not None and category not in ['backend', 'frontend']:
+            raise HTTPException(status_code=400, detail="分类参数无效，只支持 'backend' 或 'frontend'")
+        data = SystemService.get_enabled_systems_with_modules(category)
+        return success_response(data=data, message="获取启用系统树数据成功")
+    except HTTPException:
+        raise
+    except Exception as e:
+        return error_response(message=f"获取启用系统树数据失败: {str(e)}")
 
 @router.get("/systems/v1/{system_id}", response_model=dict, summary="获取系统详情")
 async def get_system(system_id: int):

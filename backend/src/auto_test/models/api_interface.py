@@ -5,7 +5,7 @@ API Interface Model - Simplified
 
 from datetime import datetime
 from typing import Optional, List, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ApiInterfaceBase(BaseModel):
@@ -33,6 +33,19 @@ class ApiInterfaceCreate(ApiInterfaceBase):
     system_id: int = Field(..., description="所属系统ID")
     module_id: int = Field(..., description="所属模块ID")
 
+    @field_validator('system_id', 'module_id', mode='before')
+    @staticmethod
+    def _validate_fk(v):
+        if v is None:
+            raise ValueError('外键ID不能为空')
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('外键ID必须为数字类型')
+
 
 class ApiInterfaceUpdate(BaseModel):
     """更新API接口模型"""
@@ -56,6 +69,19 @@ class ApiInterfaceUpdate(BaseModel):
     system_id: Optional[int] = Field(None, description="所属系统ID")
     module_id: Optional[int] = Field(None, description="所属模块ID")
 
+    @field_validator('system_id', 'module_id', mode='before')
+    @staticmethod
+    def _validate_optional_fk(v):
+        if v is None:
+            return None
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('外键ID必须为数字类型')
+
 
 class ApiInterface(ApiInterfaceBase):
     """API接口模型"""
@@ -67,6 +93,32 @@ class ApiInterface(ApiInterfaceBase):
     system_name: Optional[str] = Field(None, description="系统名称")
     module_name: Optional[str] = Field(None, description="模块名称")
     enabled: Optional[bool] = Field(None, description="是否启用（兼容字段）")
+
+    @field_validator('system_id', mode='before')
+    @staticmethod
+    def _validate_system_id(v):
+        if v is None:
+            raise ValueError('system_id不能为空')
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('system_id必须为数字类型')
+
+    @field_validator('module_id', mode='before')
+    @staticmethod
+    def _validate_module_id(v):
+        if v is None:
+            return None
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('module_id必须为数字类型')
     
     class Config:
         from_attributes = True

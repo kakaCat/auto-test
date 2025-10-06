@@ -4,7 +4,7 @@ Page Management Data Models
 """
 
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
 
@@ -20,6 +20,19 @@ class PageBase(BaseModel):
 class PageCreate(PageBase):
     """创建页面模型"""
     system_id: int = Field(..., description="所属系统ID")
+
+    @field_validator('system_id', mode='before')
+    @staticmethod
+    def _validate_system_id_create(v):
+        if v is None:
+            raise ValueError('system_id不能为空')
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('system_id必须为数字类型')
 
 
 class PageUpdate(BaseModel):
@@ -37,6 +50,19 @@ class Page(PageBase):
     system_id: int = Field(..., description="所属系统ID")
     created_at: datetime = Field(..., description="创建时间")
     updated_at: datetime = Field(..., description="更新时间")
+
+    @field_validator('system_id', mode='before')
+    @staticmethod
+    def _validate_system_id_entity(v):
+        if v is None:
+            raise ValueError('system_id不能为空')
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('system_id必须为数字类型')
 
     class Config:
         from_attributes = True
@@ -100,6 +126,19 @@ class PageQueryRequest(BaseModel):
     status: Optional[str] = Field(None, description="状态")
     page: int = Field(1, description="页码", ge=1)
     size: int = Field(10, description="每页数量", ge=1, le=100)
+
+    @field_validator('system_id', mode='before')
+    @staticmethod
+    def _validate_system_id_query(v):
+        if v is None:
+            return None
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.isdigit():
+                return int(s)
+        raise ValueError('system_id必须为数字类型')
 
 
 class PageResponse(BaseModel):

@@ -11,6 +11,7 @@ from ..database.dao import SystemDAO, ModuleDAO, SystemCategoryDAO
 from ..models.system import System, SystemCreate, SystemUpdate
 from ..utils.logger import get_logger
 from ..transforms import SystemTransform
+from ..services.module_service import ModuleService
 
 logger = get_logger(__name__)
 
@@ -507,4 +508,36 @@ class SystemService:
             
         except Exception as e:
             logger.error(f"获取分类为 '{category}' 的启用系统列表失败: {e}")
+            return []
+
+    @staticmethod
+    def get_enabled_systems_with_modules(category: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        获取启用系统及其启用模块的树状数据
+        
+        Args:
+            category (Optional[str]): 系统分类，可选（'backend' 或 'frontend'）
+        
+        Returns:
+            List[Dict[str, Any]]: 系统列表，每个系统包含其启用的模块列表（字段为 'modules'）
+        """
+        try:
+            # 获取启用系统，按需按分类过滤
+            systems = SystemService.get_enabled_systems()
+            if category is not None:
+                systems = [s for s in systems if s.get('category') == category]
+
+            result: List[Dict[str, Any]] = []
+            for sys in systems:
+                sid = sys.get('id')
+                # 获取该系统下启用的模块
+                enabled_modules = ModuleService.get_enabled_modules(sid) if sid is not None else []
+                # 组装返回数据，保留系统原有字段并添加 modules 字段
+                node = { **sys, 'modules': enabled_modules }
+                result.append(node)
+
+            logger.info(f"获取启用系统及其启用模块列表，分类: {category}，系统数: {len(result)}")
+            return result
+        except Exception as e:
+            logger.error(f"获取启用系统及其启用模块列表失败: {e}")
             return []

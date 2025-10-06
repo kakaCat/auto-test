@@ -538,39 +538,67 @@ const filteredApiList = computed<ApiItem[]>(() => {
 // 方法
 const loadSystemList = async (retryCount = 0): Promise<void> => {
   try {
-    // 使用新的按分类获取启用系统接口
-    const response = await systemApi.getEnabledListByCategory('backend')
-    // 兼容两种返回结构：数组 或 { success, data }
-    const data = Array.isArray(response) ? response : (response?.data ?? [])
-    if (Array.isArray(data)) {
-      systemList.value = data
-      // 将系统写入轻量缓存，模块稍后填充
+    // 使用统一的启用系统-模块树接口
+    const response = await systemApi.getEnabledTree('backend')
+    if (response.success) {
+      const list = Array.isArray(response.data) ? response.data : []
+      // 设置系统列表
+      systemList.value = list as SystemItem[]
+      // 聚合模块列表
+      moduleList.value = (list as unknown[]).flatMap((s: unknown) => {
+        const mods = (s as { modules?: unknown }).modules
+        return Array.isArray(mods) ? mods : []
+      }) as ModuleItem[]
+      // 写入缓存
       serviceStore.setSystems(systemList.value)
-      await loadModuleList() // 加载系统后立即加载模块
-      // 合并系统与模块到缓存，避免重复请求
       if (Array.isArray(moduleList.value)) {
         serviceStore.setSystemsAndModules(systemList.value, moduleList.value)
       }
-      buildSystemTree()
+      // 直接构建系统-模块树
+      const treeData: TreeNode[] = (list as unknown[]).map((system: unknown) => {
+        const sys = system as SystemItem & { modules?: ModuleItem[]; category?: string }
+        const systemNode: TreeNode = {
+          id: sys.id,
+          label: sys.name,
+          type: 'system',
+          category: (sys as any).category ?? 'other',
+          children: []
+        }
+        const mods = Array.isArray(sys.modules) ? sys.modules : []
+        mods.forEach((module: ModuleItem) => {
+          const moduleNode: TreeNode = {
+            id: module.id,
+            label: module.name,
+            type: 'module',
+            systemId: sys.id,
+            children: []
+          }
+          systemNode.children!.push(moduleNode)
+        })
+        return systemNode
+      })
+      systemTreeData.value = treeData
     } else {
-      console.warn('系统列表数据格式不正确:', data)
+      console.warn('系统与模块树接口返回失败:', response)
       systemList.value = []
-      throw new Error('获取启用系统列表失败')
+      moduleList.value = []
+      throw new Error('获取启用系统及模块树失败')
     }
   } catch (error: unknown) {
-    console.error('加载启用系统列表失败:', error)
-    systemList.value = [] // 确保在错误时设置为空数组
+    console.error('加载启用系统与模块树失败:', error)
+    systemList.value = []
+    moduleList.value = []
     // 清空缓存防止脏数据
     serviceStore.setSystems([])
     const msg = error instanceof Error ? error.message : '网络连接错误'
     
     if (retryCount < 2) {
-      ElMessage.warning(`加载启用系统列表失败，正在重试... (${retryCount + 1}/3)`) 
+      ElMessage.warning(`加载启用系统与模块树失败，正在重试... (${retryCount + 1}/3)`) 
       setTimeout(() => loadSystemList(retryCount + 1), 1000)
     } else {
-      ElMessage.error('加载启用系统列表失败: ' + msg)
+      ElMessage.error('加载启用系统与模块树失败: ' + msg)
       ElMessageBox.confirm(
-        '加载启用系统列表失败，是否重新尝试？',
+        '加载启用系统与模块树失败，是否重新尝试？',
         '网络错误',
         {
           confirmButtonText: '重试',
@@ -631,49 +659,37 @@ const loadModuleList = async (retryCount = 0): Promise<void> => {
 
 const buildSystemTree = async (): Promise<void> => {
   try {
-    const response = await systemApi.getEnabledListByCategory('backend')
-    if (response.success && response.data) {
+    // 使用统一的启用系统-模块树接口
+    const response = await systemApi.getEnabledTree('backend')
+    if (response.success) {
       const systems = Array.isArray(response.data) ? response.data : []
-      // 优先使用缓存中的模块数据
-      const modules: ModuleItem[] = Array.isArray(moduleList.value) ? moduleList.value : ([] as ModuleItem[])
-      const treeData: TreeNode[] = []
-      systems.forEach(system => {
-        const sid = String(system.id)
-        // 先从缓存获取该系统的模块；若缓存为空，再从已加载的模块列表中过滤
-        let systemModules = serviceStore.getModulesBySystem(sid)
-        if (!Array.isArray(systemModules) || systemModules.length === 0) {
-          systemModules = modules.filter((module: ModuleItem) => 
-            module && system && String(module.system_id ?? module.systemId) === String(system.id)
-          )
-        }
-        
-        const systemNode: TreeNode = {
-          id: system.id,
-          label: system.name,
+      const treeData: TreeNode[] = (systems as unknown[]).map((s: unknown) => {
+        const sys = s as SystemItem & { modules?: ModuleItem[]; category?: string }
+        const node: TreeNode = {
+          id: sys.id,
+          label: sys.name,
           type: 'system',
-          category: (system as any).category ?? 'other',
+          category: (sys as any).category ?? 'other',
           children: []
         }
-        
-        // 添加模块作为系统的子节点
-        systemModules.forEach((module: ModuleItem) => {
-          const moduleNode: TreeNode = {
-            id: module.id,
-            label: module.name,
+        const mods = Array.isArray(sys.modules) ? sys.modules : []
+        mods.forEach((m: ModuleItem) => {
+          node.children!.push({
+            id: m.id,
+            label: m.name,
             type: 'module',
-            systemId: system.id,
+            systemId: sys.id,
             children: []
-          }
-          systemNode.children!.push(moduleNode)
+          } as TreeNode)
         })
-        
-        treeData.push(systemNode)
+        return node
       })
-      
       systemTreeData.value = treeData
+    } else {
+      throw new Error('获取启用系统及模块树失败')
     }
-  } catch (error: any) {
-    console.error('获取backend系统列表失败:', error)
+  } catch (error: unknown) {
+    console.error('获取系统-模块树失败:', error)
     systemTreeData.value = []
   }
 }
@@ -1476,13 +1492,12 @@ onUnmounted(() => {
 const handleTreeRefresh = async () => {
   pageLoading.value = true
   try {
+    // 使用统一树接口刷新数据
     await loadSystemList()
-    await loadModuleList()
-    await buildSystemTree()
-    ElMessage.success('系统和模块树刷新成功')
-  } catch (error: any) {
+    ElMessage.success('系统与模块树刷新成功')
+  } catch (error: unknown) {
     console.error('刷新系统树失败:', error)
-    ElMessage.error('刷新系统和模块树失败')
+    ElMessage.error('刷新系统与模块树失败')
   } finally {
     pageLoading.value = false
   }

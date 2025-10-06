@@ -20,6 +20,7 @@
 import { BaseApi, type BaseEntity, type BaseListParams } from './base-api'
 import type { ApiHandlerOptions, ApiResponse } from '@/types'
 import { request } from '@/utils/request'
+import type { ModuleEntity } from './module-api'
 
 /**
  * 系统实体接口
@@ -82,6 +83,11 @@ export interface SystemStatistics {
   totalModules: number
   totalApis: number
   recentlyCreated: number
+}
+
+// 系统树类型（系统 + 启用模块）
+export interface SystemWithModules extends SystemEntity {
+  modules: ModuleEntity[]
 }
 
 /**
@@ -213,6 +219,20 @@ class SystemApi extends BaseApi<SystemEntity> {
     const res = await this.getSystemList({ category, enabled_only: true }, options)
     const list = (res.data as any)?.data ?? (res.data as any)
     return { ...res, data: list }
+  }
+
+  // 统一树接口：获取启用系统及其启用模块
+  async getEnabledTree(
+    category?: string,
+    options: ApiHandlerOptions = {}
+  ): Promise<ApiResponse<SystemWithModules[]>> {
+    const params: Record<string, unknown> = category ? { category } : {}
+    const config: import('@/utils/request').RequestConfig = {}
+    if (options.showLoading === false) config.skipLoading = true
+    if (options.showError === false) config.skipErrorHandler = true
+    const res = await request.get(`${this.baseUrl}/enabled_tree`, params, config)
+    const list = (res.data as any)?.data ?? (res.data as any)
+    return { ...res, data: (Array.isArray(list) ? list : []) as SystemWithModules[] }
   }
 
   /**
