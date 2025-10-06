@@ -184,8 +184,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, VideoPlay, Delete, Search, Upload, Download } from '@element-plus/icons-vue'
 import ApiScenarioEditDialog from './ApiScenarioEditDialog.vue'
 import ApiScenarioExecutionResultDialog from './ApiScenarioExecutionResultDialog.vue'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi, testApisApi } from '@/api/unified-api'
 import type { TestCase, TestRequestConfig } from '@/types/test-case'
+import type { ApiTestResponse } from '@/types'
+import { normalizeList } from '@/utils/listNormalizer'
 const props = defineProps<{ apiInfo: any; visible?: boolean }>()
 
 // 响应式数据
@@ -202,8 +204,8 @@ const currentTestCase = ref<Partial<TestCase> | null>(null)
 const batchExecutionResults = ref<any[]>([])
 
 // 统一后端API代理
-const apiProxy = unifiedApi.apiManagementApi
-const testApisProxy = unifiedApi.testApisApi
+const apiProxy = apiManagementApi
+const testApisProxy = testApisApi
 
 // 构建后端测试请求体
 const buildTestPayload = (testCase: TestCase): Record<string, any> => {
@@ -352,13 +354,27 @@ const handleExecuteTestCase = async (testCase: TestCase) => {
     const payload = buildTestPayload(testCase)
     const resp = await apiProxy.testApi(apiId, payload)
     const now = new Date().toISOString()
-    const data = resp?.data || {}
+    const data = resp?.data as ApiTestResponse | undefined
 
-    // 尝试从返回数据提取指标
-    const statusCode = (data.statusCode ?? data.status_code ?? data.response?.status ?? 200) as number
-    const responseTime = (data.responseTime ?? data.response_time ?? data.metrics?.duration_ms ?? 0) as number
-    const success = !!(resp && resp.success)
-    const error = (resp && !resp.success) ? (resp.message || data.error || '执行失败') : undefined
+    // 尝试从返回数据提取指标（类型安全窄化）
+    const raw = resp?.data as unknown
+    const d = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {}
+    let statusCode = 200
+    if (typeof d['statusCode'] === 'number') statusCode = d['statusCode'] as number
+    else if (typeof d['status_code'] === 'number') statusCode = d['status_code'] as number
+    else {
+      const responseObj = d['response'] as any
+      if (responseObj && typeof responseObj.status === 'number') statusCode = responseObj.status
+    }
+    let responseTime = 0
+    if (typeof d['responseTime'] === 'number') responseTime = d['responseTime'] as number
+    else if (typeof d['response_time'] === 'number') responseTime = d['response_time'] as number
+    else {
+      const metrics = d['metrics'] as any
+      if (metrics && typeof metrics.duration_ms === 'number') responseTime = metrics.duration_ms
+    }
+    const success = !!resp?.success
+    const error = resp && !resp.success ? (resp.message ?? (typeof d['error'] === 'string' ? (d['error'] as string) : undefined) ?? '执行失败') : undefined
 
     // 更新测试用例状态
     testCase.lastExecutedAt = now
@@ -396,11 +412,24 @@ const handleBatchExecute = async () => {
       try {
         const resp = await apiProxy.testApi(apiId, payload)
         const now = new Date().toISOString()
-        const data = resp?.data || {}
-        const statusCode = (data.statusCode ?? data.status_code ?? data.response?.status ?? 200) as number
-        const responseTime = (data.responseTime ?? data.response_time ?? data.metrics?.duration_ms ?? 0) as number
-        const success = !!(resp && resp.success)
-        const error = (resp && !resp.success) ? (resp.message || data.error || '执行失败') : undefined
+        const raw = resp?.data as unknown
+        const d = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {}
+        let statusCode = 200
+        if (typeof d['statusCode'] === 'number') statusCode = d['statusCode'] as number
+        else if (typeof d['status_code'] === 'number') statusCode = d['status_code'] as number
+        else {
+          const responseObj = d['response'] as any
+          if (responseObj && typeof responseObj.status === 'number') statusCode = responseObj.status
+        }
+        let responseTime = 0
+        if (typeof d['responseTime'] === 'number') responseTime = d['responseTime'] as number
+        else if (typeof d['response_time'] === 'number') responseTime = d['response_time'] as number
+        else {
+          const metrics = d['metrics'] as any
+          if (metrics && typeof metrics.duration_ms === 'number') responseTime = metrics.duration_ms
+        }
+        const success = !!resp?.success
+        const error = resp && !resp.success ? (resp.message ?? (typeof d['error'] === 'string' ? (d['error'] as string) : undefined) ?? '执行失败') : undefined
         // 更新测试用例状态
         tc.lastExecutedAt = now
         tc.executionCount = (tc.executionCount || 0) + 1
@@ -586,8 +615,8 @@ const fetchTestCases = async () => {
       keyword: searchKeyword.value || undefined,
       api_id: Number.isFinite(api_id as number) ? (api_id as number) : undefined
     })
-    const data = (resp?.data || {}) as any
-    const items = (data.items || data.list || []) as any[]
+    const normalized = normalizeList(resp)
+    const items = normalized.list as any[]
     testCases.value = items.map(mapItemToTestCase)
   } catch (e: any) {
     ElMessage.error(e?.message || '加载测试场景失败')

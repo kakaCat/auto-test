@@ -249,6 +249,37 @@ frontend/docs/
 - 使用相对路径链接
 - 提供快速访问入口
 
+## 组件废弃标注规范（前端）
+
+### 适用范围
+- `/frontend/src/views/api-management/components/` 目录下的业务组件
+- `/frontend/src/components/common/` 目录下的通用组件
+
+### 标注要求
+- 在组件文件头部添加注释：`@deprecated {YYYY-MM-DD} 替代：{新组件名或方案} 原因：{简述}`
+- 在组件导出索引（如 `components/index.ts`）移除导出，并在相邻位置保留中文注释说明删除原因
+- 在用户手册或组件文档中更新“组件状态矩阵”（使用中/未使用/已废弃），并建立互链
+- 若删除组件文件，需在变更记录（changelogs）中记录删除项与替代方案
+
+### 示例
+```
+// @deprecated 2025-10-03 替代：ParamsEditor 原因：统一响应字段编辑器
+// 文件已删除，引用请迁移至 '@/components/common/ParamsEditor.vue'
+```
+
+### 本次变更（示例登记）
+- 删除：ApiTestDrawer.vue（已废弃，文档一致性调整）
+- 删除：KeyValueEditor.vue（随 ApiTestDrawer 一并移除）
+- 删除：ApiForm.vue（未使用，已由 ApiFormDialog 统一入口替代）
+- 删除：ResponseConfig.vue（已由通用组件 ParamsEditor 替代）
+- 删除：MockManagement.vue / MockEditDialog.vue / MockTestDialog.vue（未使用）
+- 更新：`frontend/src/views/api-management/components/index.ts` 移除相关导出
+
+### 责任与流程
+- 责任人：发起删除的开发者需完成标注、索引更新与文档登记
+- 审核：由模块负责人在 PR 评审中确认
+- 回滚策略：若恢复使用，需撤销废弃标注并在索引与文档中恢复“使用中”状态
+
 ## 维护规范
 
 ### 文档更新

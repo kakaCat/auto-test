@@ -23,7 +23,7 @@ class Config:
     
     # 服务配置
     HOST: str = os.getenv("HOST", "0.0.0.0")
-    PORT: int = int(os.getenv("PORT", "8000"))
+    PORT: int = 8000
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     
     # 日志配置

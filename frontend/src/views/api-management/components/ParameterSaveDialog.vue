@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -63,7 +63,7 @@ const handleSave = async () => {
   try {
     const savedId = `param-${Date.now()}`
     const updates = props.selected.map((row: any) =>
-      unifiedApi.scenario.update(String(row.id || row.scenario_id || ''), {
+      scenarioApi.update(String(row.id || row.scenario_id || ''), {
         is_parameters_saved: true,
         saved_parameters_id: savedId,
         tags: form.tags

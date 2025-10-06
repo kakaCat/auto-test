@@ -39,6 +39,24 @@
 - 导入顺序：第三方 → 别名 → 相对路径；去除未使用导入。
 - 注释：仅在必要处说明“为什么”，避免赘述“做了什么”。
 
+## 统一入口 API 导入与调用（MUST）
+- 所有领域 API 必须通过统一聚合入口进行命名导入：`@/api/unified-api`。例如：`import { apiManagementApi, systemApi, moduleApi } from '@/api/unified-api'`。
+- 禁止在视图/组件中通过 `unified` 的动态属性访问（如 `unifiedApi.module`）；禁止在脚本中途再次 `import` 默认实例（如 `import moduleApi from '@/api/module-api'`）。
+- 调用约定：
+  - 系统列表：`systemApi.getEnabledListByCategory('backend')`
+  - 模块列表：`moduleApi.getEnabledModules({ enabled_only: true })`
+  - API 列表：`const apiProxy = apiManagementApi; apiProxy.getApis(params)`
+- 一致性参照：
+  - 服务管理页：<mcfile name="index.vue" path="/Users/mac/Documents/ai/auto-test/frontend/src/views/service-management/index.vue"></mcfile>
+  - API 管理页：<mcfile name="index.vue" path="/Users/mac/Documents/ai/auto-test/frontend/src/views/api-management/index.vue"></mcfile>
+- 迁移要求：
+  - 将 `unifiedApi` 的默认导入与属性访问替换为命名导入。
+  - 移除重复定义与中途导入，避免同名冲突与运行时 `{} is not a function` 错误。
+  - 按导入顺序规范组织：第三方 → 别名 → 相对路径。
+- 类型与错误：
+  - 严格模式（tsconfig: `strict: true`）；避免 `any`，使用具体类型或 `unknown` 后窄化。
+  - 异步函数返回 `Promise<T>`；错误统一在 `apiHandler` 层转换为统一结构，视图层负责展示与重试。
+
 ## 测试与可观测性
 - 关键路径需具备单元测试或集成测试；断言统一返回结构。
 - 日志与跟踪：透传 `traceId`；避免打印敏感信息。

@@ -19,8 +19,8 @@
  */
 
 import { request } from '@/utils/request'
-import { apiHandler } from '@/utils/apiHandler'
 import type { ApiHandlerOptions } from '@/types'
+import type { RequestConfig } from '@/utils/request'
 
 /**
  * 基础列表查询参数
@@ -69,10 +69,20 @@ export interface BaseStatistics {
  */
 export class BaseApi<T extends BaseEntity = BaseEntity> {
   protected baseUrl: string
-  protected apiHandler = apiHandler
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
+  }
+
+  private toRequestConfig(options: ApiHandlerOptions = {}): RequestConfig {
+    const config: RequestConfig = {}
+    if (options.showLoading === false) {
+      config.skipLoading = true
+    }
+    if (options.showError === false) {
+      config.skipErrorHandler = true
+    }
+    return config
   }
 
   /**
@@ -82,11 +92,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     params: BaseListParams = {}, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<{data: T[], total: number}>> {
-    return this.apiHandler.get(this.baseUrl, params, {
-      cache: true,
-      loadingText: '加载列表中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.get(this.baseUrl, params, config)
   }
 
   /**
@@ -96,12 +103,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     id: number, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<T>> {
-    return this.apiHandler.get(`${this.baseUrl}/${id}`, {}, {
-      cache: true,
-      cacheTime: 60000,
-      loadingText: '加载详情中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.get(`${this.baseUrl}/${id}`, {}, config)
   }
 
   /**
@@ -111,11 +114,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     data: Partial<T>, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<T>> {
-    return this.apiHandler.post(this.baseUrl, data, {
-      successMessage: '创建成功',
-      loadingText: '创建中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.post(this.baseUrl, data, config)
   }
 
   /**
@@ -126,11 +126,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     data: Partial<T>, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<T>> {
-    return this.apiHandler.put(`${this.baseUrl}/${id}`, data, {
-      successMessage: '更新成功',
-      loadingText: '更新中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.put(`${this.baseUrl}/${id}`, data, config)
   }
 
   /**
@@ -140,11 +137,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     id: number, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<void>> {
-    return this.apiHandler.delete(`${this.baseUrl}/${id}`, {
-      successMessage: '删除成功',
-      loadingText: '删除中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.delete(`${this.baseUrl}/${id}`, config)
   }
 
   /**
@@ -155,12 +149,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     enabled: boolean, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<T>> {
-    return this.apiHandler.patch(`${this.baseUrl}/${id}/toggle`, { enabled }, {
-      successMessage: `${enabled ? '启用' : '禁用'}成功`,
-      loadingText: '状态切换中...',
-      showLoading: false,
-      ...options
-    })
+    const config = this.toRequestConfig({ ...options, showLoading: false })
+    return request.patch(`${this.baseUrl}/${id}/toggle`, { enabled }, config)
   }
 
   /**
@@ -170,11 +160,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     params: BatchOperationParams, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<{successful: number, failed: number}>> {
-    return this.apiHandler.post(`${this.baseUrl}/batch`, params, {
-      successMessage: '批量操作成功',
-      loadingText: '批量操作中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.post(`${this.baseUrl}/batch`, params, config)
   }
 
   /**
@@ -183,12 +170,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async getEnabledList(
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<T[]>> {
-    return this.apiHandler.get(`${this.baseUrl}/enabled`, {}, {
-      cache: true,
-      cacheTime: 300000,
-      loadingText: '加载数据中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.get(`${this.baseUrl}/enabled`, {}, config)
   }
 
   /**
@@ -197,12 +180,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   async getStatistics(
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<BaseStatistics>> {
-    return this.apiHandler.get(`${this.baseUrl}/statistics`, {}, {
-      cache: true,
-      cacheTime: 60000,
-      loadingText: '加载统计中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.get(`${this.baseUrl}/statistics`, {}, config)
   }
 
   /**
@@ -212,12 +191,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
     keyword: string, 
     options: ApiHandlerOptions = {}
   ): Promise<import('@/types').ApiResponse<T[]>> {
-    return this.apiHandler.get(`${this.baseUrl}/search`, { keyword }, {
-      cache: true,
-      cacheTime: 30000,
-      loadingText: '搜索中...',
-      ...options
-    })
+    const config = this.toRequestConfig(options)
+    return request.get(`${this.baseUrl}/search`, { keyword }, config)
   }
 
   /**
@@ -240,15 +215,8 @@ export class BaseApi<T extends BaseEntity = BaseEntity> {
   ): Promise<import('@/types').ApiResponse<any>> {
     const formData = new FormData()
     formData.append('file', file)
-    
-    return this.apiHandler.execute(
-      () => request.upload(`${this.baseUrl}/import`, formData),
-      {
-        successMessage: '导入成功',
-        loadingText: '导入中...',
-        ...options
-      }
-    )
+    const config = this.toRequestConfig(options)
+    return request.upload(`${this.baseUrl}/import`, formData, config)
   }
 }
 

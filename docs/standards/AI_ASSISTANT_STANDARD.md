@@ -10,7 +10,7 @@
   - 根文档导航：`docs/README.md`
   - 前端文档导航：`frontend/docs/README.md`
   - 后端文档导航：`backend/docs/README.md`
-  - 前端编码规范：`frontend/docs/guides/coding-style.md`
+  - 前端编码规范：`frontend/docs/api/refactor-plan.md` 与 `frontend/docs/guides/`
 
 ## 工作习惯总览
 1) 文档组织（就近原则）

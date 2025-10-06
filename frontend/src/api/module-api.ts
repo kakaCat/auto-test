@@ -22,6 +22,7 @@
 import { BaseApi } from './base-api';
 import type { BaseEntity, BaseListParams, BaseStatistics } from './base-api';
 import type { ApiHandlerOptions } from '@/types';
+import { request } from '@/utils/request';
 
 // ==================== 类型定义 ====================
 
@@ -125,8 +126,12 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
       p.enabled_only = p.enabledOnly
       delete p.enabledOnly
     }
-    if (Array.isArray(p.tags)) {
-      p.tags = p.tags.join(',')
+    if (p.tags !== undefined) {
+      if (Array.isArray(p.tags)) {
+        p.tags = (p.tags as string[]).join(',')
+      } else if (typeof p.tags === 'string') {
+        p.tags = p.tags.split(',').map((s: string) => s.trim()).filter(Boolean).join(',')
+      }
     }
     return p
   }
@@ -229,7 +234,10 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
       const url = system_id
         ? `${this.baseUrl}/statistics?system_id=${system_id}`
         : `${this.baseUrl}/statistics`;
-      return await this.apiHandler.get<BaseStatistics>(url, {}, apiOptions);
+      const config: import('@/utils/request').RequestConfig = {}
+      if (apiOptions?.showLoading === false) config.skipLoading = true
+      if (apiOptions?.showError === false) config.skipErrorHandler = true
+      return await request.get<BaseStatistics>(url, {}, config);
     } catch (error: any) {
       throw new Error(`获取模块统计信息失败: ${error?.message || error}`);
     }
@@ -242,7 +250,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    */
   async getDependencies(moduleId: string): Promise<import('@/types').ApiResponse<ModuleDependency>> {
     try {
-      return await this.apiHandler.get<ModuleDependency>(`${this.baseUrl}/${moduleId}/dependencies`);
+      return await request.get<ModuleDependency>(`${this.baseUrl}/${moduleId}/dependencies`);
     } catch (error: any) {
       throw new Error(`获取模块依赖关系失败: ${error?.message || error}`);
     }
@@ -256,7 +264,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    */
   async updateDependencies(moduleId: string, dependencies: string[]): Promise<import('@/types').ApiResponse<ModuleDependency>> {
     try {
-      return await this.apiHandler.put<ModuleDependency>(
+      return await request.put<ModuleDependency>(
         `${this.baseUrl}/${moduleId}/dependencies`,
         { depends_on: dependencies }
       );
@@ -275,7 +283,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
   async copyModule(moduleId: string, newName: string, systemId?: string): Promise<import('@/types').ApiResponse<ModuleEntity>> {
     try {
       const payload = this._normalizePayload({ name: newName, systemId: systemId })
-      return await this.apiHandler.post<ModuleEntity>(`${this.baseUrl}/${moduleId}/copy`, payload);
+      return await request.post<ModuleEntity>(`${this.baseUrl}/${moduleId}/copy`, payload);
     } catch (error: any) {
       throw new Error(`复制模块失败: ${error?.message || error}`);
     }
@@ -290,7 +298,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
   async moveToSystem(moduleId: string, targetSystemId: string): Promise<import('@/types').ApiResponse<ModuleEntity>> {
     try {
       const payload = this._normalizePayload({ systemId: targetSystemId })
-      return await this.apiHandler.put<ModuleEntity>(`${this.baseUrl}/${moduleId}/move`, payload);
+      return await request.put<ModuleEntity>(`${this.baseUrl}/${moduleId}/move`, payload);
     } catch (error: any) {
       throw new Error(`移动模块失败: ${error?.message || error}`);
     }
@@ -305,7 +313,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
   async getUsageStats(moduleId: string, timeRange?: string): Promise<import('@/types').ApiResponse<any>> {
     try {
       const params = timeRange ? { time_range: timeRange } : {};
-      return await this.apiHandler.get<any>(`${this.baseUrl}/${moduleId}/usage`, params);
+      return await request.get<any>(`${this.baseUrl}/${moduleId}/usage`, params);
     } catch (error: any) {
       throw new Error(`获取模块使用统计失败: ${error?.message || error}`);
     }
@@ -318,7 +326,7 @@ export class ModuleApi extends BaseApi<ModuleEntity> {
    */
   async testConnection(moduleId: string): Promise<import('@/types').ApiResponse<any>> {
     try {
-      return await this.apiHandler.post<any>(`${this.baseUrl}/${moduleId}/test`);
+      return await request.post<any>(`${this.baseUrl}/${moduleId}/test`);
     } catch (error: any) {
       throw new Error(`测试模块连接失败: ${error?.message || error}`);
     }

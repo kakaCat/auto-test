@@ -98,6 +98,7 @@ class ApiManagementTest {
         this.apiList = [];
         this.systemList = [];
         this.moduleList = [];
+        this.createdApiId = null;
     }
 
     // 1. 页面初始化 - 加载系统列表
@@ -121,6 +122,23 @@ class ApiManagementTest {
         }
     }
 
+    // 工具方法：根据系统ID选择一个匹配的模块ID
+    findModuleForSystem(systemId) {
+        if (!Array.isArray(this.moduleList)) return null;
+        const mod = this.moduleList.find(m => (m.system_id ?? m.systemId) === systemId);
+        return mod ? mod.id : null;
+    }
+
+    // 工具方法：找到至少包含一个模块的系统ID
+    findSystemWithModules() {
+        if (!Array.isArray(this.systemList) || !Array.isArray(this.moduleList)) return null;
+        for (const sys of this.systemList) {
+            const mod = this.moduleList.find(m => (m.system_id ?? m.systemId) === sys.id);
+            if (mod) return sys.id;
+        }
+        return null;
+    }
+
     // 2. 选择系统 - 模拟用户点击系统节点
     async selectSystem(systemId) {
         console.log(`\n🎯 选择系统: ${systemId}`);
@@ -132,9 +150,10 @@ class ApiManagementTest {
             const apiResponse = await mockRequest('GET', `${API_BASE_URL}/api/api-interfaces/v1/`, null, {
                 'X-System-ID': systemId
             });
-            
-            this.apiList = apiResponse.data || [];
-            console.log(`📋 系统 ${systemId} 的API列表加载成功，共 ${this.apiList.length} 个API`);
+            const data = apiResponse.data || {};
+            this.apiList = data.apis || data.list || (Array.isArray(data) ? data : []);
+            const count = Array.isArray(this.apiList) ? this.apiList.length : 0;
+            console.log(`📋 系统 ${systemId} 的API列表加载成功，共 ${count} 个API`);
             return true;
         } catch (error) {
             console.error(`❌ 选择系统失败: ${error.message}`);
@@ -154,8 +173,10 @@ class ApiManagementTest {
             });
             
             const apiResponse = await mockRequest('GET', `${API_BASE_URL}/api/api-interfaces/v1/?${params}`);
-            this.apiList = apiResponse.data || [];
-            console.log(`📋 模块 ${moduleId} 的API列表加载成功，共 ${this.apiList.length} 个API`);
+            const data = apiResponse.data || {};
+            this.apiList = data.apis || data.list || (Array.isArray(data) ? data : []);
+            const count = Array.isArray(this.apiList) ? this.apiList.length : 0;
+            console.log(`📋 模块 ${moduleId} 的API列表加载成功，共 ${count} 个API`);
             return true;
         } catch (error) {
             console.error(`❌ 选择模块失败: ${error.message}`);
@@ -167,9 +188,10 @@ class ApiManagementTest {
     async createApi() {
         console.log('\n➕ 创建新API...');
         try {
+            const moduleId = this.selectedModuleId || this.findModuleForSystem(this.selectedSystemId || 1) || 1;
             const newApiData = {
                 system_id: this.selectedSystemId || 1,
-                module_id: this.selectedModuleId || 1,
+                module_id: moduleId,
                 name: '测试API',
                 description: '这是一个测试API',
                 method: 'GET',
@@ -182,6 +204,16 @@ class ApiManagementTest {
             };
 
             const response = await mockRequest('POST', `${API_BASE_URL}/api/api-interfaces/v1/`, newApiData);
+            if (response && response.success === false) {
+                console.error('❌ API创建返回失败:', response.message);
+                return null;
+            }
+            const createdId = response?.data?.id ?? response?.id ?? null;
+            if (createdId) {
+                this.createdApiId = createdId;
+                if (!Array.isArray(this.apiList)) this.apiList = [];
+                this.apiList.unshift({ id: createdId, name: newApiData.name });
+            }
             console.log('✅ API创建成功:', response);
             return response;
         } catch (error) {
@@ -232,6 +264,78 @@ class ApiManagementTest {
         }
     }
 
+    // 分段保存：仅更新 request_schema
+    async segmentedSaveRequestSchema(apiId) {
+        console.log(`\n🧩 分段保存 request_schema: ${apiId}`);
+        try {
+            const reqSchemaStr = JSON.stringify({
+                user_id: { type: 'number', required: true },
+                q: { type: 'string' }
+            });
+            const updateResponse = await mockRequest('PUT', `${API_BASE_URL}/api/api-interfaces/v1/${apiId}`, { request_schema: reqSchemaStr });
+            const detailResponse = await mockRequest('GET', `${API_BASE_URL}/api/api-interfaces/v1/${apiId}`);
+            const data = detailResponse.data || detailResponse;
+            const schema = data.request_schema || (data.data ? data.data.request_schema : undefined);
+            const parsed = typeof schema === 'string' ? JSON.parse(schema) : schema;
+            const ok = parsed && typeof parsed === 'object' && parsed.user_id && parsed.q;
+            console.log(`✅ 分段保存 request_schema 校验: ${ok ? '通过' : '失败'}`);
+            return ok;
+        } catch (error) {
+            console.error(`❌ 分段保存 request_schema 失败: ${error.message}`);
+            return false;
+        }
+    }
+
+    // 分段保存：仅更新 response_schema
+    async segmentedSaveResponseSchema(apiId) {
+        console.log(`\n🧩 分段保存 response_schema: ${apiId}`);
+        try {
+            const respSchemaStr = JSON.stringify({
+                code: { type: 'number' },
+                data: { type: 'object' }
+            });
+            const updateResponse = await mockRequest('PUT', `${API_BASE_URL}/api/api-interfaces/v1/${apiId}`, { response_schema: respSchemaStr });
+            const detailResponse = await mockRequest('GET', `${API_BASE_URL}/api/api-interfaces/v1/${apiId}`);
+            const data = detailResponse.data || detailResponse;
+            const schema = data.response_schema || (data.data ? data.data.response_schema : undefined);
+            const parsed = typeof schema === 'string' ? JSON.parse(schema) : schema;
+            const ok = parsed && typeof parsed === 'object' && parsed.code && parsed.data;
+            console.log(`✅ 分段保存 response_schema 校验: ${ok ? '通过' : '失败'}`);
+            return ok;
+        } catch (error) {
+            console.error(`❌ 分段保存 response_schema 失败: ${error.message}`);
+            return false;
+        }
+    }
+
+    // 分段保存：仅更新 tags 与 auth_required
+    async segmentedSaveTagsAndAuth(apiId) {
+        console.log(`\n🧩 分段保存 tags/auth: ${apiId}`);
+        try {
+            const updateResponse = await mockRequest('PUT', `${API_BASE_URL}/api/api-interfaces/v1/${apiId}`, { tags: 'fast,internal', auth_required: 0 });
+            const detailResponse = await mockRequest('GET', `${API_BASE_URL}/api/api-interfaces/v1/${apiId}`);
+            const raw = detailResponse.data || detailResponse;
+            const entity = raw.data ? raw.data : raw;
+            // 后端响应模型不包含 tags_list（Service层会生成，但模型过滤），因此在缺失时从 tags 字符串回退解析
+            let tagsList = entity.tags_list;
+            if (!Array.isArray(tagsList) || tagsList.length === 0) {
+                const tagsStr = entity.tags;
+                if (typeof tagsStr === 'string') {
+                    tagsList = tagsStr.split(',').map(s => s.trim()).filter(Boolean);
+                } else {
+                    tagsList = [];
+                }
+            }
+            const auth = entity.auth_required;
+            const ok = Array.isArray(tagsList) && tagsList.includes('fast') && tagsList.includes('internal') && Number(auth) === 0;
+            console.log(`✅ 分段保存 tags/auth 校验: ${ok ? '通过' : '失败'}`);
+            return ok;
+        } catch (error) {
+            console.error(`❌ 分段保存 tags/auth 失败: ${error.message}`);
+            return false;
+        }
+    }
+
     // 7. 删除API - 模拟用户点击删除按钮
     async deleteApi(apiId) {
         console.log(`\n🗑️ 删除API: ${apiId}`);
@@ -249,8 +353,16 @@ class ApiManagementTest {
     async batchOperations() {
         console.log('\n📦 批量操作测试...');
         try {
-            if (this.apiList.length === 0) {
-                console.log('⚠️ 没有可用的API进行批量操作');
+            if (!Array.isArray(this.apiList) || this.apiList.length === 0) {
+                console.log('⚠️ 没有可用的API进行批量操作，尝试重新加载列表');
+                if (this.selectedModuleId) {
+                    await this.selectModule(this.selectedModuleId);
+                } else if (this.selectedSystemId) {
+                    await this.selectSystem(this.selectedSystemId);
+                }
+            }
+            if (!Array.isArray(this.apiList) || this.apiList.length === 0) {
+                console.log('⚠️ 仍然没有可用的API进行批量操作');
                 return false;
             }
 
@@ -302,6 +414,9 @@ class ApiManagementTest {
             systemSelection: false,
             moduleSelection: false,
             apiCreation: false,
+            segmentedRequestSchema: false,
+            segmentedResponseSchema: false,
+            segmentedTagsAuth: false,
             apiEditing: false,
             apiTesting: false,
             apiDeletion: false,
@@ -316,28 +431,46 @@ class ApiManagementTest {
                 throw new Error('页面初始化失败');
             }
 
-            // 2. 选择系统
+            // 2. 选择系统（选择一个至少包含一个模块的系统）
+            let targetSystemId = null;
             if (this.systemList.length > 0) {
-                results.systemSelection = await this.selectSystem(this.systemList[0].id);
+                targetSystemId = this.findSystemWithModules() || this.systemList[0].id;
+                results.systemSelection = await this.selectSystem(targetSystemId);
             }
 
-            // 3. 选择模块
+            // 3. 选择模块（选择该系统对应的模块）
+            let targetModuleId = null;
             if (this.moduleList.length > 0) {
-                results.moduleSelection = await this.selectModule(this.moduleList[0].id);
+                targetModuleId = this.findModuleForSystem(targetSystemId) || this.moduleList[0].id;
+                results.moduleSelection = await this.selectModule(targetModuleId);
             }
 
             // 4. 创建API
             const newApi = await this.createApi();
             results.apiCreation = newApi !== null;
+            const apiId = (newApi && newApi.data && newApi.data.id) ? newApi.data.id : this.createdApiId;
+
+            // 4.1 分段保存：request_schema
+            if (apiId) {
+                results.segmentedRequestSchema = await this.segmentedSaveRequestSchema(apiId);
+            }
+            // 4.2 分段保存：response_schema
+            if (apiId) {
+                results.segmentedResponseSchema = await this.segmentedSaveResponseSchema(apiId);
+            }
+            // 4.3 分段保存：tags/auth
+            if (apiId) {
+                results.segmentedTagsAuth = await this.segmentedSaveTagsAndAuth(apiId);
+            }
 
             // 5. 编辑API
-            if (this.apiList.length > 0) {
-                results.apiEditing = await this.editApi(this.apiList[0].id) !== null;
+            if (apiId) {
+                results.apiEditing = await this.editApi(apiId) !== null;
             }
 
             // 6. 测试API
-            if (this.apiList.length > 0) {
-                results.apiTesting = await this.testApi(this.apiList[0].id) !== null;
+            if (apiId) {
+                results.apiTesting = await this.testApi(apiId) !== null;
             }
 
             // 7. 批量操作
@@ -347,8 +480,8 @@ class ApiManagementTest {
             results.searching = await this.searchApis('用户') !== null;
 
             // 9. 删除API (如果创建了新的API)
-            if (newApi && newApi.data && newApi.data.id) {
-                results.apiDeletion = await this.deleteApi(newApi.data.id) !== null;
+            if (apiId) {
+                results.apiDeletion = await this.deleteApi(apiId) !== null;
             }
 
         } catch (error) {

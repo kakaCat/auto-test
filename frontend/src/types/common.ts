@@ -17,7 +17,7 @@ export interface Result<T = unknown> {
 }
 
 // 兼容旧命名：保持ApiResponse与Result一致
-export interface ApiResponse<T = any> extends Result<T> {}
+export interface ApiResponse<T = unknown> extends Result<T> {}
 
 // ============= 分页相关类型 =============
 export interface PaginationParams {
@@ -46,7 +46,7 @@ export interface BaseEntity {
 }
 
 export interface CreateRequest {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface UpdateRequest extends CreateRequest {
@@ -55,7 +55,7 @@ export interface UpdateRequest extends CreateRequest {
 
 export interface ListParams extends PaginationParams {
   keyword?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // ============= 状态相关类型 =============
@@ -82,7 +82,7 @@ export interface CacheOptions {
   invalidateCache?: string[]
 }
 
-export interface CacheData<T = any> {
+export interface CacheData<T = unknown> {
   data: T
   expireTime: number
 }
@@ -96,7 +96,7 @@ export interface ApiHandlerOptions extends CacheOptions {
   retryDelay?: number
   timeout?: number
   cache?: boolean
-  transform?: ((data: any) => any) | null
+  transform?: ((data: unknown) => unknown) | null
   successMessage?: string | null
   errorMessage?: string | null
   loadingText?: string
@@ -121,14 +121,14 @@ export interface StatsData {
 export interface ErrorInfo {
   code?: string | number
   message: string
-  details?: any
+  details?: unknown
   timestamp?: string
 }
 
 export interface ValidationError {
   field: string
   message: string
-  value?: any
+  value?: unknown
 }
 
 // ============= 文件操作类型 =============
@@ -141,7 +141,7 @@ export interface FileUploadOptions {
 export interface DownloadParams {
   filename?: string
   contentType?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // ============= 工具类型 =============

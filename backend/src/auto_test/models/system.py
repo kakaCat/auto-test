@@ -11,6 +11,7 @@ class SystemBase(BaseModel):
     """系统基础模型"""
     name: str = Field(..., description="系统名称")
     description: Optional[str] = Field(None, description="系统描述")
+    url: Optional[str] = Field(None, description="系统基础URL，用于API Base路径")
 
 class SystemCreate(SystemBase):
     """创建系统模型"""
@@ -20,6 +21,7 @@ class SystemUpdate(BaseModel):
     """更新系统模型"""
     name: Optional[str] = Field(None, description="系统名称")
     description: Optional[str] = Field(None, description="系统描述")
+    url: Optional[str] = Field(None, description="系统基础URL，用于API Base路径")
     status: Optional[str] = Field(None, description="系统状态")
     category: Optional[str] = Field(None, description="系统分类")
     enabled: Optional[bool] = Field(None, description="是否启用")

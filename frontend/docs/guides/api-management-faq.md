@@ -57,3 +57,35 @@
 ### 网络请求超时
 - 问题: API请求超时导致页面卡死
 - 解决: 设置合理的请求超时时间和重试机制
+
+## 规范：API 管理交互与请求层最佳实践（防重复提示与状态卡死）
+
+为避免再次出现“双提示”和保存状态无法重置的问题，遵循以下统一规范：
+
+- 请求层（传输层）规范：
+  - 统一使用 <mcfile name="request.ts" path="/Users/mac/Documents/ai/auto-test/frontend/src/utils/request.ts"></mcfile> 作为唯一传输层。
+  - 请求层不产生任何 UI 副作用：不触发 ElMessage、不绑定全局 Loading、不做业务数据适配。
+  - 所有 CRUD 操作直接调用 request.get/post/put/patch/delete；错误通过 `throw new Error('具体消息')` 返回到页面层处理。
+
+- 页面层操作反馈（单一提示）：
+  - 成功提示由页面控制，只弹一次：在 await 成功后调用 `ElMessage.success('操作成功')` 或上下文更贴切的文案。
+  - 失败提示由页面控制，只弹一次：`catch (error: unknown) { ElMessage.error((error as Error)?.message || '操作失败') }`。
+  - 使用 `finally` 保证状态重置与清理逻辑始终执行（如按钮 disabled、loading 还原、关闭弹窗、刷新列表）。
+
+- 组件状态管理（父子协作）：
+  - 子组件（如 ApiFormDialog）在保存流程中暴露重置方法：
+    - `defineExpose({ resetSavingState })`，内部实现将 `saving.value = false`。
+  - 父组件在保存逻辑中使用 `try/catch/finally`：
+    - 成功或失败后均调用 `apiFormDialogRef.value.resetSavingState()`；在 finally 中统一调用以避免遗漏。
+    - 同步执行界面清理动作：关闭对话框、刷新列表、重置表单。
+
+- API 层（域 API）规范：
+  - 移除并禁止使用 `@/utils/apiHandler`，统一改用 `request.*`。
+  - 在域 API 内可保留纯数据转换（Converter/normalize）但不得产生 UI 副作用。
+  - 复杂对象使用 interface，避免 any；异步返回 `Promise<T>`，错误用 `throw new Error('具体消息')`。
+
+- 验收清单（每次改动都要自检）：
+  - 成功/失败提示每次操作最多出现一次（页面层发起）。
+  - 保存/提交的 loading 状态在成功或失败后都能正确重置（父子组件协作）。
+  - 传输层无任何 UI 副作用；所有界面反馈在页面层实现。
+  - 端点路径显式包含 `/api/...` 或完整域名，避免隐式前缀导致请求异常。

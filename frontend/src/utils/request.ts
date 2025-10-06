@@ -40,12 +40,12 @@ export interface RequestConfig extends AxiosRequestConfig {
  * 请求方法接口
  */
 export interface RequestMethods {
-  get<T = any>(url: string, params?: any, config?: RequestConfig): Promise<ApiResponse<T>>
-  post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>
-  put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>
-  delete<T = any>(url: string, config?: RequestConfig): Promise<ApiResponse<T>>
-  patch<T = any>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>
-  upload<T = any>(url: string, formData: FormData, config?: RequestConfig): Promise<ApiResponse<T>>
+  get<T = unknown>(url: string, params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<T>>
+  post<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>>
+  put<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>>
+  delete<T = unknown>(url: string, config?: RequestConfig): Promise<ApiResponse<T>>
+  patch<T = unknown>(url: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>>
+  upload<T = unknown>(url: string, formData: FormData, config?: RequestConfig): Promise<ApiResponse<T>>
   download(url: string, params?: DownloadParams, filename?: string): Promise<void>
 }
 
@@ -372,8 +372,8 @@ export const request: RequestMethods = {
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
   */
-  get<T = any>(url: string, params: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.get(normalizeAndWarn(url), { params, ...config })
+  get<T = unknown>(url: string, params: Record<string, unknown> = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+    return service.get(normalizeAndWarn(url), { params, ...config }) as unknown as Promise<ApiResponse<T>>
   },
   
   /**
@@ -385,8 +385,8 @@ export const request: RequestMethods = {
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
   */
-  post<T = any>(url: string, data: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.post(normalizeAndWarn(url), data, config)
+  post<T = unknown>(url: string, data: unknown = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+    return service.post(normalizeAndWarn(url), data as any, config) as unknown as Promise<ApiResponse<T>>
   },
   
   /**
@@ -398,8 +398,8 @@ export const request: RequestMethods = {
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
   */
-  put<T = any>(url: string, data: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.put(normalizeAndWarn(url), data, config)
+  put<T = unknown>(url: string, data: unknown = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+    return service.put(normalizeAndWarn(url), data as any, config) as unknown as Promise<ApiResponse<T>>
   },
   
   /**
@@ -410,8 +410,8 @@ export const request: RequestMethods = {
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
   */
-  delete<T = any>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.delete(normalizeAndWarn(url), config)
+  delete<T = unknown>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+    return service.delete(normalizeAndWarn(url), config) as unknown as Promise<ApiResponse<T>>
   },
   
   /**
@@ -423,8 +423,8 @@ export const request: RequestMethods = {
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 请求Promise
   */
-  patch<T = any>(url: string, data: any = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-    return service.patch(normalizeAndWarn(url), data, config)
+  patch<T = unknown>(url: string, data: unknown = {}, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+    return service.patch(normalizeAndWarn(url), data as any, config) as unknown as Promise<ApiResponse<T>>
   },
   
   /**
@@ -436,13 +436,13 @@ export const request: RequestMethods = {
    * @param {RequestConfig} config - axios配置选项
    * @returns {Promise} 上传Promise
   */
-  upload<T = any>(url: string, formData: FormData, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+  upload<T = unknown>(url: string, formData: FormData, config: RequestConfig = {}): Promise<ApiResponse<T>> {
     return service.post(normalizeAndWarn(url), formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       ...config
-    })
+    }) as unknown as Promise<ApiResponse<T>>
   },
   
   /**

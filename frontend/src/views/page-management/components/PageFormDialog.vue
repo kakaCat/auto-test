@@ -256,7 +256,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Link, Edit, Delete, Search } from '@element-plus/icons-vue'
 import { pageApi } from '@/api/page-management'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi, moduleApi } from '@/api/unified-api'
 
 // Props
 const props = defineProps({
@@ -416,7 +416,7 @@ const resetForm = () => {
 // 加载模块列表
 const loadModuleList = async () => {
   try {
-    const response = await unifiedApi.module.getList()
+    const response = await moduleApi.getList()
     if (response.success) {
       moduleList.value = response.data
     }
@@ -500,7 +500,7 @@ const loadAvailableApis = async () => {
     if (form.system_id) params.system_id = form.system_id
     if (form.module_id) params.module_id = form.module_id
 
-    const response = await unifiedApi.apiManagementApi.getApis(params)
+    const response = await apiManagementApi.getApis(params)
     if (response.success) {
       const data = Array.isArray(response.data) ? response.data : (response.data?.list ?? [])
       availableApis.value = data.map(api => ({

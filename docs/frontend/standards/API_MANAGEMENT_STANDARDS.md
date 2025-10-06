@@ -98,9 +98,65 @@ export function normalizeList<T>(resp: ListEnvelope<T>) {
     size: resp.data.size ?? 20,
   };
 }
-```
-
 实施要求：
 - 列表页与 Store 统一使用 `entities.items` 承载数据，但来源一律通过 `normalizeList(resp).list` 映射；分页与总数同步自 `normalizeList(resp)`。
 - 不得在页面或组件内出现对 `data.apis` 的直接读取；迁移完成后将删除兼容逻辑。
 - 新增接口与文档示例一律使用 `list/total/page/size`；变更记录进入 `frontend/docs/changelogs/` 并关联后端规范。
+```
+
+## 12. 统一入口 API 导入与调用（MUST）
+
+为确保 API 管理页面及相关组件的调用一致性与可维护性，所有域 API 必须通过统一入口进行命名导入与调用，并配合 `apiHandler` 层完成响应结构归一化与参数兼容。
+
+- 统一导入（MUST）：
+  - 仅使用命名导入从 `@/api/unified-api` 引入域 API 实例。
+  - 示例：
+
+```ts
+import { SystemApi, ModuleApi, ApiInterfaceApi } from '@/api/unified-api';
+```
+
+- 禁止模式（MUST NOT）：
+  - 禁止动态属性调用：`unifiedApi[someKey]`、`(obj as any)[key]()`。
+  - 禁止中途默认导入或混合导入：`import unifiedApi from '@/api/unified-api'` 后再派生属性调用。
+
+- 统一调用约定（MUST）：
+  - 系统列表（仅后端类别 backend）：
+
+```ts
+SystemApi.getEnabledListByCategory('backend')
+  .then(apiHandler.normalizeList)
+  .then(({ list, total }) => { /* 使用 list/total 构建 SystemTree */ });
+```
+
+  - 模块列表（按系统加载，兼容 `systemId | system_id`）：
+
+```ts
+ModuleApi.getEnabledModules({ systemId: sid }) // 或 { system_id: sid }
+  .then(apiHandler.normalizeList)
+  .then(({ list }) => { /* 缓存并用于左侧树 */ });
+```
+
+  - API 列表（筛选与分页）：
+
+```ts
+ApiInterfaceApi.getList(filters)
+  .then(apiHandler.normalizeList)
+  .then(({ list, total, page, size }) => { /* 映射到 entities.items/total/page/size */ });
+```
+
+- 类型与错误（MUST）：
+  - 所有函数返回 `Promise<ApiResponse<T>>` 或 `Promise<NormalizedList<T>>`；避免 `any`，优先 `unknown` 并显式收敛类型。
+  - 错误统一写入 `ui.error`，仅在不可恢复场景抛出 `new Error('具体消息')`；页面不做多格式判断与分支解析。
+
+- 迁移要求（MUST）：
+  - 将 `unifiedApi` 默认导入与动态属性调用全部替换为命名导入与直接实例方法调用。
+  - 列表页、弹窗组件与 Store 示例全部更新为命名导入调用，删除页面内对旧字段的判断逻辑。
+
+- SystemTree 加载与缓存（SHOULD）：
+  - 加载系统后按类别过滤 `backend`，随后加载对应模块并通过 `serviceStore.setSystemModules` 缓存。
+  - 构建左侧树时优先从缓存获取模块；缓存缺失时使用 `normalizeList` 后的 `moduleList` 作为兜底。
+
+- 参考（SHOULD）：
+  - 《FRONTEND_CODING_STANDARDS.md》中的“统一入口 API 导入与调用（MUST）”。
+  - 本规范第 11 章“统一列表响应与分页（MUST）”。

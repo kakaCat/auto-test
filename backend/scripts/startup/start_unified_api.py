@@ -138,7 +138,7 @@ async def start_server(host: str, port: int, debug: bool):
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(description="统一API服务启动脚本")
-    parser.add_argument("--port", type=int, default=8003, help="服务端口 (默认: 8003)")
+    parser.add_argument("--port", type=int, default=8000, help="服务端口 (默认: 8000)")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="服务主机 (默认: 127.0.0.1)")
     parser.add_argument("--debug", action="store_true", help="启用调试模式")
     parser.add_argument("--env", type=str, choices=['dev', 'prod'], default='dev', help="环境配置 (默认: dev)")

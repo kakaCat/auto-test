@@ -148,7 +148,7 @@ class SystemConverter {
 - 遵循ESLint规则
 
 ### 代码风格规范
-详细的代码风格规范请参考：[前端代码风格规范](../guides/coding-style.md)
+详细规范说明请参考：[Guides 索引](../guides/README.md)。
 
 该文档包含：
 - **API架构设计规范**：分层架构原则、类型定义规范、错误处理规范

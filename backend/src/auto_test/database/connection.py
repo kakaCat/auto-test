@@ -55,6 +55,7 @@ def init_database():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         description TEXT,
+        url TEXT,
         category TEXT NOT NULL DEFAULT 'custom',
         status TEXT DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -195,6 +196,13 @@ def init_database():
             if "category" not in system_columns:
                 logger.info("检测到 systems.category 缺失，正在执行迁移补丁……")
                 cursor.execute("ALTER TABLE systems ADD COLUMN category TEXT NOT NULL DEFAULT 'custom'")
+
+            # 补丁迁移：为已有的 systems 表增加缺失的 url 列
+            cursor.execute("PRAGMA table_info(systems)")
+            system_columns = [row[1] if isinstance(row, tuple) else row["name"] for row in cursor.fetchall()]
+            if "url" not in system_columns:
+                logger.info("检测到 systems.url 缺失，正在执行迁移补丁……")
+                cursor.execute("ALTER TABLE systems ADD COLUMN url TEXT")
 
             # 补丁迁移：为已有的 modules 表增加缺失的 path 列
             cursor.execute("PRAGMA table_info(modules)")

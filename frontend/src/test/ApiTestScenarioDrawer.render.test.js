@@ -1,19 +1,19 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ApiTestScenarioDrawer from '@/views/api-management/components/ApiTestScenarioDrawer.vue'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
 import { nextTick } from 'vue'
 
 describe('ApiTestScenarioDrawer 渲染与行为', () => {
   it('应在可见且提供 apiInfo 时加载场景列表，且无分页组件', async () => {
     // Mock 场景列表与详情接口
-    vi.spyOn(unifiedApi.scenario, 'getList').mockResolvedValue({
+    vi.spyOn(scenarioApi, 'getList').mockResolvedValue({
       data: [
         { name: '场景A', scenario_type: 'normal', status: 'active', tags: ['a', 'b'] },
         { name: '场景B', scenario_type: 'exception', status: 'inactive', tags: [] }
       ]
     })
-    vi.spyOn(unifiedApi.scenario, 'getDetail').mockResolvedValue({
+    vi.spyOn(scenarioApi, 'getDetail').mockResolvedValue({
       data: { variables: { v1: 1 }, config: { c1: true } }
     })
 

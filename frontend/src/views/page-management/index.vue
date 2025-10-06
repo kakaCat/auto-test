@@ -381,13 +381,11 @@ import PageApiFormDialog from './components/PageApiFormDialog.vue'
 
 // API导入
 import { pageApi, pageUtils } from '@/api/page-management'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi, systemApi, moduleApi } from '@/api/unified-api'
 
-// 直接使用统一API
-const apiProxy = unifiedApi.apiManagementApi
-// 补充分域代理，防止通过 apiManagementApi 访问 system/module 方法
-const systemApi = unifiedApi.system
-const moduleApi = unifiedApi.module
+// 直接使用命名导出 API
+const apiProxy = apiManagementApi
+// 直接使用命名导出的 systemApi 与 moduleApi
 
 // 路由实例
 const route = useRoute()
@@ -605,7 +603,7 @@ const loadPageList = async () => {
 
 const loadAvailableApis = async () => {
   try {
-    const response = await unifiedApi.apiManagementApi.getApis()
+    const response = await apiManagementApi.getApis()
     if (response.success) {
       availableApis.value = response.data
     } else {

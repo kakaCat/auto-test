@@ -10,13 +10,13 @@ vi.mock('element-plus', () => ({
 
 import { mount } from '@vue/test-utils'
 import ApiTestScenarioDrawer from '@/views/api-management/components/ApiTestScenarioDrawer.vue'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
 import { ElMessage } from 'element-plus'
 
 describe('ApiTestScenarioDrawer 创建流程', () => {
   it('成功创建后重置表单并刷新列表', async () => {
-    const createSpy = vi.spyOn(unifiedApi.scenario, 'create').mockResolvedValue({ data: { id: 'S1' } })
-    const getListSpy = vi.spyOn(unifiedApi.scenario, 'getList').mockResolvedValue({ data: [] })
+    const createSpy = vi.spyOn(scenarioApi, 'create').mockResolvedValue({ data: { id: 'S1' } })
+    const getListSpy = vi.spyOn(scenarioApi, 'getList').mockResolvedValue({ data: [] })
 
     const wrapper = mount(ApiTestScenarioDrawer, {
       props: { visible: true, apiInfo: { id: 11, name: 'API-Create' } },

@@ -21,7 +21,7 @@ class SystemDAO:
         try:
             with get_db_cursor() as cursor:
                 cursor.execute("""
-                    SELECT id, name, description, category, status, created_at, updated_at 
+                    SELECT id, name, description, url, category, status, created_at, updated_at 
                     FROM systems 
                     ORDER BY created_at DESC
                 """)
@@ -36,7 +36,7 @@ class SystemDAO:
         try:
             with get_db_cursor() as cursor:
                 cursor.execute("""
-                    SELECT id, name, description, category, status, created_at, updated_at 
+                    SELECT id, name, description, url, category, status, created_at, updated_at 
                     FROM systems 
                     WHERE id = ?
                 """, (system_id,))
@@ -47,21 +47,21 @@ class SystemDAO:
             raise
     
     @staticmethod
-    def create(name: str, description: str = None) -> int:
+    def create(name: str, description: str = None, url: Optional[str] = None) -> int:
         """创建系统"""
         try:
             with get_db_cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO systems (name, description) 
-                    VALUES (?, ?)
-                """, (name, description))
+                    INSERT INTO systems (name, description, url) 
+                    VALUES (?, ?, ?)
+                """, (name, description, url))
                 return cursor.lastrowid
         except Exception as e:
             logger.error(f"创建系统失败: {e}")
             raise
     
     @staticmethod
-    def update(system_id: int, name: str = None, description: str = None, status: str = None, category: str = None) -> bool:
+    def update(system_id: int, name: str = None, description: str = None, status: str = None, category: str = None, url: Optional[str] = None) -> bool:
         """更新系统"""
         try:
             updates = []
@@ -73,6 +73,9 @@ class SystemDAO:
             if description is not None:
                 updates.append("description = ?")
                 params.append(description)
+            if url is not None:
+                updates.append("url = ?")
+                params.append(url)
             if status is not None:
                 updates.append("status = ?")
                 params.append(status)
@@ -483,21 +486,67 @@ class ApiInterfaceDAO:
                 # 构建动态更新SQL
                 update_fields = []
                 update_values = []
-                
-                for field in ['system_id', 'module_id', 'name', 'description', 'method', 
-                             'path', 'version', 'status', 'enabled', 'request_format', 'response_format',
-                             'auth_required', 'rate_limit', 'timeout', 'tags', 
-                             'request_schema', 'response_schema', 'example_request', 'example_response']:
+
+                # 字段兼容与转换
+                # - 将 enabled 映射为 status（数据库无 enabled 列）
+                if 'enabled' in api_data:
+                    enabled_val = api_data.pop('enabled')
+                    if isinstance(enabled_val, bool):
+                        api_data['status'] = 'active' if enabled_val else 'inactive'
+                    else:
+                        try:
+                            api_data['status'] = 'active' if int(enabled_val) == 1 else 'inactive'
+                        except Exception:
+                            api_data['status'] = 'inactive'
+
+                # 兼容旧字段
+                if 'request_params' in api_data and 'request_schema' not in api_data:
+                    api_data['request_schema'] = api_data.pop('request_params')
+                if 'response_example' in api_data and 'response_schema' not in api_data:
+                    api_data['response_schema'] = api_data.pop('response_example')
+
+                # 序列化 JSON 字段到 TEXT
+                for json_field in ['request_schema', 'response_schema', 'example_request', 'example_response']:
+                    if json_field in api_data:
+                        value = api_data[json_field]
+                        if value is None:
+                            api_data[json_field] = None
+                        elif isinstance(value, (dict, list)):
+                            api_data[json_field] = json.dumps(value, ensure_ascii=False)
+                        elif isinstance(value, str):
+                            # 保持字符串原样
+                            pass
+                        else:
+                            # 其他类型统一转字符串以避免绑定错误
+                            api_data[json_field] = json.dumps(value, ensure_ascii=False)
+
+                # 标签字段支持数组->JSON
+                if 'tags' in api_data:
+                    tags_val = api_data['tags']
+                    if tags_val is None:
+                        api_data['tags'] = None
+                    elif isinstance(tags_val, list):
+                        api_data['tags'] = json.dumps(tags_val, ensure_ascii=False)
+                    elif isinstance(tags_val, str):
+                        # 保持字符串原样（兼容逗号分隔）
+                        pass
+                    else:
+                        api_data['tags'] = json.dumps(tags_val, ensure_ascii=False)
+
+                for field in ['system_id', 'module_id', 'name', 'description', 'method',
+                              'path', 'version', 'status', 'request_format', 'response_format',
+                              'auth_required', 'rate_limit', 'timeout', 'tags',
+                              'request_schema', 'response_schema', 'example_request', 'example_response']:
                     if field in api_data:
                         update_fields.append(f"{field} = ?")
                         update_values.append(api_data[field])
-                
+
                 if not update_fields:
                     return False
-                
+
                 update_fields.append("updated_at = CURRENT_TIMESTAMP")
                 update_values.append(api_id)
-                
+
                 sql = f"UPDATE api_interfaces SET {', '.join(update_fields)} WHERE id = ?"
                 cursor.execute(sql, update_values)
                 return cursor.rowcount > 0

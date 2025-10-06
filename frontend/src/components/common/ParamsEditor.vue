@@ -569,6 +569,8 @@ watch(params, (val) => {
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
+  width: 100%;
+  box-sizing: border-box;
 }
 .mode-switcher { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 1px solid #e4e7ed; }
 .mode-actions { display: flex; gap: 8px; }

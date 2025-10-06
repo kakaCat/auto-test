@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ApiTestScenarioDrawer from '@/views/api-management/components/ApiTestScenarioDrawer.vue'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
 
 describe('ApiTestScenarioDrawer 筛选参数与请求', () => {
   it('根据 filters 构造 getList 请求参数并包含必填 api_id', async () => {
-    const getListSpy = vi.spyOn(unifiedApi.scenario, 'getList').mockResolvedValue({ data: [] })
+    const getListSpy = vi.spyOn(scenarioApi, 'getList').mockResolvedValue({ data: [] })
 
     const wrapper = mount(ApiTestScenarioDrawer, {
       props: { visible: true, apiInfo: { id: 321, name: 'API X' } },

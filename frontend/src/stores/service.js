@@ -6,11 +6,9 @@ import {
   SystemCategory,
   SystemCategoryLabels 
 } from '@/types/service'
-import unifiedApi from '@/api/unified-api'
+import { systemApi, moduleApi } from '@/api/unified-api'
 
-// 使用统一API
-const systemApi = unifiedApi.system
-const moduleApi = unifiedApi.module
+// 使用命名导出的 API
 
 export const useServiceStore = defineStore('service', () => {
   // 状态
@@ -289,6 +287,51 @@ export const useServiceStore = defineStore('service', () => {
     return null
   }
   
+  // 轻量缓存API：按系统获取模块与设置
+  const getModulesBySystem = (systemId) => {
+    const sid = String(systemId)
+    const system = systemsList.value.find(s => String(s.id) === sid)
+    return system && Array.isArray(system.modules) ? system.modules : []
+  }
+  
+  const hasModules = (systemId) => {
+    const mods = getModulesBySystem(systemId)
+    return Array.isArray(mods) && mods.length > 0
+  }
+  
+  const setSystems = (systems) => {
+    systemsList.value = (Array.isArray(systems) ? systems : []).map(s => ({
+      ...s,
+      modules: Array.isArray(s.modules) ? s.modules : []
+    }))
+  }
+  
+  const setSystemModules = (systemId, modules) => {
+    const sid = String(systemId)
+    const system = systemsList.value.find(s => String(s.id) === sid)
+    if (system) {
+      system.modules = (Array.isArray(modules) ? modules : []).map(m => ({
+        ...m,
+        system_id: String(m.system_id ?? sid),
+        tags: Array.isArray(m.tags) ? m.tags : []
+      }))
+    }
+  }
+  
+  const setSystemsAndModules = (systems, modules) => {
+    const allSystems = Array.isArray(systems) ? systems : []
+    const allModules = Array.isArray(modules) ? modules : []
+    systemsList.value = allSystems.map(sys => {
+      const sid = String(sys.id)
+      const mods = allModules.filter(m => String(m.system_id ?? m.systemId) === sid).map(m => ({
+        ...m,
+        system_id: String(m.system_id ?? sid),
+        tags: Array.isArray(m.tags) ? m.tags : []
+      }))
+      return { ...sys, modules: mods }
+    })
+  }
+  
   // 数据加载方法
   const loadSystems = async () => {
     setLoading(true)
@@ -381,6 +424,13 @@ export const useServiceStore = defineStore('service', () => {
     // 数据加载
     loadSystems,
     refreshSystems,
-    initialize
+    initialize,
+    
+    // 轻量缓存接口
+    getModulesBySystem,
+    hasModules,
+    setSystems,
+    setSystemModules,
+    setSystemsAndModules
   }
 })

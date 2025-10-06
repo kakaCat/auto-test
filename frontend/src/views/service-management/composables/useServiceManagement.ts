@@ -7,11 +7,11 @@ import type { Ref, ComputedRef } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { debounce } from '../data'
 import { useServiceStore } from '@/stores/service'
-import unifiedApi from '@/api/unified-api'
+import { systemApi, moduleApi } from '@/api/unified-api'
 
 // 直接使用统一API
-const systemApiProxy = unifiedApi.system
-const moduleApiProxy = unifiedApi.module
+const systemApiProxy = systemApi
+const moduleApiProxy = moduleApi
 
 import type {
   System,
@@ -279,10 +279,13 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
         
         // 处理tags字段 - 后端期望字符串，前端可能是数组
         if (moduleForm.tags) {
-          if (Array.isArray(moduleForm.tags)) {
-            updateData.tags = moduleForm.tags.join(',')
+          const tagsUnknown: unknown = moduleForm.tags as unknown
+          if (Array.isArray(tagsUnknown)) {
+            updateData.tags = (tagsUnknown as string[]).join(',')
+          } else if (typeof tagsUnknown === 'string') {
+            updateData.tags = (tagsUnknown as string).split(',').map((s: string) => s.trim()).filter(Boolean).join(',')
           } else {
-            updateData.tags = moduleForm.tags
+            updateData.tags = ''
           }
         }
         
@@ -306,10 +309,13 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
         
         // 处理tags字段 - 后端期望字符串，前端可能是数组
         if (moduleForm.tags) {
-          if (Array.isArray(moduleForm.tags)) {
-            createData.tags = moduleForm.tags.join(',')
+          const tagsUnknown: unknown = moduleForm.tags as unknown
+          if (Array.isArray(tagsUnknown)) {
+            createData.tags = (tagsUnknown as string[]).join(',')
+          } else if (typeof tagsUnknown === 'string') {
+            createData.tags = (tagsUnknown as string).split(',').map((s: string) => s.trim()).filter(Boolean).join(',')
           } else {
-            createData.tags = moduleForm.tags
+            createData.tags = ''
           }
         }
         

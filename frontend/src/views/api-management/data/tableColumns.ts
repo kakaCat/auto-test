@@ -9,18 +9,25 @@ import { Link, View, Edit, VideoPlay, Delete, DataAnalysis } from '@element-plus
 export interface ApiItem {
   id: number
   name: string
-  serviceName: string
-  moduleId: string
+  serviceName?: string
+  moduleId?: string
+  module_id?: string | number  // 兼容后端字段
+  system_id?: string | number  // 兼容后端字段
   version?: string
   method: string
-  protocol: string
+  protocol?: string
   url: string
+  path?: string               // API路径
   description: string
-  status: 'active' | 'inactive'
-  callCount: number
+  status?: 'active' | 'inactive'
+  enabled?: boolean           // 启用状态
+  callCount?: number
   lastCallTime?: string
   headers?: any[]
   parameters?: any[]
+  tags?: string[]             // 标签
+  metadata?: Record<string, any>  // 元数据
+  [key: string]: any          // 允许其他字段
 }
 
 // 表格处理器接口定义

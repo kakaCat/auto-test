@@ -1,3 +1,6 @@
+<!-- Deprecated: 2025-10 -->
+> 本文档已废弃。请参考 [API 重构计划](../api/refactor-plan.md)、[API 重构总结](../api/refactor-summary.md) 与 [Guides 索引](./README.md)。
+
 # 前端代码风格规范
 
 > 视觉总览：以下 ASCII 图示帮助你一眼掌握统一 API 架构与使用方式。
@@ -17,7 +20,7 @@
                         │      │        │                         │
                         └──────┴────────┴──────────┬──────────────┘
                                                    ▼
-                                   apiHandler（封装 request 工具，统一重试/缓存/Loading）
+
                                                    ▼
                                  /api/... 后端 RESTful 接口（V2）
 ```
@@ -227,6 +230,47 @@ try {
   throw new Error(`获取${this.resourceName}列表失败: ${error.message}`);
 }
 ```
+
+## 命名风格（组件 camelCase / API snake_case）
+- 组件与页面内部（含 props、emit、响应式状态、校验规则、watchers 等）统一使用 camelCase 命名，符合 TypeScript/Vue 生态与自动补全习惯，避免混用导致的隐性错误。
+- API 边界（统一入口/Converter/Adapter 层）负责将 camelCase 映射为 snake_case，屏蔽后端字段形态差异，确保调用处不感知大小写转换。
+- 常见映射：
+  - 基本信息：`url → path`、`systemId/moduleId → system_id/module_id`
+  - 参数与响应：`requestParameters/responseParameters → request_schema/response_schema`
+  - 认证与标签：`authRequired → auth_required`、`tags: string[] → tags: 'a,b'`
+- 返回结构：各代理方法统一返回 `Promise<ApiResponse<...>>`，避免在组件内做异常抛出与大小写转换。
+
+示例（页面使用 camelCase，API 层转换为 snake_case）：
+```ts
+// 组件内（camelCase）
+const form = reactive({
+  systemId: '',
+  moduleId: '',
+  url: '/api/api-interfaces/v1/list',
+  method: 'GET',
+  requestParameters: [],
+  responseParameters: [],
+  authRequired: true,
+  tags: ['core', 'internal']
+})
+
+// API 层（Converter/Adapter：统一映射）
+const payload = normalizeApiPayload({
+  system_id: Number(form.systemId),
+  module_id: form.moduleId ? Number(form.moduleId) : undefined,
+  path: form.url,
+  method: form.method,
+  request_schema: toRequestSchema(form.requestParameters),
+  response_schema: toResponseSchema(form.responseParameters),
+  auth_required: form.authRequired ? 1 : 0,
+  tags: form.tags.join(',')
+})
+```
+
+注意事项：
+- 不要在组件或 Store 层重复做 `camelCase → snake_case`；统一由 API/Converter 层承担。
+- 新增接口必须在对应代理层提供映射逻辑与类型签名（禁止 any），异步函数返回 `Promise<T>`。
+- 业务组件间传递数据使用领域 Data/VO 类型，避免直接透传后端 Entity。
 
 ## 编码标准（TypeScript 强约束）
 

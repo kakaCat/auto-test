@@ -40,7 +40,7 @@ def setup_logging(debug=False):
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(description="API管理模块 v2 启动脚本")
-    parser.add_argument("--port", type=int, default=8002, help="服务端口")
+    parser.add_argument("--port", type=int, default=8000, help="服务端口")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="服务主机")
     parser.add_argument("--debug", action="store_true", help="调试模式")
     

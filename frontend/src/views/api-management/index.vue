@@ -113,7 +113,7 @@
         - 搜索筛选功能
         - 批量操作支持
       -->
-      <div class="right-panel">
+      <div class="right-panel" v-loading="pageLoading">
         <!-- 
           空状态提示
           - 未选择系统/模块时显示
@@ -344,7 +344,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { 
@@ -352,34 +352,41 @@ import {
   View, Edit, Delete, Check, Close, Monitor, Document,
   Link, Cloudy, Phone, Connection, DataBoard, Cpu, Platform, Star
 } from '@element-plus/icons-vue'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi, systemApi, moduleApi } from '@/api/unified-api'
 import ApiFormDialog from './components/ApiFormDialog.vue'
 import MockDataGenerator from './components/MockDataGenerator.vue'
 import TestApiManagement from './components/TestApiManagement.vue'
 import SystemTree from '@/components/SystemTree.vue'
 import ApiTestScenarioDrawer from './components/ApiTestScenarioDrawer.vue'
+import type { ApiItem } from './data/tableColumns'
+import type { ApiData } from '@/api/api-management'
+import { useServiceStore } from '@/stores/service'
 
-// 使用本地类型以避免跨模块字段命名差异导致的类型错误
-interface ApiItem {
+const serviceStore = useServiceStore()
+
+// 类型定义
+interface SystemItem {
   id: string | number
   name: string
   description?: string
-  url?: string
-  path?: string
-  method: string
-  enabled: boolean
-  system_id?: string | number
-  module_id?: string | number
+  enabled?: boolean
+  category?: string
   [key: string]: any
 }
-interface SystemItem { id: string | number; name: string; category?: string }
-interface ModuleItem { id: string | number; name: string; system_id: string | number }
 
-// 直接使用统一API
-const apiProxy = unifiedApi.apiManagementApi
-// 补充分域代理，避免将 system/module 误挂到 apiManagementApi 下
-const systemApi = unifiedApi.system
-const moduleApi = unifiedApi.module
+interface ModuleItem {
+  id: string | number
+  name: string
+  description?: string
+  system_id?: string | number
+  systemId?: string | number
+  enabled?: boolean
+  [key: string]: any
+}
+
+// 使用统一聚合命名导入
+const apiProxy = apiManagementApi
+// systemApi 与 moduleApi 由命名导入提供
 
 // 路由实例
 const route = useRoute()
@@ -387,8 +394,11 @@ const router = useRouter()
 
 // 响应式数据
 const loading = ref(false)
+const pageLoading = ref(false)
 const dialogVisible = ref(false)
 const dialogTitle = ref('新增API')
+// 防止重试定时器导致的加载状态异常
+const retryTimerId = ref<number | null>(null)
 const systemTreeRef = ref()
 const apiFormDialogRef = ref()
 const importInputRef = ref<HTMLInputElement | null>(null)
@@ -443,11 +453,33 @@ interface ApiFormShape {
   description: string
   url: string
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  system_id: string
-  module_id: string
+  system_id: string | number
+  module_id: string | number
   enabled: boolean
   tags: string[]
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
+  // 子组件回传的参数schema（可能是JSON字符串或对象或null）
+  request_schema?: Record<string, unknown> | string | null
+  response_schema?: Record<string, unknown> | string | null
+  auth_required?: number
+}
+
+// 编辑详情类型，确保严格模式下安全访问属性
+type ApiDetail = {
+  id?: string | number
+  name?: string
+  description?: string
+  url?: string
+  path?: string
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | string
+  system_id?: string | number
+  module_id?: string | number
+  enabled?: boolean
+  tags?: string[]
+  metadata?: Record<string, unknown>
+  auth_required?: unknown
+  request_schema?: Record<string, unknown> | unknown[] | string | null
+  response_schema?: Record<string, unknown> | unknown[] | string | null
 }
 const form = reactive<ApiFormShape>({
   id: '',
@@ -459,7 +491,8 @@ const form = reactive<ApiFormShape>({
   module_id: '',
   enabled: true,
   tags: [],
-  metadata: {}
+  metadata: {},
+  auth_required: 1
 })
 
 
@@ -511,22 +544,31 @@ const loadSystemList = async (retryCount = 0): Promise<void> => {
     const data = Array.isArray(response) ? response : (response?.data ?? [])
     if (Array.isArray(data)) {
       systemList.value = data
+      // 将系统写入轻量缓存，模块稍后填充
+      serviceStore.setSystems(systemList.value)
       await loadModuleList() // 加载系统后立即加载模块
+      // 合并系统与模块到缓存，避免重复请求
+      if (Array.isArray(moduleList.value)) {
+        serviceStore.setSystemsAndModules(systemList.value, moduleList.value)
+      }
       buildSystemTree()
     } else {
       console.warn('系统列表数据格式不正确:', data)
       systemList.value = []
       throw new Error('获取启用系统列表失败')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('加载启用系统列表失败:', error)
     systemList.value = [] // 确保在错误时设置为空数组
+    // 清空缓存防止脏数据
+    serviceStore.setSystems([])
+    const msg = error instanceof Error ? error.message : '网络连接错误'
     
     if (retryCount < 2) {
-      ElMessage.warning(`加载启用系统列表失败，正在重试... (${retryCount + 1}/3)`)
+      ElMessage.warning(`加载启用系统列表失败，正在重试... (${retryCount + 1}/3)`) 
       setTimeout(() => loadSystemList(retryCount + 1), 1000)
     } else {
-      ElMessage.error('加载启用系统列表失败: ' + (error.message || '网络连接错误'))
+      ElMessage.error('加载启用系统列表失败: ' + msg)
       ElMessageBox.confirm(
         '加载启用系统列表失败，是否重新尝试？',
         '网络错误',
@@ -546,26 +588,43 @@ const loadSystemList = async (retryCount = 0): Promise<void> => {
 
 const loadModuleList = async (retryCount = 0): Promise<void> => {
   try {
-    // 使用新的启用模块接口
-    const response = await moduleApi.getEnabledList()
-    // 兼容两种返回结构：数组 或 { success, data }
-    const data = Array.isArray(response) ? response : (response?.data ?? [])
-    if (Array.isArray(data)) {
-      moduleList.value = data
+    // 直接使用模块API获取启用模块列表，并保证返回结构解析正确
+    const response = await moduleApi.getEnabledModules({ enabled_only: true })
+    // 兼容两种返回结构：
+    // 1) BaseApi.getEnabledList: response.data 为数组
+    // 2) ModuleApi.getEnabledModules: response.data 为 { data: ModuleEntity[], total }
+    const payload = (response as any)?.data
+    const list = Array.isArray(payload) ? payload : (payload?.data ?? [])
+
+    if (Array.isArray(list)) {
+      moduleList.value = list as ModuleItem[]
+      // 按系统写入模块缓存
+      const grouped: Record<string, ModuleItem[]> = {}
+      (list as ModuleItem[]).forEach((m: ModuleItem) => {
+        const sid = String(m.system_id ?? (m as any).systemId)
+        if (!grouped[sid]) grouped[sid] = []
+        grouped[sid].push(m)
+      })
+      if (typeof (serviceStore as any).setSystemModules !== 'function') {
+        throw new Error('serviceStore.setSystemModules 方法不可用')
+      }
+      for (const sid in grouped) {
+        (serviceStore as any).setSystemModules(sid, grouped[sid])
+      }
     } else {
-      console.warn('模块列表数据格式不正确:', data)
+      console.warn('模块列表数据格式不正确:', payload)
       moduleList.value = []
       throw new Error('获取启用模块列表失败')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('加载启用模块列表失败:', error)
-    moduleList.value = [] // 确保在错误时设置为空数组
-    
+    moduleList.value = []
+    const msg = (error instanceof Error && error.message) ? error.message : '网络连接错误'
     if (retryCount < 2) {
-      ElMessage.warning(`加载启用模块列表失败，正在重试... (${retryCount + 1}/3)`)
+      ElMessage.warning(`加载启用模块列表失败，正在重试... (${retryCount + 1}/3)`) 
       setTimeout(() => loadModuleList(retryCount + 1), 1000)
     } else {
-      ElMessage.error('加载启用模块列表失败: ' + (error.message || '网络连接错误'))
+      ElMessage.error('加载启用模块列表失败: ' + msg)
     }
   }
 }
@@ -575,15 +634,18 @@ const buildSystemTree = async (): Promise<void> => {
     const response = await systemApi.getEnabledListByCategory('backend')
     if (response.success && response.data) {
       const systems = Array.isArray(response.data) ? response.data : []
-      const modules = Array.isArray(moduleList.value) ? moduleList.value : []
-      
+      // 优先使用缓存中的模块数据
+      const modules: ModuleItem[] = Array.isArray(moduleList.value) ? moduleList.value : ([] as ModuleItem[])
       const treeData: TreeNode[] = []
-      
       systems.forEach(system => {
-        // 获取该系统下的模块
-        const systemModules = modules.filter(module => 
-          module && system && String((module as any).system_id ?? (module as any).systemId) === String(system.id)
-        )
+        const sid = String(system.id)
+        // 先从缓存获取该系统的模块；若缓存为空，再从已加载的模块列表中过滤
+        let systemModules = serviceStore.getModulesBySystem(sid)
+        if (!Array.isArray(systemModules) || systemModules.length === 0) {
+          systemModules = modules.filter((module: ModuleItem) => 
+            module && system && String(module.system_id ?? module.systemId) === String(system.id)
+          )
+        }
         
         const systemNode: TreeNode = {
           id: system.id,
@@ -594,7 +656,7 @@ const buildSystemTree = async (): Promise<void> => {
         }
         
         // 添加模块作为系统的子节点
-        systemModules.forEach(module => {
+        systemModules.forEach((module: ModuleItem) => {
           const moduleNode: TreeNode = {
             id: module.id,
             label: module.name,
@@ -618,7 +680,9 @@ const buildSystemTree = async (): Promise<void> => {
 
 const loadApiList = async (retryCount = 0): Promise<void> => {
   try {
-    loading.value = true
+    if (retryCount === 0) {
+      loading.value = true
+    }
     const params: Record<string, any> = {}
     
     // 只传递有值的参数，避免空字符串导致后端验证失败
@@ -649,6 +713,7 @@ const loadApiList = async (retryCount = 0): Promise<void> => {
           ...api,
           url: api.url ?? api.path ?? ''
         } as ApiItem))
+        pagination.total = Array.isArray(apiList.value) ? apiList.value.length : 0
       } else if (data && typeof data === 'object' && (Array.isArray((data as any).items) || Array.isArray((data as any).list))) {
         // 兼容分页数据或列表数据格式：支持 { items, total } 或 { list, total }
         const srcList: ApiItem[] = Array.isArray((data as any).items) ? (data as any).items : (data as any).list
@@ -662,6 +727,8 @@ const loadApiList = async (retryCount = 0): Promise<void> => {
         apiList.value = []
         pagination.total = 0
       }
+      // 成功后关闭加载
+      loading.value = false
     } else {
       throw new Error(response.message || '获取API列表失败')
     }
@@ -669,16 +736,26 @@ const loadApiList = async (retryCount = 0): Promise<void> => {
     console.error('加载API列表失败:', error)
     
     if (retryCount < 2) {
-      ElMessage.warning(`加载API列表失败，正在重试... (${retryCount + 1}/3)`)
-      setTimeout(() => loadApiList(retryCount + 1), 1000)
+      ElMessage.warning(`加载API列表失败，正在重试... (${retryCount + 1}/3)`) 
+      // 清理已有的重试定时器，避免多个并发重试导致loading异常
+      if (retryTimerId.value) {
+        clearTimeout(retryTimerId.value)
+        retryTimerId.value = null
+      }
+      retryTimerId.value = window.setTimeout(() => {
+        retryTimerId.value = null
+        loadApiList(retryCount + 1)
+      }, 1000)
+      // 重试期间保持加载状态，不关闭
+      return
     } else {
       ElMessage.error('加载API列表失败: ' + (error.message || '网络连接错误'))
       // 显示空状态而不是错误对话框，因为这是更频繁的操作
       apiList.value = []
       pagination.total = 0
+      // 最终失败后关闭加载
+      loading.value = false
     }
-  } finally {
-    loading.value = false
   }
 }
 
@@ -712,33 +789,7 @@ const handleSystemNodeClick = (data: TreeNode): void => {
 /**
  * 根据系统分类获取图标
  */
-const getSystemIcon = (category?: string) => {
-  const iconMap: Record<string, any> = {
-    'backend': Cloudy,      // 后端服务使用云图标
-    'frontend': Monitor,    // 前端应用使用显示器图标
-    'web': Link,
-    'api': Cloudy,
-    'mobile': Phone,
-    'desktop': Monitor,
-    'database': DataBoard,
-    'middleware': Connection,
-    'hardware': Cpu,
-    'other': Platform
-  }
-  const key = category ?? 'other'
-  return iconMap[key] || Platform
-}
 
-const getSystemTreeIcon = (data: TreeNode) => {
-  if (data.type === 'system') {
-    // 根据系统分类返回对应图标
-    return getSystemIcon(data.category)
-  } else if (data.type === 'module') {
-    return Document // 模块使用文件图标
-  } else {
-    return Document
-  }
-}
 
 const handleSearch = (): void => {
   loadApiList()
@@ -763,8 +814,13 @@ const handleSelectionChange = (selection: ApiItem[]): void => {
 
 const handleApiStatusChange = async (api: ApiItem & { enabled: boolean }): Promise<void> => {
   try {
-    await apiProxy.updateApi(String(api.id), { status: api.enabled ? 'active' : 'inactive' })
-    ElMessage.success('状态更新成功')
+    const res = await apiProxy.updateApi(String(api.id), { status: api.enabled ? 'active' : 'inactive' })
+    if (res?.success) {
+      ElMessage.success('状态更新成功')
+    } else {
+      ElMessage.error(res?.message || '更新状态失败')
+      api.enabled = !api.enabled // 回滚状态
+    }
   } catch (error: any) {
     console.error('更新API状态失败:', error)
     ElMessage.error('更新状态失败')
@@ -791,28 +847,79 @@ const showAddApiDialog = (): void => {
 
 const showEditApiDialog = async (api: ApiItem): Promise<void> => {
   dialogTitle.value = '编辑API'
-  // 安全映射，避免类型不匹配
-  form.id = api.id
-  form.name = api.name ?? ''
-  form.description = api.description ?? ''
-  form.url = api.url ?? api.path ?? ''
-  form.method = (['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(api.method) ? (api.method as ApiFormShape['method']) : 'POST')
-  form.system_id = api.system_id ? String(api.system_id) : ''
-  form.module_id = api.module_id ? String(api.module_id) : ''
-  form.enabled = Boolean(api.enabled)
-  form.tags = Array.isArray(api.tags) ? api.tags : []
-  form.metadata = (api.metadata && typeof api.metadata === 'object') ? api.metadata : {}
-  dialogVisible.value = true
+  loading.value = true
+  try {
+    // 先清空系统/模块，避免子组件基于旧值触发模块列表请求
+    form.system_id = ''
+    form.module_id = ''
+
+    const res = await apiProxy.getApiDetail(String(api.id))
+    const detail: ApiDetail = (typeof res === 'object' && res !== null && 'data' in res
+      ? ((res as { data?: ApiDetail }).data ?? {})
+      : {}) as ApiDetail
+
+    // 使用详情数据填充表单，避免使用列表行数据
+    form.id = detail.id ?? api.id
+    form.name = detail.name ?? ''
+    form.description = detail.description ?? ''
+    form.url = detail.url ?? detail.path ?? ''
+
+    // 方法字段安全处理，严格限定到允许集合
+    const allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const
+    const methodVal = typeof detail.method === 'string' ? detail.method.toUpperCase() : ''
+    form.method = (allowedMethods as readonly string[]).includes(methodVal)
+      ? (methodVal as ApiFormShape['method'])
+      : 'POST'
+
+    form.system_id = detail.system_id ? String(detail.system_id) : (api.system_id ? String(api.system_id) : '')
+    form.module_id = detail.module_id ? String(detail.module_id) : (api.module_id ? String(api.module_id) : '')
+    form.enabled = detail.enabled !== undefined ? Boolean(detail.enabled) : Boolean(api.enabled)
+
+    // 标签兼容字符串/数组
+    if (Array.isArray(detail.tags)) {
+      form.tags = detail.tags
+    } else if (typeof (detail as { tags?: string }).tags === 'string' && (detail as { tags?: string }).tags) {
+      form.tags = [(detail as { tags?: string }).tags as string]
+    } else if (Array.isArray(api.tags)) {
+      form.tags = api.tags
+    } else {
+      form.tags = []
+    }
+
+    // 元数据仅接受对象
+    form.metadata = (detail.metadata && typeof detail.metadata === 'object') ? detail.metadata : {}
+
+    // 映射认证字段：将后端的 1/'1'/true 统一为 0/1 数值
+    const toStrictAuth = (val: unknown): 0 | 1 => (val === 1 || val === '1' || val === true) ? 1 : 0
+    const arVal: unknown = (detail as { auth_required?: unknown }).auth_required
+    form.auth_required = arVal === undefined ? 1 : toStrictAuth(arVal)
+
+    // 回填参数schema到子组件（ApiFormDialog）以便同步表格/JSON模式（类型安全）
+    const normalizeSchema = (val: unknown): Record<string, unknown> | string | null => {
+      if (val === null || val === undefined) return null
+      if (typeof val === 'string') return val
+      if (Array.isArray(val)) {
+        try {
+          return JSON.stringify(val)
+        } catch {
+          return '[]'
+        }
+      }
+      if (typeof val === 'object') return val as Record<string, unknown>
+      return null
+    }
+    form.request_schema = normalizeSchema((detail as { request_schema?: unknown }).request_schema)
+    form.response_schema = normalizeSchema((detail as { response_schema?: unknown }).response_schema)
+
+    dialogVisible.value = true
+  } catch (error: unknown) {
+    console.error('获取API详情失败:', error)
+    ElMessage.error('获取API详情失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
 }
 
-const viewApi = (api: ApiItem): Promise<void> => {
-  return showEditApiDialog(api)
-}
-
-const openScenarioDrawer = (api: ApiItem): void => {
-  currentScenarioApi.value = api
-  scenarioDrawerVisible.value = true
-}
 
 // 修复：列表"测试"按钮应该打开测试用例管理弹框
 const testApi = (api: ApiItem): void => {
@@ -860,87 +967,186 @@ const handleParamsAppliedFromDrawer = (payload: AppliedParamsPayload): void => {
 
 const saveApi = async (formData: ApiFormShape): Promise<void> => {
   try {
-    // 解析系统/模块ID，优先使用表单值，其次使用当前树选择
-    const resolvedSystemId = (formData.system_id ?? selectedSystemId.value) as string | number | undefined
-    const resolvedModuleId = (formData.module_id ?? selectedModuleId.value) as string | number | undefined
+    // 调试日志：观察父组件是否接收到了子组件的 save 事件
+    console.log('[ApiManagement] save event payload:', formData)
 
-    // 创建时要求必须提供系统与模块ID，否则给出提示并中断
+    // 统一解析并校验ID：过滤 null/undefined/空串/NaN
+    const coerceId = (id: unknown): number | undefined => {
+      if (id == null) return undefined
+      const s = String(id).trim()
+      if (!s) return undefined
+      const n = Number(s)
+      return Number.isNaN(n) ? undefined : n
+    }
+
+    const sysId = coerceId(formData.system_id) ?? coerceId(selectedSystemId.value)
+    const modId = coerceId(formData.module_id) ?? coerceId(selectedModuleId.value)
+
+    // 创建时必须有有效的系统/模块ID
     if (!formData.id) {
-      if (resolvedSystemId == null || resolvedModuleId == null) {
+      if (sysId == null || modId == null) {
         ElMessage.error('请先选择系统与模块，或在表单中填写')
+        if (apiFormDialogRef.value) apiFormDialogRef.value.resetSavingState()
         return
       }
     }
 
-    const payloadUpdate = {
-      name: formData.name,
-      description: formData.description,
-      method: formData.method,
-      path: formData.url || '',
-      system_id: resolvedSystemId != null ? Number(resolvedSystemId) : undefined,
-      module_id: resolvedModuleId != null ? Number(resolvedModuleId) : undefined,
-      status: formData.enabled ? 'active' : 'inactive',
-      tags: (formData.tags && formData.tags.length) ? formData.tags.join(',') : ''
+    // schema处理：创建传对象、更新传字符串
+    const ensureSchemaObject = (schema: unknown): Record<string, unknown> | undefined => {
+      if (schema == null) return undefined
+      if (typeof schema === 'string') {
+        const s = schema.trim()
+        if (!s) return undefined
+        try { return JSON.parse(s) as Record<string, unknown> } catch (e) {
+          console.warn('request/response schema 解析失败:', e)
+          return undefined
+        }
+      }
+      if (typeof schema === 'object') return schema as Record<string, unknown>
+      return undefined
+    }
+    const ensureSchemaString = (schema: unknown): string | undefined => {
+      if (schema == null) return undefined
+      if (typeof schema === 'string') {
+        const s = schema.trim(); return s || undefined
+      }
+      if (typeof schema === 'object') {
+        try { return JSON.stringify(schema as Record<string, unknown>) } catch (e) {
+          console.warn('request/response schema 序列化失败:', e)
+          return undefined
+        }
+      }
+      return undefined
+    }
+    // 新增：统一将标签转换为逗号分隔字符串，兼容字符串或数组
+    const ensureTagsString = (tags: unknown): string => {
+      const arr = Array.isArray(tags)
+        ? tags as string[]
+        : (typeof tags === 'string'
+            ? tags.split(',').map(s => s.trim()).filter(Boolean)
+            : [])
+      return arr.length ? arr.join(',') : ''
     }
 
+    // 兼容处理：优先使用子组件提供的 status，其次根据 enabled 推导；同时透传扩展字段
+    const ext: {
+      status?: 'active' | 'inactive' | 'deprecated' | 'testing'
+      request_format?: 'json' | 'form' | 'xml'
+      response_format?: 'json' | 'xml' | 'text'
+      version?: string
+      auth_required?: number
+      rate_limit?: number
+      timeout?: number
+      example_request?: string | null
+      example_response?: string | null
+    } = formData as unknown as {
+      status?: 'active' | 'inactive' | 'deprecated' | 'testing'
+      request_format?: 'json' | 'form' | 'xml'
+      response_format?: 'json' | 'xml' | 'text'
+      version?: string
+      auth_required?: number
+      rate_limit?: number
+      timeout?: number
+      example_request?: string | null
+      example_response?: string | null
+    }
+    const statusVal: 'active' | 'inactive' | 'deprecated' | 'testing' = ext.status ?? (formData.enabled ? 'active' : 'inactive')
+
     if (formData.id) {
-      await apiProxy.updateApi(String(formData.id), payloadUpdate)
-      ElMessage.success('更新成功')
-    } else {
-      const payloadCreate = {
+      // 更新接口：按后端ApiInterfaceUpdate要求传字符串
+      const payloadUpdate: Record<string, unknown> = {
         name: formData.name,
         description: formData.description,
         method: formData.method,
-        path: formData.url || '',
-        system_id: Number(resolvedSystemId!),
-        module_id: Number(resolvedModuleId!),
-        status: formData.enabled ? 'active' : 'inactive',
-        tags: (formData.tags && formData.tags.length) ? formData.tags.join(',') : ''
+        url: String(formData.url || '').trim(),
+        system_id: sysId,
+        module_id: modId,
+        status: statusVal,
+        request_format: ext.request_format,
+        response_format: ext.response_format,
+        version: ext.version,
+        auth_required: ext.auth_required,
+        rate_limit: ext.rate_limit,
+        timeout: ext.timeout,
+        example_request: ext.example_request,
+        example_response: ext.example_response,
+        tags: ensureTagsString(formData.tags),
+        request_schema: ensureSchemaString(formData.request_schema),
+        response_schema: ensureSchemaString(formData.response_schema)
       }
-      await apiProxy.createApi(payloadCreate)
-      ElMessage.success('创建成功')
+      console.log('[ApiManagement] update payload =>', payloadUpdate)
+
+      const updateRes = await apiProxy.updateApi(String(formData.id), payloadUpdate as unknown as Partial<ApiData>)
+      if (!updateRes?.success) {
+        if (apiFormDialogRef.value) apiFormDialogRef.value.resetSavingState()
+        return
+      }
+    } else {
+      // 创建接口：按后端ApiInterfaceCreate要求传对象
+      const payloadCreate: Record<string, unknown> = {
+        name: formData.name,
+        description: formData.description,
+        method: formData.method,
+        url: String(formData.url || '').trim(),
+        system_id: Number(sysId!),
+        module_id: Number(modId!),
+        status: statusVal,
+        request_format: ext.request_format,
+        response_format: ext.response_format,
+        version: ext.version,
+        auth_required: ext.auth_required,
+        rate_limit: ext.rate_limit,
+        timeout: ext.timeout,
+        example_request: ext.example_request,
+        example_response: ext.example_response,
+        tags: ensureTagsString(formData.tags),
+        request_schema: ensureSchemaObject(formData.request_schema),
+        response_schema: ensureSchemaObject(formData.response_schema)
+      }
+      console.log('[ApiManagement] create payload =>', payloadCreate)
+
+      const createRes = await apiProxy.createApi(payloadCreate as unknown as Partial<ApiData>)
+      if (!createRes?.success) {
+        if (apiFormDialogRef.value) apiFormDialogRef.value.resetSavingState()
+        return
+      }
     }
     
     dialogVisible.value = false
     loadApiList()
-    
-    // 重置子组件的保存状态
-    if (apiFormDialogRef.value) {
-      apiFormDialogRef.value.resetSavingState()
-    }
-  } catch (error: any) {
+    if (apiFormDialogRef.value) apiFormDialogRef.value.resetSavingState()
+  } catch (error: unknown) {
     console.error('保存API失败:', error)
     
-    // 显示详细错误信息
     let errorMessage = '保存失败'
-    
-    // 处理业务错误（success: false的情况）
-    if (error.message && error.message !== '请求失败') {
+    if (error instanceof Error && error.message && error.message !== '请求失败') {
       errorMessage = error.message
-    } else if (error.response && error.response.data) {
-      if (typeof error.response.data === 'string') {
-        errorMessage = error.response.data
-      } else if (error.response.data.message) {
-        errorMessage = error.response.data.message
-      } else if (error.response.data.detail) {
-        errorMessage = JSON.stringify(error.response.data.detail)
+    } else if ((error as any)?.response && (error as any).response.data) {
+      const respData = (error as any).response.data
+      if (typeof respData === 'string') {
+        errorMessage = respData
+      } else if (respData.message) {
+        errorMessage = respData.message
+      } else if (respData.detail) {
+        errorMessage = JSON.stringify(respData.detail)
       } else {
-        errorMessage = JSON.stringify(error.response.data)
+        errorMessage = JSON.stringify(respData)
       }
     }
     
     ElMessage.error(errorMessage)
-    
-    // 保存失败时也要重置子组件的保存状态
-    if (apiFormDialogRef.value) {
-      apiFormDialogRef.value.resetSavingState()
-    }
+    if (apiFormDialogRef.value) apiFormDialogRef.value.resetSavingState()
   }
 }
 
 // 处理对话框取消事件
 const handleDialogCancel = (): void => {
   dialogVisible.value = false
+  if (retryTimerId.value) {
+    clearTimeout(retryTimerId.value)
+    retryTimerId.value = null
+  }
+  loading.value = false
 }
 
 const resetForm = (preserveSelection = false): void => {
@@ -988,23 +1194,30 @@ const batchEnable = async (): Promise<void> => {
     return
   }
 
+  let loadingInstance: { close: () => void } | null = null
   try {
-    const loadingInstance = ElLoading.service({
+    loadingInstance = ElLoading.service({
       text: `正在启用 ${selectedApis.value.length} 个API...`,
       background: 'rgba(0, 0, 0, 0.7)'
     })
 
-    const promises = selectedApis.value.map((api: ApiItem) =>
-      apiProxy.updateApi(String(api.id), { status: 'active' })
+    const results = await Promise.all(
+      selectedApis.value.map((api: ApiItem) => apiProxy.updateApi(String(api.id), { status: 'active' }))
     )
-    await Promise.all(promises)
-    
-    loadingInstance.close()
-    ElMessage.success(`成功启用 ${selectedApis.value.length} 个API`)
-    loadApiList()
+    const successCount = results.filter(r => r?.success).length
+    const failCount = results.length - successCount
+    if (successCount > 0) {
+      ElMessage.success(`成功启用 ${successCount} 个API`)
+    }
+    if (failCount > 0) {
+      ElMessage.error(`启用失败 ${failCount} 个API`)
+    }
+    await loadApiList()
   } catch (error: any) {
     console.error('批量启用失败:', error)
     ElMessage.error('批量启用失败: ' + (error.message || '网络错误'))
+  } finally {
+    if (loadingInstance) loadingInstance.close()
   }
 }
 
@@ -1014,33 +1227,41 @@ const batchDisable = async (): Promise<void> => {
     return
   }
 
+  let loadingInstance: { close: () => void } | null = null
   try {
-    const loadingInstance = ElLoading.service({
+    loadingInstance = ElLoading.service({
       text: `正在禁用 ${selectedApis.value.length} 个API...`,
       background: 'rgba(0, 0, 0, 0.7)'
     })
 
-    const promises = selectedApis.value.map((api: ApiItem) =>
-      apiProxy.updateApi(String(api.id), { status: 'inactive' })
+    const results = await Promise.all(
+      selectedApis.value.map((api: ApiItem) => apiProxy.updateApi(String(api.id), { status: 'inactive' }))
     )
-    await Promise.all(promises)
-    
-    loadingInstance.close()
-    ElMessage.success(`成功禁用 ${selectedApis.value.length} 个API`)
-    loadApiList()
+    const successCount = results.filter(r => r?.success).length
+    const failCount = results.length - successCount
+    if (successCount > 0) {
+      ElMessage.success(`成功禁用 ${successCount} 个API`)
+    }
+    if (failCount > 0) {
+      ElMessage.error(`禁用失败 ${failCount} 个API`)
+    }
+    await loadApiList()
   } catch (error: any) {
     console.error('批量禁用失败:', error)
     ElMessage.error('批量禁用失败: ' + (error.message || '网络错误'))
+  } finally {
+    if (loadingInstance) loadingInstance.close()
   }
 }
 
 const batchDelete = async (): Promise<void> => {
+  let loadingInstance: { close: () => void } | null = null
   try {
     await ElMessageBox.confirm(`确定要删除选中的 ${selectedApis.value.length} 个API吗？`, '确认删除', {
       type: 'warning'
     })
     
-    const loadingInstance = ElLoading.service({
+    loadingInstance = ElLoading.service({
       text: '正在删除...',
       background: 'rgba(0, 0, 0, 0.7)'
     })
@@ -1050,14 +1271,15 @@ const batchDelete = async (): Promise<void> => {
     )
     await Promise.all(promises)
     
-    loadingInstance.close()
     ElMessage.success('批量删除成功')
-    loadApiList()
+    await loadApiList()
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('批量删除失败:', error)
       ElMessage.error('批量删除失败')
     }
+  } finally {
+    if (loadingInstance) loadingInstance.close()
   }
 }
 
@@ -1067,9 +1289,10 @@ const batchTest = async () => {
     return
   }
   
+  let loadingInstance: { close: () => void } | null = null
   try {
     ElMessage.info('正在批量测试API...')
-    const loadingInstance = ElLoading.service({
+    loadingInstance = ElLoading.service({
       text: `正在测试 ${selectedApis.value.length} 个API，请稍候...`,
       background: 'rgba(0, 0, 0, 0.7)'
     })
@@ -1080,26 +1303,28 @@ const batchTest = async () => {
       { headers: {}, timeout: 30 }
     )
     
-    loadingInstance.close()
-    
-    if (response.success) {
+    if (response.success && response.data) {
       ElMessage.success('批量测试完成')
-      const results = response.data.results || []
-      const successCount = results.filter((r: any) => r.success).length
-      const failCount = results.length - successCount
+      const data = response.data
+      const results = Array.isArray((data as any).results) ? (data as any).results : []
+      const successCount = results.filter((r: any) => r && r.success).length
+      const totalCount = (data as any).total_count ?? results.length
+      const successNum = (data as any).success_count ?? successCount
+      const avgTime = (data as any).average_response_time ?? 0
+      const testTime = (data as any).test_time ?? ''
       
       ElMessageBox.alert(
         `<div style="text-align: left;">
-          <p><strong>测试总数:</strong> ${response.data.total_count}</p>
-          <p><strong>成功数量:</strong> <span style="color: #67c23a;">${response.data.success_count}</span></p>
-          <p><strong>失败数量:</strong> <span style="color: #f56c6c;">${response.data.total_count - response.data.success_count}</span></p>
-          <p><strong>平均响应时间:</strong> ${response.data.average_response_time}ms</p>
-          <p><strong>测试时间:</strong> ${response.data.test_time}</p>
+          <p><strong>测试总数:</strong> ${totalCount}</p>
+          <p><strong>成功数量:</strong> <span style="color: #67c23a;">${successNum}</span></p>
+          <p><strong>失败数量:</strong> <span style="color: #f56c6c;">${totalCount - successNum}</span></p>
+          <p><strong>平均响应时间:</strong> ${avgTime}ms</p>
+          <p><strong>测试时间:</strong> ${testTime}</p>
         </div>`,
         '批量测试结果',
         {
           dangerouslyUseHTMLString: true,
-          type: response.data.success_count === response.data.total_count ? 'success' : 'warning'
+          type: successNum === totalCount ? 'success' : 'warning'
         }
       )
     } else {
@@ -1108,6 +1333,8 @@ const batchTest = async () => {
   } catch (error: any) {
     console.error('批量测试失败:', error)
     ElMessage.error('批量测试失败: ' + (error.message || '网络错误'))
+  } finally {
+    if (loadingInstance) loadingInstance.close()
   }
 }
 
@@ -1152,13 +1379,13 @@ const handleImportFile = async (e: Event) => {
   const file = input.files[0]
   const formData = new FormData()
   formData.append('file', file)
+  let loadingInstance: { close: () => void } | null = null
   try {
-    const loadingInstance = ElLoading.service({
+    loadingInstance = ElLoading.service({
       text: '正在导入API，请稍候...',
       background: 'rgba(0, 0, 0, 0.7)'
     })
     const resp = await apiProxy.importApis(formData)
-    loadingInstance.close()
     if (resp.success) {
       ElMessage.success(resp.message || '导入成功')
       // 导入成功后刷新列表
@@ -1170,6 +1397,7 @@ const handleImportFile = async (e: Event) => {
     console.error('导入API失败:', error)
     ElMessage.error(error?.message || '导入失败')
   } finally {
+    if (loadingInstance) loadingInstance.close()
     // 重置 input 值，确保下次同一文件也能触发 change
     if (importInputRef.value) importInputRef.value.value = ''
   }
@@ -1199,10 +1427,15 @@ const initializeData = () => {
 onMounted(async () => {
   // 初始化数据
   initializeData()
-  
-  await loadSystemList() // 只加载系统和模块，不预加载API列表
-  
-  // 从URL参数中读取系统和模块ID
+  pageLoading.value = true
+  try {
+    await loadSystemList() // 只加载系统和模块，不预加载API列表
+  } finally {
+    // 页面级loading在系统/模块加载完成后立即关闭
+    pageLoading.value = false
+  }
+
+  // 从URL参数中读取系统和模块ID（在pageLoading关闭后执行）
   const { systemId, moduleId } = route.query
   const sysId = systemId ? String(systemId) : ''
   const modId = moduleId ? String(moduleId) : ''
@@ -1221,6 +1454,7 @@ onMounted(async () => {
       selectedModuleId.value = ''
       router.replace({ path: route.path, query: { systemId: sysId } })
     }
+    // 在页面级loading关闭后开始API列表加载（表格级loading）
     await loadApiList()
   } else if (sysId) {
     // URL中的systemId在当前系统列表中不存在，清理并提示
@@ -1231,7 +1465,16 @@ onMounted(async () => {
   }
 })
 
+// 组件卸载时清理定时器，避免内存泄漏和意外重试
+onUnmounted(() => {
+  if (retryTimerId.value) {
+    clearTimeout(retryTimerId.value)
+    retryTimerId.value = null
+  }
+})
+
 const handleTreeRefresh = async () => {
+  pageLoading.value = true
   try {
     await loadSystemList()
     await loadModuleList()
@@ -1240,6 +1483,8 @@ const handleTreeRefresh = async () => {
   } catch (error: any) {
     console.error('刷新系统树失败:', error)
     ElMessage.error('刷新系统和模块树失败')
+  } finally {
+    pageLoading.value = false
   }
 }
 </script>
@@ -1321,6 +1566,7 @@ const handleTreeRefresh = async () => {
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .right-panel:hover {
@@ -1342,7 +1588,7 @@ const handleTreeRefresh = async () => {
 
 .api-list-container {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   padding: 20px;
 }
 
@@ -1417,6 +1663,27 @@ const handleTreeRefresh = async () => {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 响应式布局优化 */
+@media (max-width: 1200px) {
+  .left-panel {
+    width: 280px;
+  }
+}
+
+@media (max-width: 992px) {
+  .main-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .left-panel,
+  .right-panel {
+    width: 100%;
+  }
+  .left-panel {
+    max-width: 100%;
   }
 }
 </style>

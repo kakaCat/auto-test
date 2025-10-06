@@ -6,7 +6,7 @@
 
 ## 📁 文档结构
 
-- **[coding-style.md](./coding-style.md)** - 编码风格指南
+- 编码风格指南（已废弃）。请参考 [API 重构计划](../api/refactor-plan.md) 与本目录其他指南。
 - **[inline-config-test.md](./inline-config-test.md)** - 内联配置测试指南
 - **[development.md](./development.md)** - 开发环境搭建（待创建）
 - **[testing.md](./testing.md)** - 测试指南（待创建）
@@ -14,7 +14,7 @@
 
 ## 🎯 快速开始
 
-1. 阅读 [编码风格指南](./coding-style.md)
+1. 阅读 [API 重构计划](../api/refactor-plan.md)
 2. 了解 [内联配置测试](./inline-config-test.md)
 3. 参考 [API文档](../api/)
 

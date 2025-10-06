@@ -111,7 +111,8 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, Refresh } from '@element-plus/icons-vue'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
+import { normalizeList } from '@/utils/listNormalizer'
 import ParameterSaveDialog from './ParameterSaveDialog.vue'
 import SavedParametersList from './SavedParametersList.vue'
 import type { ScenarioListParams, ScenarioData, ScenarioCreateData } from '@/api/scenario'
@@ -160,8 +161,9 @@ const loadScenarios = async () => {
     if (filters.status) params.status = filters.status
     if (filters.is_parameters_saved) params.is_parameters_saved = true
 
-    const resp: any = await unifiedApi.scenario.getList(params)
-    const data = Array.isArray(resp) ? resp : (resp?.data ?? [])
+    const resp: any = await scenarioApi.getList(params)
+    const normalized = normalizeList<ScenarioData>(resp)
+    const data = normalized.list
     scenarioList.value = Array.isArray(data) ? (data as ScenarioData[]) : []
   } catch (err: any) {
     console.error('加载场景列表失败:', err)
@@ -184,7 +186,7 @@ const handleCreate = async () => {
       scenario_type: createForm.scenario_type as ScenarioCreateData['scenario_type'],
       api_id: String(props.apiInfo.id)
     }
-    await unifiedApi.scenario.create(payload)
+    await scenarioApi.create(payload)
     ElMessage.success('创建成功')
     createForm.name = ''
     createForm.description = ''
@@ -223,10 +225,11 @@ const handleParamsApplied = async (row: any) => {
       return
     }
     const scenarioId = String(row.id || row.scenario_id)
-    const resp: any = await unifiedApi.scenario.getDetail(scenarioId)
-    const detail = resp?.data ?? resp
-    const variables = detail?.variables || {}
-    const config = detail?.config || {}
+    const resp: any = await scenarioApi.getDetail(scenarioId)
+    const raw = (resp?.data ?? resp) as unknown
+    const detail = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {}
+    const variables = (detail['variables'] as Record<string, unknown> | undefined) || {}
+    const config = (detail['config'] as Record<string, unknown> | undefined) || {}
 
     // 向父级抛出参数应用事件
     emit('params-applied', { scenarioId, variables, config, detail })

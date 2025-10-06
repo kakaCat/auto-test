@@ -211,10 +211,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi } from '@/api/unified-api'
 
 // 直接使用统一API
-const apiProxy = unifiedApi.apiManagementApi
+const apiProxy = apiManagementApi
 
 const router = useRouter()
 

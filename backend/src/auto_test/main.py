@@ -28,7 +28,13 @@ from .api.scenarios import router as scenarios_router
 from .api.api_interfaces import router as api_interfaces_router
 from .api.logs import router as logs_router
 from .api.pages import router as pages_router
-from .api.orchestration import router as orchestration_router
+# 尝试导入编排路由（依赖可能缺失时跳过）
+try:
+    from .api.orchestration import router as orchestration_router
+except Exception as e:
+    orchestration_router = None
+    import logging as _logging
+    _logging.getLogger(__name__).warning(f"Orchestration router disabled due to import error: {e}")
 from .api.test_apis_page import router as test_apis_page_router
 from .api.test_apis_dialog import router as test_apis_dialog_router
 
@@ -80,7 +86,8 @@ def create_app() -> FastAPI:
     app.include_router(api_interfaces_router, prefix="/api", tags=["API Interface Management"])
     app.include_router(logs_router, prefix="/api", tags=["Log Management"])
     app.include_router(pages_router, prefix="/api", tags=["Page Management"])
-    app.include_router(orchestration_router, prefix="/api", tags=["AI Orchestration"])
+    if orchestration_router is not None:
+        app.include_router(orchestration_router, prefix="/api", tags=["AI Orchestration"])
     app.include_router(test_apis_page_router, prefix="/api", tags=["Test APIs Management - Page"])
     app.include_router(test_apis_dialog_router, prefix="/api", tags=["Test APIs Management - Dialog"])
     

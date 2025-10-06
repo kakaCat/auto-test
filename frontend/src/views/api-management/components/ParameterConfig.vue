@@ -196,19 +196,46 @@ const parameterExample = computed(() => {
 })
 
 // 监听器
+let isInternalUpdate = false
 watch(() => props.modelValue, (newValue) => {
+  if (isInternalUpdate) return
   if (Array.isArray(newValue)) {
     parameters.value = newValue.map(param => ({
       ...param,
       id: param.id || ++parameterIdCounter,
       level: param.level || 0
     }))
+    // 外部数据回填后：清空搜索并根据当前模式同步展示
+    searchText.value = ''
+    jsonError.value = ''
+    if (currentMode.value === 'json') {
+      try {
+        jsonContent.value = parameters.value.length > 0
+          ? JSON.stringify(generateJsonSchema(parameters.value), null, 2)
+          : ''
+      } catch (e) {
+        jsonError.value = 'JSON生成失败：' + (e && e.message ? e.message : '未知错误')
+      }
+    }
   }
 }, { immediate: true, deep: true })
 
 watch(parameters, (newValue) => {
+  isInternalUpdate = true
   emit('update:modelValue', newValue)
   emit('change', newValue)
+  // 如果当前在JSON模式，保持JSON内容与表格同步
+  try {
+    if (currentMode.value === 'json') {
+      jsonContent.value = newValue && newValue.length > 0
+        ? JSON.stringify(generateJsonSchema(newValue), null, 2)
+        : ''
+      jsonError.value = ''
+    }
+  } catch (e) {
+    jsonError.value = 'JSON生成失败：' + (e && e.message ? e.message : '未知错误')
+  }
+  nextTick(() => { isInternalUpdate = false })
 }, { deep: true })
 
 // 本地持久化折叠状态（最小版）
@@ -727,6 +754,8 @@ defineExpose({
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mode-switcher {

@@ -27,7 +27,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
+import { normalizeList } from '@/utils/listNormalizer'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -50,9 +51,10 @@ const loadSavedScenarios = async () => {
     loading.value = true
     const params: any = { api_id: props.apiId, is_parameters_saved: true }
     if (keyword.value) params.keyword = keyword.value
-    const resp = await unifiedApi.scenario.getList(params)
-    const data = Array.isArray(resp) ? resp : (resp?.data ?? [])
-    savedList.value = Array.isArray(data) ? data : []
+    const resp = await scenarioApi.getList(params)
+    const normalized = normalizeList(resp)
+    const data = normalized.list
+    savedList.value = Array.isArray(data) ? (data as any[]) : []
   } catch (err: any) {
     console.error('加载已保存参数列表失败:', err)
     ElMessage.error(`加载失败：${(err && err.message) || '网络错误'}`)

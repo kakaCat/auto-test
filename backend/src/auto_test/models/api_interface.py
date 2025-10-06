@@ -4,7 +4,7 @@ API Interface Model - Simplified
 """
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Union
 from pydantic import BaseModel, Field
 
 
@@ -48,11 +48,11 @@ class ApiInterfaceUpdate(BaseModel):
     auth_required: Optional[int] = Field(None, description="是否需要认证(0:否, 1:是)")
     rate_limit: Optional[int] = Field(None, description="速率限制")
     timeout: Optional[int] = Field(None, description="超时时间(秒)")
-    tags: Optional[str] = Field(None, description="标签")
-    request_schema: Optional[str] = Field(None, description="请求模式")
-    response_schema: Optional[str] = Field(None, description="响应模式")
-    example_request: Optional[str] = Field(None, description="请求示例")
-    example_response: Optional[str] = Field(None, description="响应示例")
+    tags: Optional[Union[str, List[str]]] = Field(None, description="标签")
+    request_schema: Optional[Union[str, dict, list]] = Field(None, description="请求模式")
+    response_schema: Optional[Union[str, dict, list]] = Field(None, description="响应模式")
+    example_request: Optional[Union[str, dict, list]] = Field(None, description="请求示例")
+    example_response: Optional[Union[str, dict, list]] = Field(None, description="响应示例")
     system_id: Optional[int] = Field(None, description="所属系统ID")
     module_id: Optional[int] = Field(None, description="所属模块ID")
 

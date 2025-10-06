@@ -2,7 +2,7 @@
  * 测试API管理前端接口封装
  * 基础路径：/api/test-apis/v1
  */
-import { apiHandler } from '@/utils/apiHandler'
+import { request } from '@/utils/request'
 import type { ApiResponse } from '@/types'
 
 export interface TestApisListParams {
@@ -28,14 +28,14 @@ export const testApisApi = {
    */
   async getList(params: TestApisListParams = {}): Promise<ApiResponse> {
     const normalized = normalizeParams(params)
-    return apiHandler.get('/api/test-apis/v1/test-apis', normalized)
+    return request.get('/api/test-apis/v1/test-apis', normalized)
   },
 
   /**
    * 获取测试API详情（预留，当前页面未用到）
    */
   async getDetail(id: number | string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/test-apis/v1/test-apis/${id}`)
+    return request.get(`/api/test-apis/v1/test-apis/${id}`)
   }
 }
 

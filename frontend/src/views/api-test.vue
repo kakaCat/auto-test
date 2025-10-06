@@ -44,7 +44,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi } from '@/api/unified-api'
 
 // 响应式数据
 const apiStatus = ref({
@@ -64,8 +64,8 @@ const testApiCall = async () => {
   
   try {
     // 直接使用统一API测试获取统计数据
-    if (unifiedApi.apiManagementApi && unifiedApi.apiManagementApi.getStats) {
-      const response = await unifiedApi.apiManagementApi.getStats()
+    if (apiManagementApi && apiManagementApi.getStats) {
+      const response = await apiManagementApi.getStats()
       testResult.value = {
         success: true,
         message: 'API调用成功',

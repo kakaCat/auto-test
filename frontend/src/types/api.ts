@@ -38,7 +38,7 @@ export interface SystemData {
   enabled?: boolean
   order_index?: number
   url?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   created_at?: string
   updated_at?: string
 }
@@ -51,7 +51,7 @@ export interface SystemCreateRequest {
   enabled?: boolean
   order_index?: number
   url?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface SystemUpdateRequest extends SystemCreateRequest {}
@@ -75,7 +75,7 @@ export interface ModuleData {
   version?: string
   module_type?: string
   tags?: string[]
-  config?: Record<string, any>
+  config?: Record<string, unknown>
   order_index?: number
   created_at?: string
   updated_at?: string
@@ -92,7 +92,7 @@ export interface ModuleCreateRequest {
   version?: string
   module_type?: string
   tags?: string[]
-  config?: Record<string, any>
+  config?: Record<string, unknown>
   order_index?: number
 }
 
@@ -151,8 +151,8 @@ export interface ApiData {
   enabled?: boolean
   category?: string
   tags?: string[]
-  headers?: Array<Record<string, any>>
-  parameters?: Array<Record<string, any>>
+  headers?: Array<Record<string, unknown>>
+  parameters?: Array<Record<string, unknown>>
   created_at?: string
   updated_at?: string
 }
@@ -169,8 +169,8 @@ export interface ApiCreateRequest {
   enabled?: boolean
   category?: string
   tags?: string[]
-  headers?: Array<Record<string, any>>
-  parameters?: Array<Record<string, any>>
+  headers?: Array<Record<string, unknown>>
+  parameters?: Array<Record<string, unknown>>
 }
 
 export interface ApiUpdateRequest extends ApiCreateRequest {}
@@ -182,8 +182,8 @@ export interface ApiListParams {
 }
 
 export interface ApiTestRequest {
-  parameters?: Record<string, any>
-  headers?: Record<string, any>
+  parameters?: Record<string, unknown>
+  headers?: Record<string, unknown>
 }
 
 export interface ApiTestResponse {
@@ -194,6 +194,25 @@ export interface ApiTestResponse {
   error?: string
 }
 
+// 批量测试返回项与汇总
+export interface ApiBatchTestResultItem {
+  success: boolean
+  status_code?: number
+  response_time?: number
+  response_data?: unknown
+  error?: string
+  api_id?: string
+  executed_at?: string
+}
+
+export interface ApiBatchTestResponse {
+  total_count: number
+  success_count: number
+  average_response_time: number
+  test_time: string
+  results: ApiBatchTestResultItem[]
+}
+
 // 工作流相关类型
 export interface WorkflowData {
   id: string
@@ -201,9 +220,9 @@ export interface WorkflowData {
   description?: string
   category?: string
   version?: string
-  config?: Record<string, any>
-  nodes?: Array<Record<string, any>>
-  connections?: Array<Record<string, any>>
+  config?: Record<string, unknown>
+  nodes?: Array<Record<string, unknown>>
+  connections?: Array<Record<string, unknown>>
   status?: string
   created_at?: string
   updated_at?: string
@@ -214,9 +233,9 @@ export interface WorkflowCreateRequest {
   description?: string
   category?: string
   version?: string
-  config?: Record<string, any>
-  nodes?: Array<Record<string, any>>
-  connections?: Array<Record<string, any>>
+  config?: Record<string, unknown>
+  nodes?: Array<Record<string, unknown>>
+  connections?: Array<Record<string, unknown>>
 }
 
 export interface WorkflowUpdateRequest extends WorkflowCreateRequest {}
@@ -244,8 +263,8 @@ export interface ScenarioData {
   description?: string
   scenario_type?: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   version?: string
-  config?: Record<string, any>
-  variables?: Record<string, any>
+  config?: Record<string, unknown>
+  variables?: Record<string, unknown>
   tags?: string[]
   is_parameters_saved?: boolean
   saved_parameters_id?: string
@@ -259,8 +278,8 @@ export interface ScenarioCreateRequest {
   description?: string
   scenario_type?: 'normal' | 'exception' | 'boundary' | 'security' | 'performance'
   version?: string
-  config?: Record<string, any>
-  variables?: Record<string, any>
+  config?: Record<string, unknown>
+  variables?: Record<string, unknown>
   tags?: string[]
   api_id?: string
 }

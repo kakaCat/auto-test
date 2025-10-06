@@ -87,8 +87,14 @@ class SystemService:
             if SystemService._is_system_name_exists(system_data.name):
                 raise ValueError(f"系统名称 '{system_data.name}' 已存在")
             
+            # 记录调试日志，检查传入字段
+            try:
+                payload = system_data.dict() if hasattr(system_data, 'dict') else {}
+            except Exception:
+                payload = {}
+            logger.info(f"[DEBUG] create_system payload: {payload}")
             # 创建系统
-            system_id = SystemDAO.create(system_data.name, system_data.description)
+            system_id = SystemDAO.create(system_data.name, system_data.description, system_data.url)
             created_system = SystemDAO.get_by_id(system_id)
             
             logger.info(f"系统创建成功: {system_data.name} (ID: {system_id})")
@@ -112,6 +118,7 @@ class SystemService:
         try:
             # 检查系统是否存在
             existing_system = SystemDAO.get_by_id(system_id)
+            logger.info(f"[DEBUG] update_system existing_system: {'FOUND' if existing_system else 'NOT_FOUND'} (id={system_id})")
             if not existing_system:
                 return None
             
@@ -126,13 +133,20 @@ class SystemService:
             if system_data.enabled is not None:
                 status = "active" if system_data.enabled else "inactive"
             
+            # 记录调试日志，检查更新字段
+            try:
+                payload_u = system_data.dict() if hasattr(system_data, 'dict') else {}
+            except Exception:
+                payload_u = {}
+            logger.info(f"[DEBUG] update_system payload: {payload_u}, resolved status: {status}")
             # 更新系统
             success = SystemDAO.update(
                 system_id, 
                 name=system_data.name,
                 description=system_data.description,
                 status=status,
-                category=system_data.category
+                category=system_data.category,
+                url=system_data.url
             )
             if success:
                 updated_system = SystemDAO.get_by_id(system_id)
@@ -202,6 +216,9 @@ class SystemService:
         
         # 添加enabled字段，基于status转换
         transformed['enabled'] = system.get('status', 'active') == 'active'
+        
+        # 显式保留 url 字段（若为 None 也保留）
+        transformed['url'] = system.get('url')
         
         # 添加创建时间格式化
         if system.get('created_at'):

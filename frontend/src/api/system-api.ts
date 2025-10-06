@@ -19,6 +19,7 @@
 
 import { BaseApi, type BaseEntity, type BaseListParams } from './base-api'
 import type { ApiHandlerOptions, ApiResponse } from '@/types'
+import { request } from '@/utils/request'
 
 /**
  * 系统实体接口
@@ -229,12 +230,10 @@ class SystemApi extends BaseApi<SystemEntity> {
    * 获取系统分类列表
    */
   async getCategories(options: ApiHandlerOptions = {}): Promise<ApiResponse<string[]>> {
-    return this.apiHandler.get(`${this.baseUrl}/categories`, {}, {
-      cache: true,
-      cacheTime: 300000,
-      loadingText: '获取分类列表中...',
-      ...options
-    })
+    const config: import('@/utils/request').RequestConfig = {}
+    if (options.showLoading === false) config.skipLoading = true
+    if (options.showError === false) config.skipErrorHandler = true
+    return request.get(`${this.baseUrl}/categories`, {}, config)
   }
 
   /**
@@ -286,12 +285,10 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemId: number, 
     options: ApiHandlerOptions = {}
   ): Promise<ApiResponse<{count: number}>> {
-    return this.apiHandler.get(`${this.baseUrl}/${systemId}/modules/count`, {}, {
-      cache: true,
-      cacheTime: 60000,
-      loadingText: '统计模块数量中...',
-      ...options
-    })
+    const config: import('@/utils/request').RequestConfig = {}
+    if (options.showLoading === false) config.skipLoading = true
+    if (options.showError === false) config.skipErrorHandler = true
+    return request.get(`${this.baseUrl}/${systemId}/modules/count`, {}, config)
   }
 
   /**
@@ -301,12 +298,10 @@ class SystemApi extends BaseApi<SystemEntity> {
     systemId: number, 
     options: ApiHandlerOptions = {}
   ): Promise<ApiResponse<{count: number}>> {
-    return this.apiHandler.get(`${this.baseUrl}/${systemId}/apis/count`, {}, {
-      cache: true,
-      cacheTime: 60000,
-      loadingText: '统计API数量中...',
-      ...options
-    })
+    const config: import('@/utils/request').RequestConfig = {}
+    if (options.showLoading === false) config.skipLoading = true
+    if (options.showError === false) config.skipErrorHandler = true
+    return request.get(`${this.baseUrl}/${systemId}/apis/count`, {}, config)
   }
 
   /**
@@ -317,11 +312,10 @@ class SystemApi extends BaseApi<SystemEntity> {
     status: 'active' | 'inactive' | 'maintenance', 
     options: ApiHandlerOptions = {}
   ): Promise<ApiResponse<SystemEntity>> {
-    return this.apiHandler.patch(`${this.baseUrl}/${systemId}/status`, { status }, {
-      successMessage: '状态更新成功',
-      loadingText: '更新状态中...',
-      ...options
-    })
+    const config: import('@/utils/request').RequestConfig = {}
+    if (options.showLoading === false) config.skipLoading = true
+    if (options.showError === false) config.skipErrorHandler = true
+    return request.patch(`${this.baseUrl}/${systemId}/status`, { status }, config)
   }
 }
 

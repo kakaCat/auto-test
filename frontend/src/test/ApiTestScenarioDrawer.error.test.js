@@ -10,12 +10,12 @@ vi.mock('element-plus', () => ({
 
 import { mount } from '@vue/test-utils'
 import ApiTestScenarioDrawer from '@/views/api-management/components/ApiTestScenarioDrawer.vue'
-import unifiedApi from '@/api/unified-api'
+import { scenarioApi } from '@/api/unified-api'
 import { ElMessage } from 'element-plus'
 
 describe('ApiTestScenarioDrawer 错误分支', () => {
   it('加载场景失败时提示错误并关闭 loading', async () => {
-    const getListSpy = vi.spyOn(unifiedApi.scenario, 'getList').mockRejectedValue(new Error('网络错误'))
+    const getListSpy = vi.spyOn(scenarioApi, 'getList').mockRejectedValue(new Error('网络错误'))
 
     const wrapper = mount(ApiTestScenarioDrawer, {
       props: { visible: true, apiInfo: { id: 99, name: 'API-Err' } },
@@ -44,7 +44,7 @@ describe('ApiTestScenarioDrawer 错误分支', () => {
   })
 
   it('创建失败时提示错误且不清空表单', async () => {
-    vi.spyOn(unifiedApi.scenario, 'create').mockRejectedValue(new Error('创建失败'))
+    vi.spyOn(scenarioApi, 'create').mockRejectedValue(new Error('创建失败'))
 
     const wrapper = mount(ApiTestScenarioDrawer, {
       props: { visible: true, apiInfo: { id: 100, name: 'API-Err2' } },

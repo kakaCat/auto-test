@@ -3,7 +3,7 @@
  * Page Management API
  */
 
-import { apiHandler } from '@/utils/apiHandler'
+import { request } from '@/utils/request'
 import type { ApiResponse } from '@/types'
 
 // 查询参数与数据类型
@@ -55,7 +55,7 @@ export const pageApi = {
    */
   getPages(params: PageListParams = {}): Promise<ApiResponse> {
     const normalized = (this as any)._normalizeQueryParams(params)
-    return apiHandler.get('/api/pages/v1/', normalized)
+    return request.get('/api/pages/v1/', normalized)
   },
 
   /**
@@ -64,7 +64,7 @@ export const pageApi = {
    * @returns {Promise} 页面详情
    */
   getPageById(pageId: number | string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/pages/v1/${pageId}`)
+    return request.get(`/api/pages/v1/${pageId}`)
   },
 
   /**
@@ -73,7 +73,7 @@ export const pageApi = {
    * @returns {Promise} 创建结果
    */
   createPage(data: PageData): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/', data)
+    return request.post('/api/pages/v1/', data)
   },
 
   /**
@@ -83,7 +83,7 @@ export const pageApi = {
    * @returns {Promise} 更新结果
    */
   updatePage(pageId: number | string, data: PageData): Promise<ApiResponse> {
-    return apiHandler.put(`/api/pages/v1/${pageId}`, data)
+    return request.put(`/api/pages/v1/${pageId}`, data)
   },
 
   /**
@@ -92,7 +92,7 @@ export const pageApi = {
    * @returns {Promise} 删除结果
    */
   deletePage(pageId: number | string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/pages/v1/${pageId}`)
+    return request.delete(`/api/pages/v1/${pageId}`)
   },
 
   /**
@@ -101,7 +101,7 @@ export const pageApi = {
    * @returns {Promise} 搜索结果
    */
   searchPages(query: PageData): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/search', query)
+    return request.post('/api/pages/v1/search', query)
   },
 
   /**
@@ -111,7 +111,7 @@ export const pageApi = {
    */
   searchPagesSimple(params: PageListParams = {}): Promise<ApiResponse> {
     const normalized = (this as any)._normalizeQueryParams(params)
-    return apiHandler.get('/api/pages/v1/search/simple', normalized)
+    return request.get('/api/pages/v1/search/simple', normalized)
   },
 
   /**
@@ -120,7 +120,7 @@ export const pageApi = {
    * @returns {Promise} API列表
    */
   getPageApis(pageId: number | string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/pages/v1/${pageId}/apis`)
+    return request.get(`/api/pages/v1/${pageId}/apis`)
   },
 
   /**
@@ -130,7 +130,7 @@ export const pageApi = {
    * @returns {Promise} 添加结果
    */
   addPageApi(pageId: number | string, data: PageData): Promise<ApiResponse> {
-    return apiHandler.post(`/api/pages/v1/${pageId}/apis`, data)
+    return request.post(`/api/pages/v1/${pageId}/apis`, data)
   },
 
   /**
@@ -140,7 +140,7 @@ export const pageApi = {
    * @returns {Promise} 更新结果
    */
   updatePageApi(relationId: number | string, data: PageData): Promise<ApiResponse> {
-    return apiHandler.put(`/api/page-apis/v1/${relationId}`, data)
+    return request.put(`/api/page-apis/v1/${relationId}`, data)
   },
 
   /**
@@ -149,7 +149,7 @@ export const pageApi = {
    * @returns {Promise} 删除结果
    */
   deletePageApi(relationId: number | string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/page-apis/v1/${relationId}`)
+    return request.delete(`/api/page-apis/v1/${relationId}`)
   },
 
   /**
@@ -159,7 +159,7 @@ export const pageApi = {
    * @returns {Promise} 操作结果
    */
   batchManagePageApis(pageId: number | string, data: PageData): Promise<ApiResponse> {
-    return apiHandler.post(`/api/pages/v1/${pageId}/apis/batch`, data)
+    return request.post(`/api/pages/v1/${pageId}/apis/batch`, data)
   },
 
   /**
@@ -167,7 +167,7 @@ export const pageApi = {
    * @returns {Promise} 统计数据
    */
   getPagesStats(): Promise<ApiResponse> {
-    return apiHandler.get('/api/pages/v1/stats/overview')
+    return request.get('/api/pages/v1/stats/overview')
   },
 
   /**
@@ -175,7 +175,7 @@ export const pageApi = {
    * @returns {Promise} 页面类型列表
    */
   getPageTypes(): Promise<ApiResponse> {
-    return apiHandler.get('/api/pages/v1/types/list')
+    return request.get('/api/pages/v1/types/list')
   },
 
   /**
@@ -183,7 +183,7 @@ export const pageApi = {
    * @returns {Promise} 执行类型列表
    */
   getExecutionTypes(): Promise<ApiResponse> {
-    return apiHandler.get('/api/pages/v1/execution-types/list')
+    return request.get('/api/pages/v1/execution-types/list')
   },
 
   /**
@@ -193,7 +193,7 @@ export const pageApi = {
    * @returns {Promise} 更新结果
    */
   batchUpdatePageStatus(pageIds: Array<number | string>, status: string): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/batch/status', { page_ids: pageIds, status })
+    return request.post('/api/pages/v1/batch/status', { page_ids: pageIds, status })
   },
 
   /**
@@ -202,7 +202,7 @@ export const pageApi = {
    * @returns {Promise} 启用结果
    */
   batchEnable(pageIds: Array<number | string>): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/batch/enable', { page_ids: pageIds })
+    return request.post('/api/pages/v1/batch/enable', { page_ids: pageIds })
   },
 
   /**
@@ -211,7 +211,7 @@ export const pageApi = {
    * @returns {Promise} 禁用结果
    */
   batchDisable(pageIds: Array<number | string>): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/batch/disable', { page_ids: pageIds })
+    return request.post('/api/pages/v1/batch/disable', { page_ids: pageIds })
   },
 
   /**
@@ -220,7 +220,7 @@ export const pageApi = {
    * @returns {Promise} 删除结果
    */
   batchDeletePages(pageIds: Array<number | string>): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/batch/delete', { page_ids: pageIds })
+    return request.post('/api/pages/v1/batch/delete', { page_ids: pageIds })
   },
 
   /**
@@ -230,7 +230,7 @@ export const pageApi = {
    * @returns {Promise} 导出结果
    */
   batchExport(pageIds: Array<number | string>, format: string = 'json'): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/batch/export', { page_ids: pageIds, format })
+    return request.post('/api/pages/v1/batch/export', { page_ids: pageIds, format })
   },
 
   /**
@@ -239,7 +239,7 @@ export const pageApi = {
    * @returns {Promise} 导入结果
    */
   importPages(formData: FormData): Promise<ApiResponse> {
-    return apiHandler.post('/api/pages/v1/import/data', formData)
+    return request.post('/api/pages/v1/import/data', formData)
   }
 }
 

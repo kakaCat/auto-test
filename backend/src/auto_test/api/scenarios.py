@@ -10,7 +10,7 @@
 """
 
 from fastapi import APIRouter, Query
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from ..services.scenario_service import ScenarioService
 from ..utils.response import success_response, error_response
@@ -35,7 +35,7 @@ async def get_scenarios(
     status: Optional[str] = Query(None, description="状态"),
     tags: Optional[str] = Query(None, description="标签，逗号分隔或多值"),
     created_by: Optional[str] = Query(None, description="创建人"),
-    created_time_range: Optional[list[str]] = Query(None, description="创建时间范围"),
+    created_time_range: Optional[List[str]] = Query(None, description="创建时间范围"),
     is_parameters_saved: Optional[bool] = Query(None, description="是否保存过参数")
 ) -> Dict[str, Any]:
     """获取场景列表（无分页）"""

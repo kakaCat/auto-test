@@ -7,13 +7,11 @@
 ## 📁 文档结构
 
 ### 🔧 API文档
-- **[api/](./api/)** - API接口相关文档
-  - [API重构总结](./api/refactor-summary.md)
+- [API重构总结](./api/refactor-summary.md)
   - [API重构计划](./api/refactor-plan.md)
 
 ### 📖 开发指南
 - **[guides/](./guides/)** - 开发指南和最佳实践
-  - [编码风格指南](./guides/coding-style.md)
   - [内联配置测试](./guides/inline-config-test.md)
 
 ### 🧩 组件文档
@@ -31,8 +29,7 @@
    ```
 
 2. **开发规范**
-   - 阅读 [编码风格指南](./guides/coding-style.md)
-   - 了解 [API架构](./api/README.md)
+   - 阅读 [API架构](./api/README.md) 与 [API重构计划](./api/refactor-plan.md)
 
 3. **项目结构**
    ```

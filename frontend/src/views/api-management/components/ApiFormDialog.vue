@@ -5,7 +5,7 @@
       <div class="navigation-menu">
         <el-button text :type="getSectionButtonType('basic')" @click="scrollToSection('basic')">基本信息</el-button>
         <el-button text :type="getSectionButtonType('params')" @click="scrollToSection('params')">请求参数</el-button>
-        <el-button text :type="getSectionButtonType('response')" @click="scrollToSection('response')">响应配置</el-button>
+        <el-button text :type="getSectionButtonType('response')" @click="scrollToSection('response')">响应参数</el-button>
         <el-button text :type="getSectionButtonType('tags')" @click="scrollToSection('tags')">标签与认证</el-button>
         <div class="progress-container">
           <el-progress :percentage="formProgress" :stroke-width="10" striped />
@@ -42,6 +42,23 @@
             </el-col>
           </el-row>
 
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="所属系统" prop="systemId">
+                <el-select v-model="localFormData.systemId" placeholder="选择所属系统" style="width: 100%" @change="handleSystemChange">
+                  <el-option v-for="system in systemList" :key="String(system.id)" :label="system.name" :value="String(system.id)" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="所属模块" prop="moduleId">
+                <el-select v-model="localFormData.moduleId" placeholder="选择所属模块" style="width: 100%" :disabled="!localFormData.systemId">
+                  <el-option v-for="module in availableModules" :key="String(module.id)" :label="module.name" :value="String(module.id)" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
           <el-form-item label="URL路径" prop="url">
             <el-input v-model="localFormData.url" placeholder="请输入API路径，如：/api/users 或完整URL" clearable>
               <template #prepend>
@@ -58,23 +75,6 @@
             </div>
           </el-form-item>
 
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="所属系统" prop="system_id">
-                <el-select v-model="localFormData.system_id" placeholder="选择所属系统" style="width: 100%" @change="handleSystemChange">
-                  <el-option v-for="system in systemList" :key="system.id" :label="system.name" :value="system.id" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="所属模块" prop="module_id">
-                <el-select v-model="localFormData.module_id" placeholder="选择所属模块" style="width: 100%" :disabled="!localFormData.system_id">
-                  <el-option v-for="module in availableModules" :key="module.id" :label="module.name" :value="module.id" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-
           <el-form-item label="API描述" prop="description">
             <el-input v-model="localFormData.description" type="textarea" :rows="3" placeholder="请输入API功能描述" maxlength="500" show-word-limit />
           </el-form-item>
@@ -87,14 +87,17 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="需要登录">
-                <el-switch v-model="localFormData.requireAuth" active-text="需要认证" inactive-text="公开访问" />
+                <el-switch v-model="localFormData.authRequired" active-text="需要认证" inactive-text="公开访问" />
                 <div class="auth-hint">
                   <el-text size="small" type="info">
-                    {{ localFormData.requireAuth ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
+                    {{ localFormData.authRequired ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
                   </el-text>
                 </div>
               </el-form-item>
             </el-col>
+           </el-row>
+           <el-row justify="end" class="section-actions">
+             <el-button type="primary" @click="handleSaveBasic" :loading="saving">保存基本信息</el-button>
            </el-row>
          </el-collapse-item>
 
@@ -104,8 +107,8 @@
              <div class="panel-title">
                <el-icon><Setting /></el-icon>
                <span>请求参数</span>
-               <el-tag v-if="localFormData.parameters.length > 0" type="success" size="small">
-                 {{ localFormData.parameters.length }} 个参数
+               <el-tag v-if="localFormData.requestParameters.length > 0" type="success" size="small">
+                 {{ localFormData.requestParameters.length }} 个参数
                </el-tag>
                <el-tag v-else type="info" size="small">暂无参数</el-tag>
              </div>
@@ -113,8 +116,12 @@
 
            <!-- 请求参数配置 (增强版) -->
           <el-form-item label="请求参数">
-            <ParameterConfig v-model="localFormData.parameters" @change="handleParametersChange" />
+            <ParameterConfig v-model="localFormData.requestParameters" @change="handleParametersChange" />
           </el-form-item>
+          <el-row justify="end" class="section-actions">
+            <el-button type="primary" @click="handleSaveParams" :loading="saving" :disabled="!localFormData.id">保存请求参数</el-button>
+            <el-text v-if="!localFormData.id" type="warning" size="small" style="margin-left:8px">请先保存基本信息以生成ID</el-text>
+          </el-row>
          </el-collapse-item>
 
          <!-- 响应配置面板 -->
@@ -122,16 +129,20 @@
            <template #title>
              <div class="panel-title">
                <el-icon><DataAnalysis /></el-icon>
-               <span>响应配置</span>
-               <el-tag v-if="localFormData.response_parameters && localFormData.response_parameters.length > 0" type="success" size="small">{{ localFormData.response_parameters.length }} 个字段</el-tag>
+               <span>响应参数</span>
+               <el-tag v-if="localFormData.responseParameters && localFormData.responseParameters.length > 0" type="success" size="small">{{ localFormData.responseParameters.length }} 个字段</el-tag>
                <el-tag v-else type="info" size="small">未配置</el-tag>
              </div>
            </template>
 
            <!-- 响应配置 (增强版) -->
-          <el-form-item label="响应配置">
-            <ParamsEditor v-model="localFormData.response_parameters" />
+          <el-form-item label="响应参数">
+            <ParamsEditor v-model="localFormData.responseParameters" />
           </el-form-item>
+          <el-row justify="end" class="section-actions">
+            <el-button type="primary" @click="handleSaveResponse" :loading="saving" :disabled="!localFormData.id">保存响应参数</el-button>
+            <el-text v-if="!localFormData.id" type="warning" size="small" style="margin-left:8px">请先保存基本信息以生成ID</el-text>
+          </el-row>
         </el-collapse-item>
 
         <!-- 标签管理面板 -->
@@ -153,6 +164,10 @@
               <el-option v-for="tag in predefinedTags" :key="tag" :label="tag" :value="tag" />
             </el-select>
           </el-form-item>
+          <el-row justify="end" class="section-actions">
+            <el-button type="primary" @click="handleSaveTags" :loading="saving" :disabled="!localFormData.id">保存标签与认证</el-button>
+            <el-text v-if="!localFormData.id" type="warning" size="small" style="margin-left:8px">请先保存基本信息以生成ID</el-text>
+          </el-row>
         </el-collapse-item>
 
         
@@ -163,8 +178,8 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="saving">
+        <el-button @click="handleCancel">取消</el-button>
+        <el-button type="primary" @click="handleSave" :loading="saving">
           {{ saving ? '保存中...' : '保存' }}
         </el-button>
       </div>
@@ -174,19 +189,22 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, Delete, 
   InfoFilled, Setting, DataAnalysis, PriceTag 
 } from '@element-plus/icons-vue'
-import unifiedApi from '@/api/unified-api'
+import { apiManagementApi } from '@/api/unified-api'
 import ParameterConfig from './ParameterConfig.vue'
 import ParamsEditor from '@/components/common/ParamsEditor.vue'
 import { ParamsConverter } from '@/utils/paramsConverter'
 import { debounce } from 'lodash-es'
+import { useServiceStore } from '@/stores/service'
 
 // 直接使用统一API的 API 管理入口
-const apiProxy = unifiedApi.apiManagementApi
+const apiProxy = apiManagementApi
+// 轻量缓存：服务管理Store（左侧树为单一数据源）
+const serviceStore = useServiceStore()
 
 // Props
 const props = defineProps({
@@ -215,6 +233,10 @@ const emit = defineEmits(['update:modelValue', 'save', 'cancel'])
 const formRef = ref()
 const saving = ref(false)
 const moduleList = ref([])
+// 为避免快速连续触发造成的重复请求，这里对模块列表加载进行防抖处理
+const loadModuleListDebounced = debounce((systemId) => {
+  void loadModuleList(systemId)
+}, 200)
 const activeCollapse = ref(['basic']) // 默认展开基本信息面板
 const activeSection = ref('basic') // 当前激活的导航区域
 
@@ -237,12 +259,12 @@ const localFormData = reactive({
   description: '',
   url: '',
   method: 'GET',
-  system_id: '',
-  module_id: '',
+  systemId: '',
+  moduleId: '',
   enabled: true,
-  requireAuth: true, // 新增：是否需要登录认证，默认需要
-  parameters: [],
-  response_parameters: [],
+  authRequired: true, // 是否需要登录认证，默认需要
+  requestParameters: [],
+  responseParameters: [],
   tags: [],
   
 })
@@ -270,8 +292,15 @@ const baseUrl = computed(() => {
 
 // 可用模块
 const availableModules = computed(() => {
-  if (!localFormData.system_id) return []
-  return moduleList.value.filter(module => module.system_id === localFormData.system_id)
+  if (!localFormData.systemId) return []
+  const sid = String(localFormData.systemId)
+  // 优先使用全局缓存的模块列表（左侧树加载后写入），避免重复请求
+  const cached = serviceStore.getModulesBySystem(sid)
+  if (Array.isArray(cached) && cached.length > 0) {
+    return cached
+  }
+  // 回退到本地列表（首次进入或缓存未命中时）
+  return moduleList.value.filter(module => String(module.system_id) === sid)
 })
 
 // 基本信息完成度
@@ -280,8 +309,8 @@ const basicInfoProgress = computed(() => {
   if (localFormData.name) count++
   if (localFormData.method) count++
   if (localFormData.url) count++
-  if (localFormData.system_id) count++
-  if (localFormData.module_id) count++
+  if (localFormData.systemId) count++
+  if (localFormData.moduleId) count++
   return count
 })
 
@@ -290,8 +319,8 @@ const basicInfoComplete = computed(() => basicInfoProgress.value === 5)
 // 表单整体完成度 - 使用防抖避免频繁计算
 const rawFormProgress = computed(() => {
   // 使用浅拷贝避免响应式追踪过深
-  const params = [...localFormData.parameters]
-  const hasResponse = Array.isArray(localFormData.response_parameters) && localFormData.response_parameters.length > 0
+  const params = [...localFormData.requestParameters]
+  const hasResponse = Array.isArray(localFormData.responseParameters) && localFormData.responseParameters.length > 0
   const tags = [...localFormData.tags]
   
   let total = 0
@@ -337,16 +366,26 @@ const rules = {
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
   url: [
-    { required: true, message: '请输入URL路径', trigger: 'blur' },
-    { pattern: /^\//, message: 'URL路径必须以 / 开头', trigger: 'blur' }
+    { required: true, message: '请输入URL路径', trigger: ['blur', 'change'] },
+    { validator: (_, value, callback) => {
+        const v = (value || '').trim()
+        if (v === '') { callback(); return }
+        const isPath = v.startsWith('/')
+        const isHttp = /^https?:\/\//i.test(v)
+        if (!isPath && !isHttp) {
+          callback(new Error('URL必须以 / 开头或以 http(s):// 开头'))
+          return
+        }
+        callback()
+      }, trigger: ['blur', 'change'] }
   ],
   method: [
     { required: true, message: '请选择请求方法', trigger: 'change' }
   ],
-  system_id: [
+  systemId: [
     { required: true, message: '请选择所属系统', trigger: 'change' }
   ],
-  module_id: [
+  moduleId: [
     { required: true, message: '请选择所属模块', trigger: 'change' }
   ]
 }
@@ -354,7 +393,7 @@ const rules = {
 // 监听表单数据变化
 watch(() => props.formData, (newData) => {
   if (newData && Object.keys(newData).length > 0) {
-    const oldSystemId = localFormData.system_id
+    const oldSystemId = localFormData.systemId
     
     // 逐个赋值，避免Object.assign触发递归更新
     localFormData.id = newData.id || ''
@@ -362,66 +401,97 @@ watch(() => props.formData, (newData) => {
     localFormData.description = newData.description || ''
     localFormData.url = newData.path || newData.url || '' // 后端path字段映射为前端url字段
     localFormData.method = newData.method || 'GET'
-    localFormData.system_id = newData.system_id || ''
-    localFormData.module_id = newData.module_id || ''
+    localFormData.systemId = newData.system_id != null ? String(newData.system_id) : ''
+    localFormData.moduleId = newData.module_id != null ? String(newData.module_id) : ''
     localFormData.enabled = newData.enabled !== undefined ? newData.enabled : true
-    localFormData.requireAuth = newData.auth_required !== undefined ? Boolean(newData.auth_required) : true // 新增：认证字段映射
-    localFormData.parameters = newData.parameters || []
+    localFormData.authRequired = newData.auth_required !== undefined ? (newData.auth_required === 1 || newData.auth_required === '1' || newData.auth_required === true) : true // 认证字段映射：严格判断 1/'1'/true 为需要认证，其余为公开
+    // 初始化请求参数：优先从 request_schema，其次从 request_example/example_request，兼容 legacy parameters 字段
+    try {
+      if (newData.request_schema) {
+        const reqSchemaObj = typeof newData.request_schema === 'string'
+          ? JSON.parse(newData.request_schema)
+          : newData.request_schema
+        localFormData.requestParameters = ParamsConverter.fromSchema(reqSchemaObj)
+      } else if (newData.request_example || newData.example_request) {
+        const reqExampleSource = newData.request_example ?? newData.example_request
+        const reqExampleObj = typeof reqExampleSource === 'string'
+          ? JSON.parse(reqExampleSource)
+          : reqExampleSource
+        localFormData.requestParameters = ParamsConverter.fromExample(reqExampleObj)
+      } else if (Array.isArray(newData.parameters)) {
+        localFormData.requestParameters = newData.parameters
+      } else {
+        localFormData.requestParameters = []
+      }
+    } catch (e) {
+      console.warn('初始化请求参数失败，已回退为空：', e)
+      localFormData.requestParameters = []
+    }
     // 初始化响应参数：优先从 response_schema，其次从 response_example 推断
     try {
       if (newData.response_schema) {
         const schemaObj = typeof newData.response_schema === 'string'
           ? JSON.parse(newData.response_schema)
           : newData.response_schema
-        localFormData.response_parameters = ParamsConverter.fromSchema(schemaObj)
+        localFormData.responseParameters = ParamsConverter.fromSchema(schemaObj)
       } else if (newData.response_example) {
         const exampleObj = typeof newData.response_example === 'string'
           ? JSON.parse(newData.response_example)
           : newData.response_example
-        localFormData.response_parameters = ParamsConverter.fromExample(exampleObj)
+        localFormData.responseParameters = ParamsConverter.fromExample(exampleObj)
       } else {
-        localFormData.response_parameters = []
+        localFormData.responseParameters = []
       }
     } catch (e) {
       console.warn('初始化响应参数失败，已回退为空：', e)
-      localFormData.response_parameters = []
+      localFormData.responseParameters = []
     }
     localFormData.tags = toStringArray(newData.tags)
     
     
-    // 如果系统ID发生变化，重新加载模块列表
-    if (localFormData.system_id && localFormData.system_id !== oldSystemId) {
-      loadModuleList(localFormData.system_id)
+    // 保持静默：编辑弹窗初始化期间不自动加载模块列表，避免额外请求
+    // 初始化阶段优先使用缓存：如果左侧树已加载过该系统的模块，则直接填充下拉
+    if (localFormData.systemId) {
+      const sid = String(localFormData.systemId)
+      const cachedModules = serviceStore.getModulesBySystem(sid)
+      moduleList.value = Array.isArray(cachedModules) ? cachedModules : []
+    } else {
+      moduleList.value = []
     }
+    // if (localFormData.systemId && localFormData.systemId !== oldSystemId) {
+    //   loadModuleListDebounced(localFormData.systemId)
+    // }
   }
   // 移除else分支中的resetForm调用，避免递归更新
 }, { immediate: true, deep: true })
 
-// 监听弹框显示状态
-watch(() => props.modelValue, (newValue) => {
-  if (newValue && localFormData.system_id) {
-    // 弹框打开且有系统ID时，立即加载该系统的模块列表
-    loadModuleList(localFormData.system_id)
-  }
-})
+// 已移除：弹框打开即加载模块列表的监听，避免旧的 systemId 触发请求。
+// 现在仅在 systemId 变化时加载模块列表（见上方对 formData 的 watch 和 handleSystemChange）。
 
 // 方法
-const loadModuleList = async (systemId = null) => {
+async function loadModuleList(systemId = null) {
   try {
     const params = {}
     if (systemId) {
-      params.system_id = systemId
+      // 后端可能期望数字，尽量转换；否则传原值
+      const numId = Number(systemId)
+      params.system_id = Number.isFinite(numId) ? numId : systemId
     }
     
     const response = await apiProxy.getModuleList(params)
     if (response.success && Array.isArray(response.data)) {
       moduleList.value = response.data.map(module => ({
-        id: module.id,
+        id: String(module.id),
         name: module.name,
-        system_id: module.system_uuid || module.system_id,
+        system_id: String(module.system_uuid || module.system_id),
         description: module.description,
         enabled: module.enabled
       }))
+      // 将最新模块列表写入全局缓存，保持单一数据源
+      const sid = String(systemId ?? localFormData.systemId ?? '')
+      if (sid) {
+        serviceStore.setSystemModules(sid, moduleList.value)
+      }
     } else {
       moduleList.value = []
     }
@@ -433,10 +503,15 @@ const loadModuleList = async (systemId = null) => {
 
 const handleSystemChange = () => {
   // 清空模块选择
-  localFormData.module_id = ''
+  localFormData.moduleId = ''
   // 重新加载该系统下的模块数据
-  if (localFormData.system_id) {
-    loadModuleList(localFormData.system_id)
+  if (localFormData.systemId) {
+    const sid = String(localFormData.systemId)
+    if (serviceStore.hasModules(sid)) {
+      moduleList.value = serviceStore.getModulesBySystem(sid)
+    } else {
+      loadModuleListDebounced(sid)
+    }
   } else {
     moduleList.value = []
   }
@@ -492,12 +567,12 @@ const resetForm = () => {
     localFormData.description = ''
     localFormData.url = ''
     localFormData.method = 'GET'
-    localFormData.system_id = ''
-    localFormData.module_id = ''
+    localFormData.systemId = ''
+    localFormData.moduleId = ''
     localFormData.enabled = true
-    localFormData.requireAuth = true
-    localFormData.parameters = []
-    localFormData.response_parameters = []
+    localFormData.authRequired = true
+    localFormData.requestParameters = []
+    localFormData.responseParameters = []
     localFormData.tags = []
     
   } catch (error) {
@@ -521,8 +596,13 @@ const resetForm = () => {
 }
 
 const handleClose = () => {
-  // 只触发 update:modelValue 事件来关闭对话框
-  // 避免同时触发 cancel 事件导致递归更新
+  emit('update:modelValue', false)
+  emit('cancel')
+}
+
+// 显式“取消”按钮事件：通知父组件执行取消收尾逻辑，再关闭弹窗
+const handleCancel = () => {
+  emit('cancel')
   emit('update:modelValue', false)
 }
 
@@ -542,45 +622,30 @@ const handleSave = async () => {
 
     saving.value = true
 
-    // 验证URL格式
-    if (localFormData.url && !localFormData.url.startsWith('/')) {
-      ElMessage.warning('URL路径应以 / 开头')
-      saving.value = false
-      return
-    }
-
     // 响应参数采用统一编辑器结构，无需示例校验
 
     // 准备保存数据，严格按照后端ApiInterfaceCreate模型构建
     const saveData = {
-      // 必需字段
+      id: localFormData.id,
       name: localFormData.name,
       method: localFormData.method,
-      path: localFormData.url,
-      system_id: parseInt(localFormData.system_id),
-      
-      // 可选字段
+      url: String(localFormData.url || '').trim(),
+      system_id: parseInt(localFormData.systemId),
       description: localFormData.description || null,
-      module_id: localFormData.module_id ? parseInt(localFormData.module_id) : null,
-      
-      // 后端默认字段
+      module_id: localFormData.moduleId ? parseInt(localFormData.moduleId) : null,
       version: 'v1',
       status: localFormData.enabled ? 'active' : 'inactive',
       request_format: 'json',
       response_format: 'json',
-      auth_required: localFormData.requireAuth ? 1 : 0, // 根据前端字段设置认证要求
+      auth_required: localFormData.authRequired ? 1 : 0,
       rate_limit: 1000,
       timeout: 30,
-      
-      // 处理标签 - 后端期望字符串（兼容字符串/数组/空值）
       tags: (() => {
         const arr = toStringArray(localFormData.tags)
         return arr.length > 0 ? arr.join(',') : null
       })(),
-      
-      // 处理请求参数 - 转换为JSON字符串
-      request_schema: localFormData.parameters && localFormData.parameters.length > 0 ? 
-        JSON.stringify(localFormData.parameters.filter(param => param.name.trim()).reduce((acc, param) => {
+      request_schema: localFormData.requestParameters && localFormData.requestParameters.length > 0 ? 
+        JSON.stringify(localFormData.requestParameters.filter(param => param.name.trim()).reduce((acc, param) => {
           acc[param.name] = {
             type: param.type || 'string',
             required: param.required || false,
@@ -588,19 +653,19 @@ const handleSave = async () => {
           }
           return acc
         }, {})) : null,
-      
-      // 处理响应Schema - 由统一参数编辑器生成
-      response_schema: (Array.isArray(localFormData.response_parameters) && localFormData.response_parameters.length > 0)
-        ? JSON.stringify(ParamsConverter.toSchema(localFormData.response_parameters))
+      response_schema: (Array.isArray(localFormData.responseParameters) && localFormData.responseParameters.length > 0)
+        ? JSON.stringify(ParamsConverter.toSchema(localFormData.responseParameters))
         : null,
-      // 保留示例字段占位
       example_response: null
     }
-    
-  emit('save', saveData)
+
+    emit('save', saveData)
   } catch (error) {
     console.error('保存失败:', error)
     ElMessage.error('保存失败: ' + (error.message || '未知错误'))
+    saving.value = false
+  } finally {
+    // 无论成功与否，都重置保存按钮loading状态，避免按钮卡住
     saving.value = false
   }
 }
@@ -614,6 +679,191 @@ const resetSavingState = () => {
 defineExpose({
   resetSavingState
 })
+
+// 分段保存方法
+const handleSaveBasic = async () => {
+  if (!formRef.value || !formRef.value.validate) {
+    ElMessage.error('表单未初始化，请稍后重试')
+    return
+  }
+  try {
+    const valid = await formRef.value.validate()
+    if (!valid) {
+      ElMessage.warning('请检查基本信息是否填写完整')
+      return
+    }
+    // 基础校验
+    const sid = parseInt(localFormData.systemId)
+    if (!Number.isFinite(sid)) {
+      ElMessage.error('系统ID无效')
+      return
+    }
+    saving.value = true
+    const payload = {
+      name: localFormData.name,
+      method: localFormData.method,
+      url: String(localFormData.url || '').trim(),
+      system_id: sid,
+      description: localFormData.description || undefined,
+      module_id: localFormData.moduleId ? parseInt(localFormData.moduleId) : undefined,
+      version: 'v1',
+      status: localFormData.enabled ? 'active' : 'inactive',
+      request_format: 'json',
+      response_format: 'json',
+      auth_required: localFormData.authRequired ? 1 : 0,
+      tags: (() => {
+        const arr = toStringArray(localFormData.tags)
+        return arr.length > 0 ? arr.join(',') : undefined
+      })()
+    }
+    let resp
+    if (!localFormData.id) {
+      resp = await apiProxy.createApi(payload)
+    } else {
+      resp = await apiProxy.updateApi(String(localFormData.id), payload)
+    }
+    if (resp && resp.success) {
+      const dataRaw = resp.data
+       const d = (typeof dataRaw === 'object' && dataRaw !== null) ? dataRaw : {}
+       const newId = d.id ?? d.uuid ?? d.api_id
+       if (newId !== undefined && newId !== null) {
+         localFormData.id = String(newId)
+       }
+       // 同步后端返回的最新字段，保证保存后回显正确
+       if (typeof d.name === 'string') localFormData.name = d.name
+       if (typeof d.method === 'string') localFormData.method = d.method
+       const pathOrUrl = typeof d.path === 'string' ? d.path : (typeof d.url === 'string' ? d.url : undefined)
+       if (pathOrUrl) localFormData.url = pathOrUrl
+       if (d.system_id !== undefined && d.system_id !== null) localFormData.systemId = String(d.system_id)
+       if (d.module_id !== undefined && d.module_id !== null) localFormData.moduleId = String(d.module_id)
+       if (typeof d.status === 'string') localFormData.enabled = String(d.status).toLowerCase() === 'active'
+       const ar = d.auth_required
+       localFormData.authRequired = (ar === 1 || ar === '1' || ar === true)
+       localFormData.tags = toStringArray(d.tags)
+       ElMessage.success('基本信息已保存')
+    } else {
+      throw new Error(resp?.message || '保存基本信息失败')
+    }
+  } catch (error) {
+    console.error('保存基本信息失败:', error)
+    ElMessage.error('保存基本信息失败: ' + (error.message || '未知错误'))
+  } finally {
+    saving.value = false
+  }
+}
+
+const handleSaveParams = async () => {
+  if (!localFormData.id) {
+    ElMessage.warning('请先保存基本信息以生成ID')
+    return
+  }
+  try {
+    saving.value = true
+    const schemaObj = Array.isArray(localFormData.requestParameters) && localFormData.requestParameters.length > 0
+      ? ParamsConverter.toSchema(localFormData.requestParameters)
+      : null
+    const payload = {
+      request_schema: schemaObj || undefined,
+      request_format: 'json'
+    }
+    const resp = await apiProxy.updateApi(String(localFormData.id), payload)
+    if (resp && resp.success) {
+      const dataRaw = resp.data
+      const d = (typeof dataRaw === 'object' && dataRaw !== null) ? dataRaw : {}
+      const serverSchema = d && d.request_schema
+      let normalizedSchema = null
+      if (typeof serverSchema === 'string') {
+        try { normalizedSchema = JSON.parse(serverSchema) } catch (e) { normalizedSchema = null }
+      } else if (serverSchema && typeof serverSchema === 'object') {
+        normalizedSchema = serverSchema
+      }
+      if (normalizedSchema) {
+        localFormData.requestParameters = ParamsConverter.fromSchema(normalizedSchema)
+      }
+      ElMessage.success('请求参数已保存')
+    } else {
+      throw new Error(resp?.message || '保存请求参数失败')
+    }
+  } catch (error) {
+    console.error('保存请求参数失败:', error)
+    ElMessage.error('保存请求参数失败: ' + (error.message || '未知错误'))
+  } finally {
+    saving.value = false
+  }
+}
+
+const handleSaveResponse = async () => {
+  if (!localFormData.id) {
+    ElMessage.warning('请先保存基本信息以生成ID')
+    return
+  }
+  try {
+    saving.value = true
+    const schemaObj = Array.isArray(localFormData.responseParameters) && localFormData.responseParameters.length > 0
+      ? ParamsConverter.toSchema(localFormData.responseParameters)
+      : null
+    const payload = {
+      response_schema: schemaObj || undefined,
+      response_format: 'json'
+    }
+    const resp = await apiProxy.updateApi(String(localFormData.id), payload)
+    if (resp && resp.success) {
+      const dataRaw = resp.data
+      const d = (typeof dataRaw === 'object' && dataRaw !== null) ? dataRaw : {}
+      const serverSchema = d && d.response_schema
+      let normalizedSchema = null
+      if (typeof serverSchema === 'string') {
+        try { normalizedSchema = JSON.parse(serverSchema) } catch (e) { normalizedSchema = null }
+      } else if (serverSchema && typeof serverSchema === 'object') {
+        normalizedSchema = serverSchema
+      }
+      if (normalizedSchema) {
+        localFormData.responseParameters = ParamsConverter.fromSchema(normalizedSchema)
+      }
+      ElMessage.success('响应参数已保存')
+    } else {
+      throw new Error(resp?.message || '保存响应参数失败')
+    }
+  } catch (error) {
+    console.error('保存响应参数失败:', error)
+    ElMessage.error('保存响应参数失败: ' + (error.message || '未知错误'))
+  } finally {
+    saving.value = false
+  }
+}
+
+const handleSaveTags = async () => {
+  if (!localFormData.id) {
+    ElMessage.warning('请先保存基本信息以生成ID')
+    return
+  }
+  try {
+    saving.value = true
+    const payload = {
+      tags: (() => {
+        const arr = toStringArray(localFormData.tags)
+        return arr.length > 0 ? arr.join(',') : undefined
+      })(),
+      auth_required: localFormData.authRequired ? 1 : 0
+    }
+    const resp = await apiProxy.updateApi(String(localFormData.id), payload)
+    if (resp && resp.success) {
+      const dataRaw = resp.data
+      const d = (typeof dataRaw === 'object' && dataRaw !== null) ? dataRaw : {}
+      const ar = d.auth_required
+      localFormData.authRequired = (ar === 1 || ar === '1' || ar === true)
+      localFormData.tags = toStringArray(d.tags)
+      ElMessage.success('标签与认证已保存')
+    } else {
+      throw new Error(resp?.message || '保存标签与认证失败')
+    }
+  } catch (error) {
+    console.error('保存标签与认证失败:', error)
+    ElMessage.error('保存标签与认证失败: ' + (error.message || '未知错误'))
+  } finally {
+    saving.value = false
+  }
+}
 
 // ——— 增强：从URL解析GET查询参数并填充到参数表 ———
 const handleParseQueryClick = async () => {
@@ -653,7 +903,7 @@ const handleParseQueryClick = async () => {
   }
 
   // 若已有参数，提示是否覆盖
-  if (Array.isArray(localFormData.parameters) && localFormData.parameters.length > 0) {
+  if (Array.isArray(localFormData.requestParameters) && localFormData.requestParameters.length > 0) {
     try {
       await ElMessageBox.confirm(
         '检测到已配置的请求参数，是否用URL中的查询参数替换？',
@@ -679,7 +929,7 @@ const handleParseQueryClick = async () => {
   // 仅保留路径部分
   localFormData.url = parsed.pathname
   // 覆盖参数
-  localFormData.parameters = newParams
+  localFormData.requestParameters = newParams
   ElMessage.success(`已解析 ${newParams.length} 个查询参数并填充表格`)
 }
 
@@ -701,10 +951,7 @@ watch(() => localFormData.method, () => {
 
 // 生命周期
 onMounted(() => {
-  // 初始加载所有模块列表
-  loadModuleList()
-  
-  // 恢复折叠状态
+  // 仅恢复折叠状态，不在挂载时加载模块列表，避免不必要请求
   const savedState = localStorage.getItem('api-form-collapse-state')
   if (savedState) {
     try {
@@ -717,6 +964,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.dialog-content { width: 100%; }
+.api-form-content { width: 100%; }
+:deep(.el-form) { width: 100%; }
+:deep(.el-form-item__content) { width: 100%; }
 .params-section {
   width: 100%;
   border: 1px solid #e4e7ed;

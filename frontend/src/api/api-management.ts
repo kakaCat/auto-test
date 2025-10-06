@@ -1,5 +1,5 @@
-import { apiHandler } from '@/utils/apiHandler'
-import type { ApiResponse } from '@/types'
+import { request } from '@/utils/request'
+import type { ApiResponse, ApiTestResponse, ApiBatchTestResponse } from '@/types'
 
 /**
  * API管理相关接口
@@ -48,24 +48,24 @@ export interface ApiData {
   status?: string
   request_format?: string
   response_format?: string
-  auth_required?: number
-  rate_limit?: number
-  timeout?: number
-  tags?: string
-  request_schema?: Record<string, any>
-  response_schema?: Record<string, any>
-  example_request?: string
-  example_response?: string
+  auth_required?: number | boolean | string
+  rate_limit?: number | string
+  timeout?: number | string
+  tags?: string | string[]
+  request_schema?: Record<string, unknown> | unknown[] | string
+  response_schema?: Record<string, unknown> | unknown[] | string
+  example_request?: string | Record<string, unknown> | unknown[]
+  example_response?: string | Record<string, unknown> | unknown[]
 }
 
 // 草稿正确性校验请求体
 
 export interface TestData {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface TestConfig {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // Mock数据相关接口定义
@@ -74,7 +74,7 @@ export interface MockFieldConfig {
   type: string
   description?: string
   required?: boolean
-  example?: any
+  example?: unknown
 }
 
 export interface MockConfig {
@@ -89,31 +89,31 @@ export interface MockGenerateRequest {
 }
 
 export interface MockGenerateResponse {
-  mockData: any
+  mockData: unknown
   config: MockConfig
   generatedAt: string
 }
 
 export interface ApiStatistics {
   total_apis: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface WorkflowStats {
   total_workflows: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface ScenarioStats {
   total_scenarios: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface StatsData {
   workflow_stats: WorkflowStats
   scenario_stats: ScenarioStats
   api_stats: ApiStatistics
-  recent_activity: any[]
+  recent_activity: unknown[]
 }
 
 // API接口管理
@@ -189,6 +189,18 @@ export const apiManagementApi = {
       d.example_response = d.exampleResponse
       delete d.exampleResponse
     }
+    // 数字与布尔字段规范化（避免后端整型校验失败）
+    if (typeof d.auth_required === 'boolean') {
+      d.auth_required = d.auth_required ? 1 : 0
+    } else if (typeof d.auth_required === 'string' && d.auth_required && !isNaN(Number(d.auth_required))) {
+      d.auth_required = Number(d.auth_required)
+    }
+    if (typeof d.rate_limit === 'string' && d.rate_limit && !isNaN(Number(d.rate_limit))) {
+      d.rate_limit = Number(d.rate_limit)
+    }
+    if (typeof d.timeout === 'string' && d.timeout && !isNaN(Number(d.timeout))) {
+      d.timeout = Number(d.timeout)
+    }
     // 数字化 ID 字段
     if (typeof d.system_id === 'string' && d.system_id && !isNaN(Number(d.system_id))) {
       d.system_id = Number(d.system_id)
@@ -205,7 +217,7 @@ export const apiManagementApi = {
    */
   getServiceList(params: ServiceListParams = {}): Promise<ApiResponse> {
     const normalized = (this as any)._normalizeQueryParams(params)
-    return apiHandler.get('/api/systems/v1/', normalized)
+    return request.get('/api/systems/v1/', normalized)
   },
 
   /**
@@ -215,7 +227,7 @@ export const apiManagementApi = {
    */
   getModuleList(params: ModuleListParams = {}): Promise<ApiResponse> {
     const normalized = (this as any)._normalizeQueryParams(params)
-    return apiHandler.get('/api/modules/v1/', normalized)
+    return request.get('/api/modules/v1/', normalized)
   },
 
   /**
@@ -224,7 +236,7 @@ export const apiManagementApi = {
    * @returns API详情数据
    */
   getApiDetail(apiId: string): Promise<ApiResponse> {
-    return apiHandler.get(`/api/api-interfaces/v1/${apiId}`)
+    return request.get(`/api/api-interfaces/v1/${apiId}`)
   },
 
   /**
@@ -234,7 +246,7 @@ export const apiManagementApi = {
    */
   getApis(params: ApiListParams = {}): Promise<ApiResponse> {
     const normalized = (this as any)._normalizeQueryParams(params)
-    return apiHandler.get('/api/api-interfaces/v1/', normalized)
+    return request.get('/api/api-interfaces/v1/', normalized, { skipLoading: true })
   },
 
   /**
@@ -243,7 +255,7 @@ export const apiManagementApi = {
    * @returns 创建结果
    */
   createService(data: ServiceData): Promise<ApiResponse> {
-    return apiHandler.post('/api/systems/v1/', data)
+    return request.post('/api/systems/v1/', data)
   },
 
   /**
@@ -251,9 +263,9 @@ export const apiManagementApi = {
    * @param data - API数据
    * @returns 创建结果
    */
-  createApi(data: ApiData): Promise<ApiResponse> {
+  createApi(data: Partial<ApiData>): Promise<ApiResponse> {
     const payload = (this as any)._normalizeApiPayload(data)
-    return apiHandler.post('/api/api-interfaces/v1/', payload)
+    return request.post('/api/api-interfaces/v1/', payload)
   },
 
   /**
@@ -263,7 +275,7 @@ export const apiManagementApi = {
    * @returns 更新结果
    */
   updateService(systemId: string, data: Partial<ServiceData>): Promise<ApiResponse> {
-    return apiHandler.put(`/api/systems/v1/${systemId}`, data)
+    return request.put(`/api/systems/v1/${systemId}`, data)
   },
 
   /**
@@ -274,7 +286,8 @@ export const apiManagementApi = {
    */
   updateApi(apiId: string, data: Partial<ApiData>): Promise<ApiResponse> {
     const payload = (this as any)._normalizeApiPayload(data)
-    return apiHandler.put(`/api/api-interfaces/v1/${apiId}`, payload)
+    // 禁用全局错误弹窗，避免与调用方的 ElMessage.error 重复弹窗
+    return request.put(`/api/api-interfaces/v1/${apiId}`, payload, { skipErrorHandler: true })
   },
 
   /**
@@ -283,7 +296,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteService(systemId: string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/systems/v1/${systemId}`)
+    return request.delete(`/api/systems/v1/${systemId}`)
   },
 
   /**
@@ -292,7 +305,7 @@ export const apiManagementApi = {
    * @returns 删除结果
    */
   deleteApi(apiId: string): Promise<ApiResponse> {
-    return apiHandler.delete(`/api/api-interfaces/v1/${apiId}`)
+    return request.delete(`/api/api-interfaces/v1/${apiId}`)
   },
 
   /**
@@ -301,8 +314,8 @@ export const apiManagementApi = {
    * @param testData - 测试数据
    * @returns 测试结果
    */
-  testApi(apiId: string, testData: TestData = {}): Promise<ApiResponse> {
-    return apiHandler.post(`/api/api-interfaces/v1/${apiId}/test`, testData)
+  testApi(apiId: string, testData: TestData = {}): Promise<ApiResponse<ApiTestResponse>> {
+    return request.post(`/api/api-interfaces/v1/${apiId}/test`, testData)
   },
 
 
@@ -312,8 +325,8 @@ export const apiManagementApi = {
    * @param testConfig - 测试配置
    * @returns 批量测试结果
    */
-  batchTestApis(apiIds: string[], testConfig: TestConfig = {}): Promise<ApiResponse> {
-    return apiHandler.post('/api/api-interfaces/v1/batch/test', { api_ids: apiIds, ...testConfig })
+  batchTestApis(apiIds: string[], testConfig: TestConfig = {}): Promise<ApiResponse<ApiBatchTestResponse>> {
+    return request.post('/api/api-interfaces/v1/batch/test', { api_ids: apiIds, ...testConfig })
   },
 
   /**
@@ -321,7 +334,7 @@ export const apiManagementApi = {
    * @returns API统计数据
    */
   getApiStatistics(): Promise<ApiResponse<ApiStatistics>> {
-    return apiHandler.get('/api/api-interfaces/v1/stats/summary')
+    return request.get('/api/api-interfaces/v1/stats/summary')
   },
 
   /**
@@ -330,8 +343,8 @@ export const apiManagementApi = {
    */
   getStats(): Promise<ApiResponse<StatsData>> {
     return Promise.all([
-      apiHandler.get('/api/workflows/v1/stats'),
-      apiHandler.get('/api/scenarios/v1/stats')
+      request.get('/api/workflows/v1/stats'),
+      request.get('/api/scenarios/v1/stats')
     ]).then(([workflowRes, scenarioRes]) => {
       return {
         success: workflowRes.success && scenarioRes.success,
@@ -392,8 +405,8 @@ export const apiManagementApi = {
    * @param request - Mock生成请求
    * @returns Mock数据生成结果
    */
-  generateMockData(request: MockGenerateRequest): Promise<ApiResponse<MockGenerateResponse>> {
-    return apiHandler.post('/api/mock/generate', request)
+  generateMockData(mockRequest: MockGenerateRequest): Promise<ApiResponse<MockGenerateResponse>> {
+    return request.post('/api/mock/generate', mockRequest)
   },
 
   /**
@@ -402,7 +415,7 @@ export const apiManagementApi = {
    * @returns 推荐的字段配置
    */
   getSmartFieldRecommendations(apiId: string): Promise<ApiResponse<MockFieldConfig[]>> {
-    return apiHandler.get(`/api/mock/recommendations/${apiId}`)
+    return request.get(`/api/mock/recommendations/${apiId}`)
   },
 
   /**
@@ -412,7 +425,7 @@ export const apiManagementApi = {
    * @returns 保存结果
    */
   saveMockConfig(apiId: string, config: MockConfig): Promise<ApiResponse> {
-    return apiHandler.post(`/api/mock/config/${apiId}`, config)
+    return request.post(`/api/mock/config/${apiId}`, config)
   },
 
   /**
@@ -421,7 +434,7 @@ export const apiManagementApi = {
    * @returns Mock配置
    */
   getMockConfig(apiId: string): Promise<ApiResponse<MockConfig>> {
-    return apiHandler.get(`/api/mock/config/${apiId}`)
+    return request.get(`/api/mock/config/${apiId}`)
   }
 }
 

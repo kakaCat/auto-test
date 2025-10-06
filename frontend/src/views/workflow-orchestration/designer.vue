@@ -1049,10 +1049,10 @@ const generateApiParameterTemplate = (apiInfo: any) => {
     const config = selectedNode.value.data.config
     
     // 设置请求头模板
-    if (apiInfo.headers || apiInfo.auth_required) {
+    if (apiInfo.headers || apiInfo.auth_required === 1 || apiInfo.auth_required === '1' || apiInfo.auth_required === true) {
       config.headers = {
         'Content-Type': 'application/json',
-        ...(apiInfo.auth_required && { 'Authorization': 'Bearer ${token}' }),
+        ...((apiInfo.auth_required === 1 || apiInfo.auth_required === '1' || apiInfo.auth_required === true) && { 'Authorization': 'Bearer ${token}' }),
         ...(apiInfo.headers && typeof apiInfo.headers === 'object' ? apiInfo.headers : {})
       }
     }

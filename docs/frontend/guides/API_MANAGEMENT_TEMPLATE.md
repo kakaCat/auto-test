@@ -44,5 +44,54 @@
 - [ ] 导入/导出流程具备校验、预览与失败备选
 - [ ] 与 `API_MANAGEMENT_STANDARDS.md` 的约束逐项核对通过
 
+## 统一入口 API 导入与调用（MUST）
+
+为确保实现与标准一致，模板层提供可复制示例，所有域 API 通过命名导入并统一调用：
+
+- 导入方式：
+
+```ts
+import { SystemApi, ModuleApi, ApiInterfaceApi } from '@/api/unified-api';
+```
+
+- 系统列表（backend 类别）：
+
+```ts
+async function loadSystems() {
+  const resp = await SystemApi.getEnabledListByCategory('backend');
+  const { list, total } = apiHandler.normalizeList(resp);
+  return { systems: list, total };
+}
+```
+
+- 模块列表（按系统加载，兼容 systemId/system_id）：
+
+```ts
+async function loadModulesBySystem(sid: string | number) {
+  const resp = await ModuleApi.getEnabledModules({ systemId: sid }); // 或 { system_id: sid }
+  const { list } = apiHandler.normalizeList(resp);
+  serviceStore.setSystemModules(String(sid), list);
+  return list;
+}
+```
+
+- API 列表（筛选与分页）：
+
+```ts
+async function fetchApiList(filters: unknown) {
+  const resp = await ApiInterfaceApi.getList(filters);
+  const { list, total, page, size } = apiHandler.normalizeList(resp);
+  return { items: list, total, page, size };
+}
+```
+
+- 禁止模式（MUST NOT）：
+  - 动态属性调用：`unifiedApi[someKey]`、`(obj as any)[key]()`。
+  - 默认导入后派生属性：`import unifiedApi from '@/api/unified-api'`。
+
+- 错误与类型（MUST）：
+  - 函数返回 `Promise<ApiResponse<T>> | Promise<NormalizedList<T>>`；避免 `any`，优先 `unknown` 并显式收敛。
+  - 失败写入 `ui.error`；仅在不可恢复场景 `throw new Error('具体消息')`。
+
 ## 下一步
 - 如需扩展，建议在本模板末尾增补“项目特定扩展”小节，并在提交时链接到标准文件。
