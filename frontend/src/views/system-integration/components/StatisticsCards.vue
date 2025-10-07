@@ -1,16 +1,28 @@
 <template>
   <div class="statistics-cards">
     <el-row :gutter="16">
-      <el-col :xs="12" :sm="6" v-for="stat in statistics" :key="stat.title">
-        <div class="stat-card" :class="`stat-card--${stat.color}`">
+      <el-col
+        v-for="stat in statistics"
+        :key="stat.title"
+        :xs="12"
+        :sm="6"
+      >
+        <div
+          class="stat-card"
+          :class="`stat-card--${stat.color}`"
+        >
           <div class="stat-icon">
             <el-icon :size="24">
               <component :is="stat.icon" />
             </el-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-value">{{ stat.value }}</div>
-            <div class="stat-title">{{ stat.title }}</div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
+            <div class="stat-title">
+              {{ stat.title }}
+            </div>
           </div>
         </div>
       </el-col>

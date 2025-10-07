@@ -32,6 +32,8 @@ export interface RequestConfig extends AxiosRequestConfig {
   skipAuth?: boolean
   skipLoading?: boolean
   skipErrorHandler?: boolean
+  // 当设置为true时，响应拦截器将直接返回原始AxiosResponse
+  returnRaw?: boolean
 }
 
 
@@ -164,6 +166,11 @@ service.interceptors.response.use(
     // 关闭全局加载状态
     if (!(response.config as RequestConfig).skipLoading) {
       appStore.setLoading(false)
+    }
+
+    // 当调用方需要原始响应（含状态码/headers）时，直接返回
+    if ((response.config as RequestConfig).returnRaw) {
+      return response
     }
     
     const { data } = response
@@ -344,6 +351,10 @@ function normalizeUrl(input: string, basePath: string): { path: string; fixed: b
 }
 
 function normalizeAndWarn(url: string): string {
+  // 如果是绝对URL，则直接返回，避免与baseURL拼接或路径规范化
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
   const basePath = getBasePath((service.defaults as any).baseURL as string | undefined)
   const { path, fixed } = normalizeUrl(url, basePath)
   if (fixed && typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {

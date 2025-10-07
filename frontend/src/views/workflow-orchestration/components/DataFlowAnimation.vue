@@ -7,7 +7,7 @@
       class="flow-dot"
       :style="getFlowStyle(flow)"
     >
-      <div class="flow-pulse"></div>
+      <div class="flow-pulse" />
     </div>
   </div>
 </template>

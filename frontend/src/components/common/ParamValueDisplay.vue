@@ -2,21 +2,38 @@
   <div class="param-value-display">
     <div class="param-header">
       <span class="param-name">{{ param.name }}</span>
-      <el-tag :type="getTypeTagType(param.type)" size="small" class="param-type">
+      <el-tag
+        :type="getTypeTagType(param.type)"
+        size="small"
+        class="param-type"
+      >
         {{ getTypeText(param.type) }}
       </el-tag>
-      <el-tag v-if="param.required" type="danger" size="small" class="required-tag">
+      <el-tag
+        v-if="param.required"
+        type="danger"
+        size="small"
+        class="required-tag"
+      >
         必填
       </el-tag>
     </div>
     
-    <div v-if="param.description" class="param-description">
+    <div
+      v-if="param.description"
+      class="param-description"
+    >
       {{ param.description }}
     </div>
     
     <div class="param-value">
-      <div class="value-label">示例值:</div>
-      <div class="value-content" :class="`value-${param.type}`">
+      <div class="value-label">
+        示例值:
+      </div>
+      <div
+        class="value-content"
+        :class="`value-${param.type}`"
+      >
         <template v-if="param.type === 'object'">
           <pre class="json-value">{{ formatObjectValue(param.value) }}</pre>
         </template>
@@ -55,12 +72,18 @@
       </div>
     </div>
     
-    <div v-if="showMetadata" class="param-metadata">
+    <div
+      v-if="showMetadata"
+      class="param-metadata"
+    >
       <div class="metadata-item">
         <span class="metadata-label">层级:</span>
         <span class="metadata-value">{{ param.level || 0 }}</span>
       </div>
-      <div v-if="param.parentId" class="metadata-item">
+      <div
+        v-if="param.parentId"
+        class="metadata-item"
+      >
         <span class="metadata-label">父级ID:</span>
         <span class="metadata-value">{{ param.parentId }}</span>
       </div>

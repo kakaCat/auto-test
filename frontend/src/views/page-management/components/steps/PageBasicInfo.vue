@@ -16,7 +16,11 @@
         
         <el-row :gutter="24">
           <el-col :span="12">
-            <el-form-item label="页面名称" prop="name" required>
+            <el-form-item
+              label="页面名称"
+              prop="name"
+              required
+            >
               <el-input
                 v-model="formData.name"
                 placeholder="请输入页面名称"
@@ -27,21 +31,31 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="页面路径" prop="path">
+            <el-form-item
+              label="页面路径"
+              prop="path"
+            >
               <el-input
                 v-model="formData.path"
                 placeholder="请输入页面路径，如：/user/list"
                 maxlength="200"
                 @blur="handleValidate"
               >
-                <template #prepend>/</template>
+                <template #prepend>
+                  /
+                </template>
               </el-input>
-              <div class="form-tip">留空表示无独立路由(如弹框、抽屉等)</div>
+              <div class="form-tip">
+                留空表示无独立路由(如弹框、抽屉等)
+              </div>
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-form-item label="页面描述" prop="description">
+        <el-form-item
+          label="页面描述"
+          prop="description"
+        >
           <el-input
             v-model="formData.description"
             type="textarea"
@@ -63,7 +77,11 @@
 
         <el-row :gutter="24">
           <el-col :span="12">
-            <el-form-item label="页面类型" prop="type" required>
+            <el-form-item
+              label="页面类型"
+              prop="type"
+              required
+            >
               <el-select
                 v-model="formData.type"
                 placeholder="请选择页面类型"
@@ -85,36 +103,57 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="页面状态" prop="enabled">
+            <el-form-item
+              label="页面状态"
+              prop="enabled"
+            >
               <el-switch
                 v-model="formData.enabled"
                 active-text="启用"
                 inactive-text="禁用"
                 @change="handleValidate"
               />
-              <div class="form-tip">禁用后页面将不会显示在导航中</div>
+              <div class="form-tip">
+                禁用后页面将不会显示在导航中
+              </div>
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-form-item label="页面图标" prop="icon">
+        <el-form-item
+          label="页面图标"
+          prop="icon"
+        >
           <div class="icon-selector">
             <div class="icon-preview">
-              <el-icon v-if="formData.icon" :size="24">
+              <el-icon
+                v-if="formData.icon"
+                :size="24"
+              >
                 <component :is="formData.icon" />
               </el-icon>
-              <span v-else class="no-icon">未选择图标</span>
+              <span
+                v-else
+                class="no-icon"
+              >未选择图标</span>
             </div>
             <div class="icon-actions">
-              <el-button @click="showIconPicker = true">选择图标</el-button>
-              <el-button @click="showUploadDialog = true">上传图标</el-button>
-              <el-button v-if="formData.icon" @click="clearIcon">清除</el-button>
+              <el-button @click="showIconPicker = true">
+                选择图标
+              </el-button>
+              <el-button @click="showUploadDialog = true">
+                上传图标
+              </el-button>
+              <el-button
+                v-if="formData.icon"
+                @click="clearIcon"
+              >
+                清除
+              </el-button>
             </div>
           </div>
         </el-form-item>
       </div>
-
-
     </el-form>
 
     <!-- 图标选择器对话框 -->

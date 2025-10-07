@@ -12,8 +12,18 @@
           end-placeholder="结束日期"
           @change="handleDateRangeChange"
         />
-        <el-button :icon="Refresh" @click="refreshAnalysis">刷新</el-button>
-        <el-button :icon="Download" @click="handleExportAnalysis">导出</el-button>
+        <el-button
+          :icon="Refresh"
+          @click="refreshAnalysis"
+        >
+          刷新
+        </el-button>
+        <el-button
+          :icon="Download"
+          @click="handleExportAnalysis"
+        >
+          导出
+        </el-button>
       </div>
     </div>
 
@@ -23,37 +33,53 @@
         <el-col :span="6">
           <div class="overview-card">
             <div class="card-header">
-              <el-icon class="card-icon"><Document /></el-icon>
+              <el-icon class="card-icon">
+                <Document />
+              </el-icon>
               <span class="card-title">总需求数</span>
             </div>
-            <div class="card-value">{{ overallStats.totalRequirements }}</div>
+            <div class="card-value">
+              {{ overallStats.totalRequirements }}
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="overview-card">
             <div class="card-header">
-              <el-icon class="card-icon success"><Check /></el-icon>
+              <el-icon class="card-icon success">
+                <Check />
+              </el-icon>
               <span class="card-title">已覆盖需求</span>
             </div>
-            <div class="card-value success">{{ overallStats.coveredRequirements }}</div>
+            <div class="card-value success">
+              {{ overallStats.coveredRequirements }}
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="overview-card">
             <div class="card-header">
-              <el-icon class="card-icon primary"><DataBoard /></el-icon>
+              <el-icon class="card-icon primary">
+                <DataBoard />
+              </el-icon>
               <span class="card-title">覆盖率</span>
             </div>
-            <div class="card-value primary">{{ overallStats.coveragePercentage }}%</div>
+            <div class="card-value primary">
+              {{ overallStats.coveragePercentage }}%
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="overview-card">
             <div class="card-header">
-              <el-icon class="card-icon warning"><Target /></el-icon>
+              <el-icon class="card-icon warning">
+                <Target />
+              </el-icon>
               <span class="card-title">目标覆盖率</span>
             </div>
-            <div class="card-value warning">{{ overallStats.targetCoverage }}%</div>
+            <div class="card-value warning">
+              {{ overallStats.targetCoverage }}%
+            </div>
           </div>
         </el-col>
       </el-row>
@@ -65,13 +91,19 @@
         <el-col :span="12">
           <div class="chart-card">
             <h4>按类别覆盖率</h4>
-            <div ref="categoryChartRef" class="chart-container"></div>
+            <div
+              ref="categoryChartRef"
+              class="chart-container"
+            />
           </div>
         </el-col>
         <el-col :span="12">
           <div class="chart-card">
             <h4>覆盖率趋势</h4>
-            <div ref="trendChartRef" class="chart-container"></div>
+            <div
+              ref="trendChartRef"
+              class="chart-container"
+            />
           </div>
         </el-col>
       </el-row>
@@ -89,35 +121,87 @@
             style="width: 200px"
             clearable
           />
-          <el-select v-model="filterCategory" placeholder="筛选类别" style="width: 120px">
-            <el-option label="全部" value="" />
-            <el-option label="功能需求" value="functional" />
-            <el-option label="性能需求" value="performance" />
-            <el-option label="安全需求" value="security" />
-            <el-option label="技术需求" value="technical" />
+          <el-select
+            v-model="filterCategory"
+            placeholder="筛选类别"
+            style="width: 120px"
+          >
+            <el-option
+              label="全部"
+              value=""
+            />
+            <el-option
+              label="功能需求"
+              value="functional"
+            />
+            <el-option
+              label="性能需求"
+              value="performance"
+            />
+            <el-option
+              label="安全需求"
+              value="security"
+            />
+            <el-option
+              label="技术需求"
+              value="technical"
+            />
           </el-select>
         </div>
       </div>
       
-      <el-table :data="filteredCoverageData" style="width: 100%">
-        <el-table-column prop="requirementId" label="需求ID" width="120" />
-        <el-table-column prop="requirementName" label="需求名称" min-width="200" />
-        <el-table-column prop="category" label="类别" width="100">
+      <el-table
+        :data="filteredCoverageData"
+        style="width: 100%"
+      >
+        <el-table-column
+          prop="requirementId"
+          label="需求ID"
+          width="120"
+        />
+        <el-table-column
+          prop="requirementName"
+          label="需求名称"
+          min-width="200"
+        />
+        <el-table-column
+          prop="category"
+          label="类别"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getCategoryType(row.category)" size="small">
+            <el-tag
+              :type="getCategoryType(row.category)"
+              size="small"
+            >
               {{ getCategoryText(row.category) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="priority" label="优先级" width="100">
+        <el-table-column
+          prop="priority"
+          label="优先级"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getPriorityType(row.priority)" size="small">
+            <el-tag
+              :type="getPriorityType(row.priority)"
+              size="small"
+            >
               {{ getPriorityText(row.priority) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="scenarioCount" label="关联场景数" width="120" />
-        <el-table-column prop="coveragePercentage" label="覆盖率" width="120">
+        <el-table-column
+          prop="scenarioCount"
+          label="关联场景数"
+          width="120"
+        />
+        <el-table-column
+          prop="coveragePercentage"
+          label="覆盖率"
+          width="120"
+        >
           <template #default="{ row }">
             <div class="coverage-cell">
               <el-progress
@@ -130,16 +214,30 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getCoverageStatusType(row.status)" size="small">
+            <el-tag
+              :type="getCoverageStatusType(row.status)"
+              size="small"
+            >
               {{ getCoverageStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120">
+        <el-table-column
+          label="操作"
+          width="120"
+        >
           <template #default="{ row }">
-            <el-button size="small" :icon="View" @click="handleViewDetail(row)">
+            <el-button
+              size="small"
+              :icon="View"
+              @click="handleViewDetail(row)"
+            >
               详情
             </el-button>
           </template>
@@ -153,7 +251,10 @@
       title="覆盖率详情"
       width="800px"
     >
-      <div v-if="selectedCoverageDetail" class="coverage-detail">
+      <div
+        v-if="selectedCoverageDetail"
+        class="coverage-detail"
+      >
         <div class="detail-header">
           <h4>{{ selectedCoverageDetail.requirementName }}</h4>
           <el-tag :type="getCoverageStatusType(selectedCoverageDetail.status)">
@@ -164,19 +265,45 @@
         <div class="detail-content">
           <div class="coverage-breakdown">
             <h5>覆盖率分解</h5>
-            <el-table :data="selectedCoverageDetail.scenarioBreakdown" size="small">
-              <el-table-column prop="scenarioName" label="场景名称" min-width="200" />
-              <el-table-column prop="coverageType" label="覆盖类型" width="120">
+            <el-table
+              :data="selectedCoverageDetail.scenarioBreakdown"
+              size="small"
+            >
+              <el-table-column
+                prop="scenarioName"
+                label="场景名称"
+                min-width="200"
+              />
+              <el-table-column
+                prop="coverageType"
+                label="覆盖类型"
+                width="120"
+              >
                 <template #default="{ row }">
-                  <el-tag size="small">{{ getCoverageTypeText(row.coverageType) }}</el-tag>
+                  <el-tag size="small">
+                    {{ getCoverageTypeText(row.coverageType) }}
+                  </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="weight" label="权重" width="80">
-                <template #default="{ row }">{{ row.weight }}%</template>
-              </el-table-column>
-              <el-table-column prop="executionStatus" label="执行状态" width="100">
+              <el-table-column
+                prop="weight"
+                label="权重"
+                width="80"
+              >
                 <template #default="{ row }">
-                  <el-tag :type="getExecutionStatusType(row.executionStatus)" size="small">
+                  {{ row.weight }}%
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="executionStatus"
+                label="执行状态"
+                width="100"
+              >
+                <template #default="{ row }">
+                  <el-tag
+                    :type="getExecutionStatusType(row.executionStatus)"
+                    size="small"
+                  >
                     {{ getExecutionStatusText(row.executionStatus) }}
                   </el-tag>
                 </template>
@@ -184,13 +311,27 @@
             </el-table>
           </div>
           
-          <div class="gap-analysis" v-if="selectedCoverageDetail.gaps?.length">
+          <div
+            v-if="selectedCoverageDetail.gaps?.length"
+            class="gap-analysis"
+          >
             <h5>覆盖率缺口</h5>
             <ul class="gap-list">
-              <li v-for="gap in selectedCoverageDetail.gaps" :key="gap.id" class="gap-item">
-                <el-icon class="gap-icon"><Warning /></el-icon>
+              <li
+                v-for="gap in selectedCoverageDetail.gaps"
+                :key="gap.id"
+                class="gap-item"
+              >
+                <el-icon class="gap-icon">
+                  <Warning />
+                </el-icon>
                 <span>{{ gap.description }}</span>
-                <el-tag type="warning" size="small">{{ gap.severity }}</el-tag>
+                <el-tag
+                  type="warning"
+                  size="small"
+                >
+                  {{ gap.severity }}
+                </el-tag>
               </li>
             </ul>
           </div>

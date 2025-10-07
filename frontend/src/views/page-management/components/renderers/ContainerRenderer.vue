@@ -6,7 +6,9 @@
     <div class="container-placeholder">
       <el-icon><Grid /></el-icon>
       <span>容器</span>
-      <p class="container-hint">拖拽组件到此处</p>
+      <p class="container-hint">
+        拖拽组件到此处
+      </p>
     </div>
   </div>
 </template>

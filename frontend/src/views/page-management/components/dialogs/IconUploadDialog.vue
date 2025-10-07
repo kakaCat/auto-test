@@ -14,7 +14,9 @@
         accept=".svg,.png,.jpg,.jpeg"
         :limit="1"
       >
-        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <el-icon class="el-icon--upload">
+          <upload-filled />
+        </el-icon>
         <div class="el-upload__text">
           将文件拖到此处，或<em>点击上传</em>
         </div>
@@ -27,8 +29,14 @@
     </div>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleConfirm" :disabled="!selectedFile">
+      <el-button @click="handleClose">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        :disabled="!selectedFile"
+        @click="handleConfirm"
+      >
         确认上传
       </el-button>
     </template>

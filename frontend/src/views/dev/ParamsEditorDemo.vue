@@ -1,5 +1,9 @@
 <template>
-  <div class="demo-wrapper" role="region" aria-label="ParamsEditor 完整功能演示">
+  <div
+    class="demo-wrapper"
+    role="region"
+    aria-label="ParamsEditor 完整功能演示"
+  >
     <header class="demo-header">
       <h2>ParamsEditor 完整功能演示</h2>
       <p>
@@ -20,49 +24,83 @@
     </section>
 
     <!-- 基础配置控制 -->
-    <section v-show="activeTab === 'basic'" class="controls" aria-label="基础配置">
+    <section
+      v-show="activeTab === 'basic'"
+      class="controls"
+      aria-label="基础配置"
+    >
       <h3>基础配置</h3>
       <div class="control-group">
         <label>
           默认展开层级：
-          <input type="number" v-model.number="defaultExpandDepth" min="0" max="6" />
+          <input
+            v-model.number="defaultExpandDepth"
+            type="number"
+            min="0"
+            max="6"
+          >
         </label>
         <label>
           最大自动展开节点数：
-          <input type="number" v-model.number="maxAutoExpandNodes" min="10" max="1000" />
+          <input
+            v-model.number="maxAutoExpandNodes"
+            type="number"
+            min="10"
+            max="1000"
+          >
         </label>
         <label>
           组件ID（命名空间）：
-          <input type="text" v-model="componentId" />
+          <input
+            v-model="componentId"
+            type="text"
+          >
         </label>
       </div>
       <div class="control-actions">
-        <button @click="resetLocalStorage">清除持久化折叠状态</button>
-        <button @click="loadLargeDataset" :disabled="isLoadingLargeDataset">
+        <button @click="resetLocalStorage">
+          清除持久化折叠状态
+        </button>
+        <button
+          :disabled="isLoadingLargeDataset"
+          @click="loadLargeDataset"
+        >
           {{ isLoadingLargeDataset ? '加载中...' : '加载大型数据集 (2k+ 节点)' }}
         </button>
-        <button @click="loadSmallDataset">恢复小型数据集</button>
+        <button @click="loadSmallDataset">
+          恢复小型数据集
+        </button>
       </div>
     </section>
 
     <!-- JSON导入演示 -->
-    <section v-show="activeTab === 'json-import'" class="json-import-demo" aria-label="JSON导入演示">
+    <section
+      v-show="activeTab === 'json-import'"
+      class="json-import-demo"
+      aria-label="JSON导入演示"
+    >
       <h3>JSON 导入功能演示</h3>
       <div class="demo-examples">
         <div class="example-buttons">
           <button 
             v-for="example in jsonExamples" 
             :key="example.name"
-            @click="loadJsonExample(example)"
             class="example-btn"
+            @click="loadJsonExample(example)"
           >
             {{ example.name }}
           </button>
-          <button @click="showJsonImportModal = true" class="import-btn">
+          <button
+            class="import-btn"
+            @click="showJsonImportModal = true"
+          >
             自定义 JSON 导入
           </button>
         </div>
-        <div class="example-description" v-if="currentExample">
+        <div
+          v-if="currentExample"
+          class="example-description"
+        >
           <h4>{{ currentExample.name }}</h4>
           <p>{{ currentExample.description }}</p>
           <details class="example-json">
@@ -74,17 +112,33 @@
     </section>
 
     <!-- 性能测试 -->
-    <section v-show="activeTab === 'performance'" class="performance-demo" aria-label="性能测试">
+    <section
+      v-show="activeTab === 'performance'"
+      class="performance-demo"
+      aria-label="性能测试"
+    >
       <h3>性能测试</h3>
       <div class="performance-controls">
-        <button @click="runPerformanceTest" :disabled="isRunningTest">
+        <button
+          :disabled="isRunningTest"
+          @click="runPerformanceTest"
+        >
           {{ isRunningTest ? '测试中...' : '运行性能测试' }}
         </button>
-        <button @click="clearPerformanceResults">清除结果</button>
+        <button @click="clearPerformanceResults">
+          清除结果
+        </button>
       </div>
-      <div v-if="performanceResults.length > 0" class="performance-results">
+      <div
+        v-if="performanceResults.length > 0"
+        class="performance-results"
+      >
         <h4>测试结果</h4>
-        <div v-for="result in performanceResults" :key="result.id" class="result-item">
+        <div
+          v-for="result in performanceResults"
+          :key="result.id"
+          class="result-item"
+        >
           <strong>{{ result.name }}</strong>
           <span>节点数: {{ result.nodeCount }}</span>
           <span>处理时间: {{ result.processingTime }}ms</span>
@@ -105,12 +159,12 @@
       <ParamsEditor
         v-model="params"
         :collapsible="true"
-        :defaultExpandDepth="defaultExpandDepth"
-        :persistExpandState="true"
-        :maxAutoExpandNodes="maxAutoExpandNodes"
-        :componentId="componentId"
-        @expand-change="onExpandChange"
+        :default-expand-depth="defaultExpandDepth"
+        :persist-expand-state="true"
+        :max-auto-expand-nodes="maxAutoExpandNodes"
+        :component-id="componentId"
         style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px;"
+        @expand-change="onExpandChange"
       />
     </section>
 

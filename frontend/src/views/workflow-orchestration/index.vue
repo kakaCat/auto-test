@@ -6,7 +6,10 @@
         <p>可视化工作流设计和编排，支持多种节点类型和连接方式</p>
       </div>
       <div class="header-actions">
-        <el-button type="primary" @click="openDesigner">
+        <el-button
+          type="primary"
+          @click="openDesigner"
+        >
           <el-icon><Setting /></el-icon>
           可视化设计器
         </el-button>
@@ -34,8 +37,8 @@
           v-model="searchForm.keyword"
           placeholder="搜索工作流名称或描述"
           clearable
-          @input="handleSearch"
           style="width: 300px"
+          @input="handleSearch"
         >
           <template #prefix>
             <el-icon><Search /></el-icon>
@@ -72,7 +75,10 @@
           />
         </el-select>
         
-        <el-button type="primary" @click="handleSearch">
+        <el-button
+          type="primary"
+          @click="handleSearch"
+        >
           <el-icon><Search /></el-icon>
           搜索
         </el-button>
@@ -92,45 +98,90 @@
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
+        <el-table-column
+          type="selection"
+          width="55"
+        />
         
-        <el-table-column prop="name" label="工作流名称" min-width="150">
+        <el-table-column
+          prop="name"
+          label="工作流名称"
+          min-width="150"
+        >
           <template #default="{ row }">
             <div class="workflow-name">
               <span class="name">{{ row.name }}</span>
-              <el-tag v-if="row.version" size="small" type="info">
+              <el-tag
+                v-if="row.version"
+                size="small"
+                type="info"
+              >
                 v{{ row.version }}
               </el-tag>
             </div>
           </template>
         </el-table-column>
         
-        <el-table-column prop="category" label="分类" width="100">
+        <el-table-column
+          prop="category"
+          label="分类"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getCategoryColor(row.category)" size="small">
+            <el-tag
+              :type="getCategoryColor(row.category)"
+              size="small"
+            >
               {{ getCategoryLabel(row.category) }}
             </el-tag>
           </template>
         </el-table-column>
         
-        <el-table-column prop="nodeCount" label="节点数" width="80" />
+        <el-table-column
+          prop="nodeCount"
+          label="节点数"
+          width="80"
+        />
         
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column
+          prop="description"
+          label="描述"
+          min-width="200"
+          show-overflow-tooltip
+        />
         
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="100"
+        >
           <template #default="{ row }">
             <div class="status-indicator">
-              <el-tag :type="getStatusColor(row.status)" size="small">
+              <el-tag
+                :type="getStatusColor(row.status)"
+                size="small"
+              >
                 {{ getStatusLabel(row.status) }}
               </el-tag>
-              <div v-if="row.status === 'running'" class="running-indicator"></div>
+              <div
+                v-if="row.status === 'running'"
+                class="running-indicator"
+              />
             </div>
           </template>
         </el-table-column>
         
-        <el-table-column prop="executionCount" label="执行次数" width="100" />
+        <el-table-column
+          prop="executionCount"
+          label="执行次数"
+          width="100"
+        />
         
-        <el-table-column prop="successRate" label="成功率" width="100">
+        <el-table-column
+          prop="successRate"
+          label="成功率"
+          width="100"
+        >
           <template #default="{ row }">
             <div class="success-rate">
               <span>{{ row.successRate }}%</span>
@@ -144,21 +195,39 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="lastExecutionTime" label="最后执行" width="150">
+        <el-table-column
+          prop="lastExecutionTime"
+          label="最后执行"
+          width="150"
+        >
           <template #default="{ row }">
             {{ formatTime(row.lastExecutionTime) }}
           </template>
         </el-table-column>
         
-        <el-table-column prop="creator" label="创建者" width="100" />
+        <el-table-column
+          prop="creator"
+          label="创建者"
+          width="100"
+        />
         
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column
+          label="操作"
+          width="280"
+          fixed="right"
+        >
           <template #default="{ row }">
-            <el-button type="text" @click="viewWorkflow(row)">
+            <el-button
+              type="text"
+              @click="viewWorkflow(row)"
+            >
               <el-icon><View /></el-icon>
               查看
             </el-button>
-            <el-button type="text" @click="editWorkflow(row)">
+            <el-button
+              type="text"
+              @click="editWorkflow(row)"
+            >
               <el-icon><Edit /></el-icon>
               编辑
             </el-button>
@@ -173,17 +242,24 @@
             <el-button 
               v-else
               type="text" 
-              @click="stopWorkflow(row)"
               style="color: var(--warning-color)"
+              @click="stopWorkflow(row)"
             >
               <el-icon><VideoPause /></el-icon>
               停止
             </el-button>
-            <el-button type="text" @click="copyWorkflow(row)">
+            <el-button
+              type="text"
+              @click="copyWorkflow(row)"
+            >
               <el-icon><CopyDocument /></el-icon>
               复制
             </el-button>
-            <el-button type="text" @click="deleteWorkflow(row)" style="color: var(--danger-color)">
+            <el-button
+              type="text"
+              style="color: var(--danger-color)"
+              @click="deleteWorkflow(row)"
+            >
               <el-icon><Delete /></el-icon>
               删除
             </el-button>
@@ -206,12 +282,26 @@
     </div>
     
     <!-- 批量操作 -->
-    <div v-if="selectedWorkflows.length > 0" class="batch-actions">
+    <div
+      v-if="selectedWorkflows.length > 0"
+      class="batch-actions"
+    >
       <span>已选择 {{ selectedWorkflows.length }} 项</span>
-      <el-button @click="batchExecute">批量执行</el-button>
-      <el-button @click="batchStop">批量停止</el-button>
-      <el-button @click="batchPublish">批量发布</el-button>
-      <el-button type="danger" @click="batchDelete">批量删除</el-button>
+      <el-button @click="batchExecute">
+        批量执行
+      </el-button>
+      <el-button @click="batchStop">
+        批量停止
+      </el-button>
+      <el-button @click="batchPublish">
+        批量发布
+      </el-button>
+      <el-button
+        type="danger"
+        @click="batchDelete"
+      >
+        批量删除
+      </el-button>
     </div>
     
     <!-- 新建工作流对话框 -->
@@ -223,26 +313,60 @@
       :close-on-press-escape="false"
     >
       <!-- 步骤指示器 -->
-      <el-steps :active="currentStep" align-center class="create-steps">
-        <el-step title="基本信息" description="填写工作流基本信息" />
-        <el-step title="创建方式" description="选择创建方式" />
-        <el-step title="完成创建" description="确认并创建工作流" />
+      <el-steps
+        :active="currentStep"
+        align-center
+        class="create-steps"
+      >
+        <el-step
+          title="基本信息"
+          description="填写工作流基本信息"
+        />
+        <el-step
+          title="创建方式"
+          description="选择创建方式"
+        />
+        <el-step
+          title="完成创建"
+          description="确认并创建工作流"
+        />
       </el-steps>
 
       <!-- 步骤内容 -->
       <div class="step-content">
         <!-- 步骤1: 基本信息 -->
-        <div v-if="currentStep === 0" class="step-basic-info">
-          <el-form :model="workflowForm" :rules="workflowRules" ref="workflowFormRef" label-width="100px">
+        <div
+          v-if="currentStep === 0"
+          class="step-basic-info"
+        >
+          <el-form
+            ref="workflowFormRef"
+            :model="workflowForm"
+            :rules="workflowRules"
+            label-width="100px"
+          >
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="工作流名称" prop="name">
-                  <el-input v-model="workflowForm.name" placeholder="请输入工作流名称" />
+                <el-form-item
+                  label="工作流名称"
+                  prop="name"
+                >
+                  <el-input
+                    v-model="workflowForm.name"
+                    placeholder="请输入工作流名称"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="分类" prop="category">
-                  <el-select v-model="workflowForm.category" placeholder="请选择分类" style="width: 100%">
+                <el-form-item
+                  label="分类"
+                  prop="category"
+                >
+                  <el-select
+                    v-model="workflowForm.category"
+                    placeholder="请选择分类"
+                    style="width: 100%"
+                  >
                     <el-option
                       v-for="category in workflowCategoryOptions"
                       :key="category.value"
@@ -254,7 +378,10 @@
               </el-col>
             </el-row>
             
-            <el-form-item label="描述" prop="description">
+            <el-form-item
+              label="描述"
+              prop="description"
+            >
               <el-input
                 v-model="workflowForm.description"
                 type="textarea"
@@ -265,17 +392,39 @@
             
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="优先级" prop="priority">
-                  <el-select v-model="workflowForm.priority" placeholder="请选择优先级" style="width: 100%">
-                    <el-option label="低" value="low" />
-                    <el-option label="中" value="medium" />
-                    <el-option label="高" value="high" />
-                    <el-option label="紧急" value="urgent" />
+                <el-form-item
+                  label="优先级"
+                  prop="priority"
+                >
+                  <el-select
+                    v-model="workflowForm.priority"
+                    placeholder="请选择优先级"
+                    style="width: 100%"
+                  >
+                    <el-option
+                      label="低"
+                      value="low"
+                    />
+                    <el-option
+                      label="中"
+                      value="medium"
+                    />
+                    <el-option
+                      label="高"
+                      value="high"
+                    />
+                    <el-option
+                      label="紧急"
+                      value="urgent"
+                    />
                   </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="超时设置" prop="timeout">
+                <el-form-item
+                  label="超时设置"
+                  prop="timeout"
+                >
                   <el-input-number 
                     v-model="workflowForm.timeout" 
                     :min="1" 
@@ -290,8 +439,16 @@
             
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="关联应用" prop="frontendApp">
-                  <el-select v-model="workflowForm.frontendApp" placeholder="请选择前端应用" clearable style="width: 100%">
+                <el-form-item
+                  label="关联应用"
+                  prop="frontendApp"
+                >
+                  <el-select
+                    v-model="workflowForm.frontendApp"
+                    placeholder="请选择前端应用"
+                    clearable
+                    style="width: 100%"
+                  >
                     <el-option
                       v-for="app in frontendAppOptions"
                       :key="app.value"
@@ -305,19 +462,41 @@
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="执行环境" prop="environment">
-                  <el-select v-model="workflowForm.environment" placeholder="请选择执行环境" style="width: 100%">
-                    <el-option label="开发环境" value="development" />
-                    <el-option label="测试环境" value="testing" />
-                    <el-option label="预发布环境" value="staging" />
-                    <el-option label="生产环境" value="production" />
+                <el-form-item
+                  label="执行环境"
+                  prop="environment"
+                >
+                  <el-select
+                    v-model="workflowForm.environment"
+                    placeholder="请选择执行环境"
+                    style="width: 100%"
+                  >
+                    <el-option
+                      label="开发环境"
+                      value="development"
+                    />
+                    <el-option
+                      label="测试环境"
+                      value="testing"
+                    />
+                    <el-option
+                      label="预发布环境"
+                      value="staging"
+                    />
+                    <el-option
+                      label="生产环境"
+                      value="production"
+                    />
                   </el-select>
                 </el-form-item>
               </el-col>
             </el-row>
             
             <el-form-item label="标签">
-              <el-input v-model="workflowForm.tags" placeholder="请输入标签，多个标签用逗号分隔" />
+              <el-input
+                v-model="workflowForm.tags"
+                placeholder="请输入标签，多个标签用逗号分隔"
+              />
             </el-form-item>
             
             <el-form-item label="自动保存">
@@ -332,19 +511,34 @@
         </div>
 
         <!-- 步骤2: 创建方式 -->
-        <div v-if="currentStep === 1" class="step-create-method">
+        <div
+          v-if="currentStep === 1"
+          class="step-create-method"
+        >
           <div class="create-methods">
             <div
               class="method-card"
               :class="{ active: selectedMethod === 'blank' }"
               @click="selectedMethod = 'blank'"
             >
-              <el-icon class="method-icon"><Document /></el-icon>
+              <el-icon class="method-icon">
+                <Document />
+              </el-icon>
               <h3>从空白开始</h3>
               <p>创建一个空白工作流，从零开始设计</p>
               <div class="method-features">
-                <el-tag size="small" type="info">完全自定义</el-tag>
-                <el-tag size="small" type="success">灵活度高</el-tag>
+                <el-tag
+                  size="small"
+                  type="info"
+                >
+                  完全自定义
+                </el-tag>
+                <el-tag
+                  size="small"
+                  type="success"
+                >
+                  灵活度高
+                </el-tag>
               </div>
             </div>
             <div
@@ -352,12 +546,24 @@
               :class="{ active: selectedMethod === 'template' }"
               @click="selectedMethod = 'template'"
             >
-              <el-icon class="method-icon"><Collection /></el-icon>
+              <el-icon class="method-icon">
+                <Collection />
+              </el-icon>
               <h3>从模板创建</h3>
               <p>基于现有模板快速创建工作流</p>
               <div class="method-features">
-                <el-tag size="small" type="primary">快速开始</el-tag>
-                <el-tag size="small" type="warning">最佳实践</el-tag>
+                <el-tag
+                  size="small"
+                  type="primary"
+                >
+                  快速开始
+                </el-tag>
+                <el-tag
+                  size="small"
+                  type="warning"
+                >
+                  最佳实践
+                </el-tag>
               </div>
             </div>
             <div
@@ -365,18 +571,33 @@
               :class="{ active: selectedMethod === 'import' }"
               @click="selectedMethod = 'import'"
             >
-              <el-icon class="method-icon"><Upload /></el-icon>
+              <el-icon class="method-icon">
+                <Upload />
+              </el-icon>
               <h3>导入工作流</h3>
               <p>导入已有的工作流文件</p>
               <div class="method-features">
-                <el-tag size="small" type="success">复用现有</el-tag>
-                <el-tag size="small" type="info">批量导入</el-tag>
+                <el-tag
+                  size="small"
+                  type="success"
+                >
+                  复用现有
+                </el-tag>
+                <el-tag
+                  size="small"
+                  type="info"
+                >
+                  批量导入
+                </el-tag>
               </div>
             </div>
           </div>
 
           <!-- 模板选择 -->
-          <div v-if="selectedMethod === 'template'" class="template-selection">
+          <div
+            v-if="selectedMethod === 'template'"
+            class="template-selection"
+          >
             <div class="template-header">
               <h4>选择模板</h4>
               <el-input
@@ -409,7 +630,11 @@
                     <span>{{ template.usageCount }} 次使用</span>
                   </div>
                   <div class="template-actions">
-                    <el-button size="small" type="text" @click.stop="previewTemplate(template)">
+                    <el-button
+                      size="small"
+                      type="text"
+                      @click.stop="previewTemplate(template)"
+                    >
                       <el-icon><View /></el-icon>
                       预览
                     </el-button>
@@ -425,24 +650,40 @@
               width="60%"
               :close-on-click-modal="false"
             >
-              <div v-if="previewingTemplate" class="template-preview">
+              <div
+                v-if="previewingTemplate"
+                class="template-preview"
+              >
                 <div class="preview-header">
                   <h3>{{ previewingTemplate.name }}</h3>
                   <p>{{ previewingTemplate.description }}</p>
                 </div>
                 <div class="preview-content">
                   <div class="preview-info">
-                    <el-descriptions :column="2" border>
-                      <el-descriptions-item label="节点数量">{{ previewingTemplate.nodeCount }}</el-descriptions-item>
-                      <el-descriptions-item label="使用次数">{{ previewingTemplate.usageCount }}</el-descriptions-item>
-                      <el-descriptions-item label="分类">{{ getCategoryLabel(previewingTemplate.category) }}</el-descriptions-item>
-                      <el-descriptions-item label="适用场景">{{ getTemplateScenario(previewingTemplate.category) }}</el-descriptions-item>
+                    <el-descriptions
+                      :column="2"
+                      border
+                    >
+                      <el-descriptions-item label="节点数量">
+                        {{ previewingTemplate.nodeCount }}
+                      </el-descriptions-item>
+                      <el-descriptions-item label="使用次数">
+                        {{ previewingTemplate.usageCount }}
+                      </el-descriptions-item>
+                      <el-descriptions-item label="分类">
+                        {{ getCategoryLabel(previewingTemplate.category) }}
+                      </el-descriptions-item>
+                      <el-descriptions-item label="适用场景">
+                        {{ getTemplateScenario(previewingTemplate.category) }}
+                      </el-descriptions-item>
                     </el-descriptions>
                   </div>
                   <div class="preview-workflow">
                     <h4>工作流结构预览</h4>
                     <div class="workflow-preview-placeholder">
-                      <el-icon size="48"><DataAnalysis /></el-icon>
+                      <el-icon size="48">
+                        <DataAnalysis />
+                      </el-icon>
                       <p>工作流结构图</p>
                       <small>{{ previewingTemplate.name }} 的节点连接图</small>
                     </div>
@@ -450,24 +691,46 @@
                 </div>
               </div>
               <template #footer>
-                <el-button @click="templatePreviewVisible = false">关闭</el-button>
-                <el-button type="primary" @click="selectTemplateFromPreview">选择此模板</el-button>
+                <el-button @click="templatePreviewVisible = false">
+                  关闭
+                </el-button>
+                <el-button
+                  type="primary"
+                  @click="selectTemplateFromPreview"
+                >
+                  选择此模板
+                </el-button>
               </template>
             </el-dialog>
           </div>
 
           <!-- 文件导入 -->
-          <div v-if="selectedMethod === 'import'" class="file-import">
+          <div
+            v-if="selectedMethod === 'import'"
+            class="file-import"
+          >
             <div class="import-options">
-              <el-radio-group v-model="importType" class="import-type-group">
-                <el-radio label="file">文件导入</el-radio>
-                <el-radio label="url">URL导入</el-radio>
-                <el-radio label="text">文本导入</el-radio>
+              <el-radio-group
+                v-model="importType"
+                class="import-type-group"
+              >
+                <el-radio label="file">
+                  文件导入
+                </el-radio>
+                <el-radio label="url">
+                  URL导入
+                </el-radio>
+                <el-radio label="text">
+                  文本导入
+                </el-radio>
               </el-radio-group>
             </div>
             
             <!-- 文件上传 -->
-            <div v-if="importType === 'file'" class="file-upload">
+            <div
+              v-if="importType === 'file'"
+              class="file-upload"
+            >
               <el-upload
                 class="upload-demo"
                 drag
@@ -475,7 +738,9 @@
                 :on-change="handleFileChange"
                 accept=".json,.yaml,.yml"
               >
-                <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+                <el-icon class="el-icon--upload">
+                  <upload-filled />
+                </el-icon>
                 <div class="el-upload__text">
                   将文件拖到此处，或<em>点击上传</em>
                 </div>
@@ -488,21 +753,31 @@
             </div>
             
             <!-- URL导入 -->
-            <div v-if="importType === 'url'" class="url-import">
+            <div
+              v-if="importType === 'url'"
+              class="url-import"
+            >
               <el-input
                 v-model="importUrl"
                 placeholder="请输入工作流文件的URL地址"
                 clearable
               >
-                <template #prepend>URL</template>
+                <template #prepend>
+                  URL
+                </template>
                 <template #append>
-                  <el-button @click="validateImportUrl">验证</el-button>
+                  <el-button @click="validateImportUrl">
+                    验证
+                  </el-button>
                 </template>
               </el-input>
             </div>
             
             <!-- 文本导入 -->
-            <div v-if="importType === 'text'" class="text-import">
+            <div
+              v-if="importType === 'text'"
+              class="text-import"
+            >
               <el-input
                 v-model="importText"
                 type="textarea"
@@ -510,19 +785,31 @@
                 placeholder="请粘贴工作流的JSON或YAML内容"
               />
               <div class="import-actions">
-                <el-button @click="formatImportText">格式化</el-button>
-                <el-button @click="validateImportText">验证</el-button>
+                <el-button @click="formatImportText">
+                  格式化
+                </el-button>
+                <el-button @click="validateImportText">
+                  验证
+                </el-button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 步骤3: 完成创建 -->
-        <div v-if="currentStep === 2" class="step-confirm">
+        <div
+          v-if="currentStep === 2"
+          class="step-confirm"
+        >
           <div class="confirm-info">
             <h3>确认创建工作流</h3>
-            <el-descriptions :column="2" border>
-              <el-descriptions-item label="工作流名称">{{ workflowForm.name }}</el-descriptions-item>
+            <el-descriptions
+              :column="2"
+              border
+            >
+              <el-descriptions-item label="工作流名称">
+                {{ workflowForm.name }}
+              </el-descriptions-item>
               <el-descriptions-item label="分类">
                 <el-tag :type="getCategoryColor(workflowForm.category)">
                   {{ getCategoryLabel(workflowForm.category) }}
@@ -533,7 +820,9 @@
                   {{ getPriorityLabel(workflowForm.priority) }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="超时设置">{{ workflowForm.timeout }} 秒</el-descriptions-item>
+              <el-descriptions-item label="超时设置">
+                {{ workflowForm.timeout }} 秒
+              </el-descriptions-item>
               <el-descriptions-item label="执行环境">
                 <el-tag :type="getEnvironmentColor(workflowForm.environment)">
                   {{ getEnvironmentLabel(workflowForm.environment) }}
@@ -543,15 +832,26 @@
                 {{ getFrontendAppLabel(workflowForm.frontendApp) || '无' }}
               </el-descriptions-item>
               <el-descriptions-item label="创建方式">
-                <el-tag type="info">{{ getMethodLabel(selectedMethod) }}</el-tag>
+                <el-tag type="info">
+                  {{ getMethodLabel(selectedMethod) }}
+                </el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="自动保存">
                 <el-tag :type="workflowForm.autoSave ? 'success' : 'info'">
                   {{ workflowForm.autoSave ? '开启' : '关闭' }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="描述" :span="2">{{ workflowForm.description }}</el-descriptions-item>
-              <el-descriptions-item v-if="workflowForm.tags" label="标签" :span="2">
+              <el-descriptions-item
+                label="描述"
+                :span="2"
+              >
+                {{ workflowForm.description }}
+              </el-descriptions-item>
+              <el-descriptions-item
+                v-if="workflowForm.tags"
+                label="标签"
+                :span="2"
+              >
                 <el-tag 
                   v-for="tag in workflowForm.tags.split(',').filter(t => t.trim())" 
                   :key="tag.trim()" 
@@ -561,7 +861,11 @@
                   {{ tag.trim() }}
                 </el-tag>
               </el-descriptions-item>
-              <el-descriptions-item v-if="selectedMethod === 'template' && selectedTemplate" label="选择模板" :span="2">
+              <el-descriptions-item
+                v-if="selectedMethod === 'template' && selectedTemplate"
+                label="选择模板"
+                :span="2"
+              >
                 {{ getTemplateName(selectedTemplate) }}
               </el-descriptions-item>
             </el-descriptions>
@@ -576,8 +880,12 @@
                 <template #default>
                   <ul>
                     <li>工作流创建后将自动跳转到可视化设计器</li>
-                    <li v-if="workflowForm.autoSave">已开启自动保存，设计过程中会自动保存草稿</li>
-                    <li v-if="selectedMethod === 'template'">基于模板创建的工作流可以进一步自定义</li>
+                    <li v-if="workflowForm.autoSave">
+                      已开启自动保存，设计过程中会自动保存草稿
+                    </li>
+                    <li v-if="selectedMethod === 'template'">
+                      基于模板创建的工作流可以进一步自定义
+                    </li>
                     <li>可以随时在工作流列表中管理和编辑工作流</li>
                   </ul>
                 </template>
@@ -589,10 +897,28 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="cancelCreate">取消</el-button>
-          <el-button v-if="currentStep > 0" @click="prevStep">上一步</el-button>
-          <el-button v-if="currentStep < 2" type="primary" @click="nextStep">下一步</el-button>
-          <el-button v-if="currentStep === 2" type="primary" @click="confirmCreate" :loading="creating">
+          <el-button @click="cancelCreate">
+            取消
+          </el-button>
+          <el-button
+            v-if="currentStep > 0"
+            @click="prevStep"
+          >
+            上一步
+          </el-button>
+          <el-button
+            v-if="currentStep < 2"
+            type="primary"
+            @click="nextStep"
+          >
+            下一步
+          </el-button>
+          <el-button
+            v-if="currentStep === 2"
+            type="primary"
+            :loading="creating"
+            @click="confirmCreate"
+          >
             创建工作流
           </el-button>
         </div>
@@ -629,7 +955,9 @@
       </div>
       
       <template #footer>
-        <el-button @click="templatesDialogVisible = false">关闭</el-button>
+        <el-button @click="templatesDialogVisible = false">
+          关闭
+        </el-button>
       </template>
     </el-dialog>
   </div>

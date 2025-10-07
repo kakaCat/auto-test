@@ -1,12 +1,17 @@
 <template>
   <el-dialog
     :model-value="visible"
-    @update:model-value="$emit('update:visible', $event)"
     :title="dialogTitle"
     width="600px"
     :close-on-click-modal="false"
+    @update:model-value="$emit('update:visible', $event)"
   >
-    <el-steps :active="currentStep" finish-status="success" align-center style="margin-bottom: 16px;">
+    <el-steps
+      :active="currentStep"
+      finish-status="success"
+      align-center
+      style="margin-bottom: 16px;"
+    >
       <el-step title="基本信息" />
       <el-step title="API接口" />
       <el-step title="布局设计" />
@@ -20,176 +25,279 @@
       @submit.prevent
     >
       <template v-if="currentStep === 1">
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="所属系统" prop="system_id">
-            <el-select
-              v-model="form.system_id"
-              placeholder="请选择所属系统"
-              style="width: 100%"
-              :disabled="mode === 'edit'"
-              @change="handleSystemChange"
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item
+              label="所属系统"
+              prop="system_id"
             >
-              <el-option
-                v-for="system in systems"
-                :key="system.id"
-                :label="system.name"
-                :value="system.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="所属模块" prop="module_id">
-            <el-select
-              v-model="form.module_id"
-              placeholder="请选择所属模块"
-              style="width: 100%"
-              :disabled="!form.system_id"
+              <el-select
+                v-model="form.system_id"
+                placeholder="请选择所属系统"
+                style="width: 100%"
+                :disabled="mode === 'edit'"
+                @change="handleSystemChange"
+              >
+                <el-option
+                  v-for="system in systems"
+                  :key="system.id"
+                  :label="system.name"
+                  :value="system.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              label="所属模块"
+              prop="module_id"
             >
-              <el-option
-                v-for="module in availableModules"
-                :key="module.id"
-                :label="module.name"
-                :value="module.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+              <el-select
+                v-model="form.module_id"
+                placeholder="请选择所属模块"
+                style="width: 100%"
+                :disabled="!form.system_id"
+              >
+                <el-option
+                  v-for="module in availableModules"
+                  :key="module.id"
+                  :label="module.name"
+                  :value="module.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-form-item label="页面名称" prop="name">
-        <el-input
-          v-model="form.name"
-          placeholder="请输入页面名称"
-          maxlength="100"
-          show-word-limit
-        />
-      </el-form-item>
-
-      <el-form-item label="页面描述" prop="description">
-        <el-input
-          v-model="form.description"
-          type="textarea"
-          placeholder="请输入页面描述"
-          :rows="3"
-          maxlength="500"
-          show-word-limit
-        />
-      </el-form-item>
-
-      <el-form-item label="路由路径" prop="route_path">
-        <el-input
-          v-model="form.route_path"
-          placeholder="请输入路由路径，如：/users"
-          maxlength="200"
+        <el-form-item
+          label="页面名称"
+          prop="name"
         >
-          <template #prepend>
-            <span>/</span>
-          </template>
-        </el-input>
-        <div class="form-tip">
-          页面的访问路径，留空表示无独立路由（如弹框、抽屉等）
-        </div>
-      </el-form-item>
+          <el-input
+            v-model="form.name"
+            placeholder="请输入页面名称"
+            maxlength="100"
+            show-word-limit
+          />
+        </el-form-item>
 
-      <el-form-item label="页面类型" prop="page_type">
-        <el-radio-group v-model="form.page_type">
-          <el-radio label="page">页面</el-radio>
-          <el-radio label="modal">弹框</el-radio>
-          <el-radio label="drawer">抽屉</el-radio>
-          <el-radio label="tab">标签页</el-radio>
-          <el-radio label="step">步骤页</el-radio>
-        </el-radio-group>
-      </el-form-item>
+        <el-form-item
+          label="页面描述"
+          prop="description"
+        >
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            placeholder="请输入页面描述"
+            :rows="3"
+            maxlength="500"
+            show-word-limit
+          />
+        </el-form-item>
 
-      <el-form-item label="状态" prop="status">
-        <el-radio-group v-model="form.status">
-          <el-radio label="active">活跃</el-radio>
-          <el-radio label="inactive">非活跃</el-radio>
-          <el-radio label="draft">草稿</el-radio>
-        </el-radio-group>
-      </el-form-item>
+        <el-form-item
+          label="路由路径"
+          prop="route_path"
+        >
+          <el-input
+            v-model="form.route_path"
+            placeholder="请输入路由路径，如：/users"
+            maxlength="200"
+          >
+            <template #prepend>
+              <span>/</span>
+            </template>
+          </el-input>
+          <div class="form-tip">
+            页面的访问路径，留空表示无独立路由（如弹框、抽屉等）
+          </div>
+        </el-form-item>
+
+        <el-form-item
+          label="页面类型"
+          prop="page_type"
+        >
+          <el-radio-group v-model="form.page_type">
+            <el-radio label="page">
+              页面
+            </el-radio>
+            <el-radio label="modal">
+              弹框
+            </el-radio>
+            <el-radio label="drawer">
+              抽屉
+            </el-radio>
+            <el-radio label="tab">
+              标签页
+            </el-radio>
+            <el-radio label="step">
+              步骤页
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item
+          label="状态"
+          prop="status"
+        >
+          <el-radio-group v-model="form.status">
+            <el-radio label="active">
+              活跃
+            </el-radio>
+            <el-radio label="inactive">
+              非活跃
+            </el-radio>
+            <el-radio label="draft">
+              草稿
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
       </template>
 
       <!-- API管理区域 -->
       <template v-if="currentStep === 2">
-      <el-divider content-position="left">
-        <span style="font-weight: 600; color: var(--el-color-primary);">API调用配置</span>
-      </el-divider>
+        <el-divider content-position="left">
+          <span style="font-weight: 600; color: var(--el-color-primary);">API调用配置</span>
+        </el-divider>
 
-      <div class="api-management-section">
-        <div class="api-header">
-          <span class="api-title">关联API列表</span>
-          <el-button type="primary" size="small" @click="showAddApiDialog">
-            <el-icon><Plus /></el-icon>
-            添加API
-          </el-button>
-        </div>
+        <div class="api-management-section">
+          <div class="api-header">
+            <span class="api-title">关联API列表</span>
+            <el-button
+              type="primary"
+              size="small"
+              @click="showAddApiDialog"
+            >
+              <el-icon><Plus /></el-icon>
+              添加API
+            </el-button>
+          </div>
 
-        <!-- API列表 -->
-        <div class="api-list" v-if="form.apis && form.apis.length > 0">
-          <div 
-            v-for="(api, index) in form.apis" 
-            :key="index"
-            class="api-item"
+          <!-- API列表 -->
+          <div
+            v-if="form.apis && form.apis.length > 0"
+            class="api-list"
           >
-            <div class="api-info">
-              <div class="api-name">
-                <el-icon class="api-icon"><Link /></el-icon>
-                <span>{{ api.name }}</span>
-                <el-tag :type="getMethodTagType(api.method)" size="small">{{ api.method }}</el-tag>
+            <div 
+              v-for="(api, index) in form.apis" 
+              :key="index"
+              class="api-item"
+            >
+              <div class="api-info">
+                <div class="api-name">
+                  <el-icon class="api-icon">
+                    <Link />
+                  </el-icon>
+                  <span>{{ api.name }}</span>
+                  <el-tag
+                    :type="getMethodTagType(api.method)"
+                    size="small"
+                  >
+                    {{ api.method }}
+                  </el-tag>
+                </div>
+                <div class="api-path">
+                  {{ api.path }}
+                </div>
               </div>
-              <div class="api-path">{{ api.path }}</div>
-            </div>
             
-            <div class="api-relation">
-              <el-select 
-                v-model="api.relation_type" 
-                size="small" 
-                style="width: 100px;"
-                @change="updateApiRelation(index)"
-              >
-                <el-option label="串行" value="serial" />
-                <el-option label="并行" value="parallel" />
-              </el-select>
-            </div>
+              <div class="api-relation">
+                <el-select 
+                  v-model="api.relation_type" 
+                  size="small" 
+                  style="width: 100px;"
+                  @change="updateApiRelation(index)"
+                >
+                  <el-option
+                    label="串行"
+                    value="serial"
+                  />
+                  <el-option
+                    label="并行"
+                    value="parallel"
+                  />
+                </el-select>
+              </div>
             
-            <div class="api-actions">
-              <el-button type="text" size="small" @click="editApi(index)">
-                <el-icon><Edit /></el-icon>
-              </el-button>
-              <el-button type="text" size="small" @click="removeApi(index)" style="color: var(--el-color-danger);">
-                <el-icon><Delete /></el-icon>
-              </el-button>
+              <div class="api-actions">
+                <el-button
+                  type="text"
+                  size="small"
+                  @click="editApi(index)"
+                >
+                  <el-icon><Edit /></el-icon>
+                </el-button>
+                <el-button
+                  type="text"
+                  size="small"
+                  style="color: var(--el-color-danger);"
+                  @click="removeApi(index)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 空状态 -->
-        <div v-else class="api-empty">
-          <el-empty description="暂无关联API" :image-size="80">
-            <el-button type="primary" @click="showAddApiDialog">添加第一个API</el-button>
-          </el-empty>
+          <!-- 空状态 -->
+          <div
+            v-else
+            class="api-empty"
+          >
+            <el-empty
+              description="暂无关联API"
+              :image-size="80"
+            >
+              <el-button
+                type="primary"
+                @click="showAddApiDialog"
+              >
+                添加第一个API
+              </el-button>
+            </el-empty>
+          </div>
         </div>
-      </div>
       </template>
 
       <template v-if="currentStep === 3">
-        <el-empty description="布局设计占位（后续接入可视化编辑器）" :image-size="80" />
+        <el-empty
+          description="布局设计占位（后续接入可视化编辑器）"
+          :image-size="80"
+        />
       </template>
 
       <template v-if="currentStep === 4">
-        <el-empty description="交互设计占位（后续接入交互配置）" :image-size="80" />
+        <el-empty
+          description="交互设计占位（后续接入交互配置）"
+          :image-size="80"
+        />
       </template>
     </el-form>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button v-if="currentStep > 1" @click="prevStep">上一步</el-button>
-        <el-button v-if="currentStep < 4" type="primary" @click="nextStep">下一步</el-button>
-        <el-button v-else type="primary" @click="handleSubmit" :loading="submitting">
+        <el-button @click="handleCancel">
+          取消
+        </el-button>
+        <el-button
+          v-if="currentStep > 1"
+          @click="prevStep"
+        >
+          上一步
+        </el-button>
+        <el-button
+          v-if="currentStep < 4"
+          type="primary"
+          @click="nextStep"
+        >
+          下一步
+        </el-button>
+        <el-button
+          v-else
+          type="primary"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           {{ mode === 'create' ? '完成创建' : '完成更新' }}
         </el-button>
       </div>
@@ -222,28 +330,62 @@
       <div class="api-table-container">
         <el-table
           :data="filteredAvailableApis"
-          @selection-change="handleApiSelection"
           style="width: 100%"
           max-height="400px"
+          @selection-change="handleApiSelection"
         >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="name" label="API名称" min-width="150" />
-          <el-table-column prop="method" label="方法" width="80">
+          <el-table-column
+            type="selection"
+            width="55"
+          />
+          <el-table-column
+            prop="name"
+            label="API名称"
+            min-width="150"
+          />
+          <el-table-column
+            prop="method"
+            label="方法"
+            width="80"
+          >
             <template #default="{ row }">
-              <el-tag :type="getMethodTagType(row.method)" size="small">{{ row.method }}</el-tag>
+              <el-tag
+                :type="getMethodTagType(row.method)"
+                size="small"
+              >
+                {{ row.method }}
+              </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="path" label="路径" min-width="200" />
-          <el-table-column prop="system_name" label="所属系统" width="120" />
-          <el-table-column prop="module_name" label="所属模块" width="120" />
+          <el-table-column
+            prop="path"
+            label="路径"
+            min-width="200"
+          />
+          <el-table-column
+            prop="system_name"
+            label="所属系统"
+            width="120"
+          />
+          <el-table-column
+            prop="module_name"
+            label="所属模块"
+            width="120"
+          />
         </el-table>
       </div>
     </div>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="apiDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmAddApis" :disabled="selectedApis.length === 0">
+        <el-button @click="apiDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          :disabled="selectedApis.length === 0"
+          @click="confirmAddApis"
+        >
           添加选中的API ({{ selectedApis.length }})
         </el-button>
       </div>

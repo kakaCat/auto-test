@@ -3,28 +3,50 @@
     <!-- 页面头部区域 -->
     <div class="page-header">
       <div class="header-left">
-        <h1 class="page-title">需求管理</h1>
-        <p class="page-description">管理业务需求与测试用例的关联关系</p>
+        <h1 class="page-title">
+          需求管理
+        </h1>
+        <p class="page-description">
+          管理业务需求与测试用例的关联关系
+        </p>
       </div>
       <div class="header-right">
-        <el-button type="primary" :icon="DocumentAdd" @click="handleAddRequirement">
+        <el-button
+          type="primary"
+          :icon="DocumentAdd"
+          @click="handleAddRequirement"
+        >
           新增需求
         </el-button>
-        <el-button :icon="Upload" @click="handleImportRequirements">
+        <el-button
+          :icon="Upload"
+          @click="handleImportRequirements"
+        >
           导入需求
         </el-button>
-        <el-button :icon="Download" @click="handleExportReport">
+        <el-button
+          :icon="Download"
+          @click="handleExportReport"
+        >
           导出报告
         </el-button>
         <el-dropdown @command="handleTestPlanCommand">
           <el-button :icon="DataBoard">
-            测试计划<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            测试计划<el-icon class="el-icon--right">
+              <ArrowDown />
+            </el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="create">制定测试计划</el-dropdown-item>
-              <el-dropdown-item command="track">执行跟踪</el-dropdown-item>
-              <el-dropdown-item command="coverage">覆盖率分析</el-dropdown-item>
+              <el-dropdown-item command="create">
+                制定测试计划
+              </el-dropdown-item>
+              <el-dropdown-item command="track">
+                执行跟踪
+              </el-dropdown-item>
+              <el-dropdown-item command="coverage">
+                覆盖率分析
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -44,26 +66,55 @@
 
       <!-- 中间需求详情区域 -->
       <div class="center-panel">
-        <div v-if="!selectedRequirement" class="empty-state">
+        <div
+          v-if="!selectedRequirement"
+          class="empty-state"
+        >
           <el-empty description="请从左侧选择需求项目或需求条目">
-            <el-button type="primary" @click="handleAddRequirement">新增需求</el-button>
+            <el-button
+              type="primary"
+              @click="handleAddRequirement"
+            >
+              新增需求
+            </el-button>
           </el-empty>
         </div>
         
-        <div v-else class="requirement-detail">
+        <div
+          v-else
+          class="requirement-detail"
+        >
           <!-- 需求基本信息 -->
           <div class="requirement-info">
             <div class="info-header">
               <h3>{{ selectedRequirement.title }}</h3>
               <div class="info-actions">
-                <el-button size="small" :icon="Edit" @click="handleEditRequirement">编辑</el-button>
-                <el-button size="small" :icon="Delete" type="danger" @click="handleDeleteRequirement">删除</el-button>
+                <el-button
+                  size="small"
+                  :icon="Edit"
+                  @click="handleEditRequirement"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  size="small"
+                  :icon="Delete"
+                  type="danger"
+                  @click="handleDeleteRequirement"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
             
             <div class="info-content">
-              <el-descriptions :column="2" border>
-                <el-descriptions-item label="需求ID">{{ selectedRequirement.id }}</el-descriptions-item>
+              <el-descriptions
+                :column="2"
+                border
+              >
+                <el-descriptions-item label="需求ID">
+                  {{ selectedRequirement.id }}
+                </el-descriptions-item>
                 <el-descriptions-item label="优先级">
                   <el-tag :type="getPriorityType(selectedRequirement.priority)">
                     {{ getPriorityText(selectedRequirement.priority) }}
@@ -74,10 +125,21 @@
                     {{ getStatusText(selectedRequirement.status) }}
                   </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="类型">{{ getTypeText(selectedRequirement.type) }}</el-descriptions-item>
-                <el-descriptions-item label="负责人">{{ selectedRequirement.assignee || '未分配' }}</el-descriptions-item>
-                <el-descriptions-item label="目标版本">{{ selectedRequirement.targetRelease || '未设置' }}</el-descriptions-item>
-                <el-descriptions-item label="预估工作量" span="2">{{ selectedRequirement.estimatedEffort || '未评估' }}</el-descriptions-item>
+                <el-descriptions-item label="类型">
+                  {{ getTypeText(selectedRequirement.type) }}
+                </el-descriptions-item>
+                <el-descriptions-item label="负责人">
+                  {{ selectedRequirement.assignee || '未分配' }}
+                </el-descriptions-item>
+                <el-descriptions-item label="目标版本">
+                  {{ selectedRequirement.targetRelease || '未设置' }}
+                </el-descriptions-item>
+                <el-descriptions-item
+                  label="预估工作量"
+                  span="2"
+                >
+                  {{ selectedRequirement.estimatedEffort || '未评估' }}
+                </el-descriptions-item>
               </el-descriptions>
               
               <div class="description-section">
@@ -85,11 +147,19 @@
                 <p>{{ selectedRequirement.description || '暂无描述' }}</p>
               </div>
               
-              <div class="acceptance-criteria-section" v-if="selectedRequirement.acceptanceCriteria?.length">
+              <div
+                v-if="selectedRequirement.acceptanceCriteria?.length"
+                class="acceptance-criteria-section"
+              >
                 <h4>验收条件</h4>
                 <ul class="criteria-list">
-                  <li v-for="(criteria, index) in selectedRequirement.acceptanceCriteria" :key="index">
-                    <el-icon class="criteria-icon"><Check /></el-icon>
+                  <li
+                    v-for="(criteria, index) in selectedRequirement.acceptanceCriteria"
+                    :key="index"
+                  >
+                    <el-icon class="criteria-icon">
+                      <Check />
+                    </el-icon>
                     {{ criteria }}
                   </li>
                 </ul>
@@ -104,22 +174,58 @@
         <div class="panel-section">
           <h4>关联场景</h4>
           <div class="scenario-list">
-            <div v-if="!associatedScenarios.length" class="empty-scenarios">
+            <div
+              v-if="!associatedScenarios.length"
+              class="empty-scenarios"
+            >
               <p>暂无关联场景</p>
-              <el-button size="small" type="primary" @click="handleLinkScenarios">关联场景</el-button>
+              <el-button
+                size="small"
+                type="primary"
+                @click="handleLinkScenarios"
+              >
+                关联场景
+              </el-button>
             </div>
             <div v-else>
-              <div v-for="scenario in associatedScenarios" :key="scenario.id" class="scenario-item">
+              <div
+                v-for="scenario in associatedScenarios"
+                :key="scenario.id"
+                class="scenario-item"
+              >
                 <div class="scenario-info">
                   <span class="scenario-name">{{ scenario.name }}</span>
-                  <el-tag size="small" :type="getScenarioTypeTag(scenario.type)">{{ scenario.type }}</el-tag>
+                  <el-tag
+                    size="small"
+                    :type="getScenarioTypeTag(scenario.type)"
+                  >
+                    {{ scenario.type }}
+                  </el-tag>
                 </div>
                 <div class="scenario-actions">
-                  <el-button size="small" :icon="View" @click="handleViewScenario(scenario)">查看</el-button>
-                  <el-button size="small" :icon="Close" @click="handleUnlinkScenario(scenario)">取消关联</el-button>
+                  <el-button
+                    size="small"
+                    :icon="View"
+                    @click="handleViewScenario(scenario)"
+                  >
+                    查看
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="Close"
+                    @click="handleUnlinkScenario(scenario)"
+                  >
+                    取消关联
+                  </el-button>
                 </div>
               </div>
-              <el-button size="small" type="primary" @click="handleLinkScenarios">添加关联</el-button>
+              <el-button
+                size="small"
+                type="primary"
+                @click="handleLinkScenarios"
+              >
+                添加关联
+              </el-button>
             </div>
           </div>
         </div>
@@ -127,18 +233,40 @@
         <div class="panel-section">
           <h4>测试计划</h4>
           <div class="test-plan-list">
-            <div v-if="!testPlans.length" class="empty-plans">
+            <div
+              v-if="!testPlans.length"
+              class="empty-plans"
+            >
               <p>暂无测试计划</p>
-              <el-button size="small" type="primary" @click="handleCreateTestPlan">创建计划</el-button>
+              <el-button
+                size="small"
+                type="primary"
+                @click="handleCreateTestPlan"
+              >
+                创建计划
+              </el-button>
             </div>
             <div v-else>
-              <div v-for="plan in testPlans" :key="plan.id" class="plan-item">
+              <div
+                v-for="plan in testPlans"
+                :key="plan.id"
+                class="plan-item"
+              >
                 <div class="plan-info">
                   <span class="plan-name">{{ plan.name }}</span>
-                  <el-progress :percentage="plan.progress" :stroke-width="6" />
+                  <el-progress
+                    :percentage="plan.progress"
+                    :stroke-width="6"
+                  />
                 </div>
                 <div class="plan-actions">
-                  <el-button size="small" :icon="View" @click="handleViewTestPlan(plan)">查看</el-button>
+                  <el-button
+                    size="small"
+                    :icon="View"
+                    @click="handleViewTestPlan(plan)"
+                  >
+                    查看
+                  </el-button>
                 </div>
               </div>
             </div>

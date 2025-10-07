@@ -42,7 +42,7 @@ export interface UseServiceManagementReturn {
   systems: Ref<System[]>
   loading: Ref<boolean>
   expandedRows: Ref<string[]>
-  selectedSystemId: Ref<string | null>
+  selectedSystemId: Ref<number | null>
   error: Ref<string | null>
   
   // 对话框状态
@@ -64,9 +64,9 @@ export interface UseServiceManagementReturn {
   
   // 方法
   handleExpandChange: (row: TreeTableNode, expandedRows: string[]) => void
-  selectSystem: (systemId: string) => void
+  selectSystem: (systemId: number) => void
   showAddSystemDialog: () => void
-  showAddModuleDialog: (systemId?: string) => void
+  showAddModuleDialog: (systemId?: number) => void
   resetSystemForm: () => void
   resetModuleForm: () => void
   saveSystem: () => Promise<void>
@@ -87,7 +87,7 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   const systems = ref<System[]>([])
   const loading = ref(false)
   const expandedRows = ref<string[]>([])
-  const selectedSystemId = ref<string | null>(null)
+  const selectedSystemId = ref<number | null>(null)
   const error = ref<string | null>(null)
   
   // 对话框状态
@@ -187,14 +187,12 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
   // 方法
   const handleExpandChange = (row: TreeTableNode, expandedRows: string[]): void => {
     if (row.type === 'system') {
-      const isExpanded = expandedRows.includes(row.id)
-      if (isExpanded) {
-        selectedSystemId.value = row.id
-      }
+      const isExpanded = expandedRows.includes(String(row.id))
+      selectedSystemId.value = isExpanded ? row.id : null
     }
   }
   
-  const selectSystem = (systemId: string): void => {
+  const selectSystem = (systemId: number): void => {
     selectedSystemId.value = systemId
   }
   
@@ -204,7 +202,7 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
     systemDialogVisible.value = true
   }
   
-  const showAddModuleDialog = (systemId?: string): void => {
+  const showAddModuleDialog = (systemId?: number): void => {
     moduleDialogTitle.value = '新增模块'
     resetModuleForm()
     if (systemId) {
@@ -296,7 +294,7 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
       } else {
         // 新增模式 - 需要发送system_id字段
         const createData: any = {
-          system_id: moduleForm.system_id || '',
+          system_id: moduleForm.system_id,
           name: moduleForm.name,
           description: moduleForm.description,
           path: moduleForm.path || '/'
@@ -304,7 +302,7 @@ export const useServiceManagement = (): UseServiceManagementReturn => {
         
         // 处理system_id - 后端期望数字，前端可能是字符串
         if (moduleForm.system_id) {
-          createData.system_id = parseInt(moduleForm.system_id)
+          createData.system_id = moduleForm.system_id
         }
         
         // 处理tags字段 - 后端期望字符串，前端可能是数组

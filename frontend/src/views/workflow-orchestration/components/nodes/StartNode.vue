@@ -1,17 +1,39 @@
 <template>
-  <div class="start-node" :class="{ selected: data.selected, running: data.status === 'running' }">
+  <div
+    class="start-node"
+    :class="{ selected: data.selected, running: data.status === 'running' }"
+  >
     <div class="node-header">
-      <el-icon class="node-icon"><VideoPlay /></el-icon>
+      <el-icon class="node-icon">
+        <VideoPlay />
+      </el-icon>
       <span class="node-title">{{ data.label || '开始' }}</span>
       <div class="node-status">
-        <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
-        <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
-        <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+        <el-icon
+          v-if="data.status === 'running'"
+          class="rotating"
+        >
+          <Loading />
+        </el-icon>
+        <el-icon
+          v-else-if="data.status === 'success'"
+          style="color: #67c23a"
+        >
+          <Check />
+        </el-icon>
+        <el-icon
+          v-else-if="data.status === 'error'"
+          style="color: #f56c6c"
+        >
+          <Close />
+        </el-icon>
       </div>
     </div>
     
     <div class="node-body">
-      <div class="description">工作流开始节点</div>
+      <div class="description">
+        工作流开始节点
+      </div>
     </div>
 
     <!-- 输出端口 -->

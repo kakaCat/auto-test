@@ -14,8 +14,14 @@
             <h4>系统关联配置</h4>
             <p>设置页面所属的系统和模块</p>
           </div>
-          <el-form label-width="80px" size="small">
-            <el-form-item label="所属系统" required>
+          <el-form
+            label-width="80px"
+            size="small"
+          >
+            <el-form-item
+              label="所属系统"
+              required
+            >
               <el-select
                 v-model="apiConfigData.systemId"
                 placeholder="请选择所属系统"
@@ -66,7 +72,10 @@
             <h4>API选择</h4>
             <p>基于系统关联选择API接口</p>
           </div>
-          <el-form label-width="80px" size="small">
+          <el-form
+            label-width="80px"
+            size="small"
+          >
             <el-form-item label="选择系统">
               <el-select
                 v-model="selectedSystemId"
@@ -115,7 +124,10 @@
                 >
                   <div class="api-option">
                     <span class="api-name">{{ api.name }}</span>
-                    <el-tag :type="getMethodTagType(api.method)" size="small">
+                    <el-tag
+                      :type="getMethodTagType(api.method)"
+                      size="small"
+                    >
                       {{ api.method }}
                     </el-tag>
                     <span class="api-path">{{ api.path }}</span>
@@ -125,7 +137,11 @@
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" @click="addApi" :disabled="!selectedApiId">
+              <el-button
+                type="primary"
+                :disabled="!selectedApiId"
+                @click="addApi"
+              >
                 添加API
               </el-button>
             </el-form-item>
@@ -141,11 +157,17 @@
         </div>
 
         <div class="api-list">
-          <div v-if="apiConfigData.apis.length === 0" class="empty-state">
+          <div
+            v-if="apiConfigData.apis.length === 0"
+            class="empty-state"
+          >
             <el-empty description="暂无API配置" />
           </div>
 
-          <div v-else class="api-items">
+          <div
+            v-else
+            class="api-items"
+          >
             <div
               v-for="(apiItem, index) in apiConfigData.apis"
               :key="apiItem.id"
@@ -156,16 +178,26 @@
               <div class="api-item-header">
                 <div class="api-info">
                   <span class="api-name">{{ apiItem.name }}</span>
-                  <el-tag :type="getMethodTagType(apiItem.method)" size="small">
+                  <el-tag
+                    :type="getMethodTagType(apiItem.method)"
+                    size="small"
+                  >
                     {{ apiItem.method }}
                   </el-tag>
                   <span class="api-path">{{ apiItem.path }}</span>
                 </div>
                 <div class="api-actions">
-                  <el-button size="small" @click.stop="editApiItem(apiItem)">
+                  <el-button
+                    size="small"
+                    @click.stop="editApiItem(apiItem)"
+                  >
                     编辑
                   </el-button>
-                  <el-button size="small" type="danger" @click.stop="removeApiItem(index)">
+                  <el-button
+                    size="small"
+                    type="danger"
+                    @click.stop="removeApiItem(index)"
+                  >
                     删除
                   </el-button>
                 </div>
@@ -179,9 +211,18 @@
                     size="small"
                     style="width: 120px"
                   >
-                    <el-option label="串行" value="serial" />
-                    <el-option label="并行" value="parallel" />
-                    <el-option label="条件" value="conditional" />
+                    <el-option
+                      label="串行"
+                      value="serial"
+                    />
+                    <el-option
+                      label="并行"
+                      value="parallel"
+                    />
+                    <el-option
+                      label="条件"
+                      value="conditional"
+                    />
                   </el-select>
                 </div>
                 <div class="config-row">
@@ -200,10 +241,16 @@
         </div>
 
         <!-- API流程图 -->
-        <div v-if="apiConfigData.apis.length > 0" class="flow-chart">
+        <div
+          v-if="apiConfigData.apis.length > 0"
+          class="flow-chart"
+        >
           <div class="chart-header">
             <h4>API调用流程图</h4>
-            <el-button size="small" @click="refreshFlowChart">
+            <el-button
+              size="small"
+              @click="refreshFlowChart"
+            >
               刷新流程图
             </el-button>
           </div>
@@ -220,7 +267,10 @@
                   <span class="node-name">{{ apiItem.name }}</span>
                   <span class="node-type">{{ getCallTypeLabel(apiItem.callType) }}</span>
                 </div>
-                <div v-if="index < sortedApis.length - 1" class="node-connector">
+                <div
+                  v-if="index < sortedApis.length - 1"
+                  class="node-connector"
+                >
                   <el-icon><ArrowRight /></el-icon>
                 </div>
               </div>
@@ -236,8 +286,14 @@
       title="API详细配置"
       width="800px"
     >
-      <div v-if="editingApiItem" class="api-detail-config">
-        <el-form :model="editingApiItem" label-width="120px">
+      <div
+        v-if="editingApiItem"
+        class="api-detail-config"
+      >
+        <el-form
+          :model="editingApiItem"
+          label-width="120px"
+        >
           <el-form-item label="延迟时间(ms)">
             <el-input-number
               v-model="editingApiItem.delay"
@@ -299,20 +355,28 @@
                 <span>将响应字段映射到页面数据键</span>
                 <el-button
                   size="small"
-                  @click="addMappingRow"
                   :disabled="responseFieldOptions.length === 0"
-                >新增映射</el-button>
+                  @click="addMappingRow"
+                >
+                  新增映射
+                </el-button>
               </div>
 
-              <div v-if="mappingEntries.length === 0" class="empty-mapping">
+              <div
+                v-if="mappingEntries.length === 0"
+                class="empty-mapping"
+              >
                 <el-empty description="暂无映射规则" />
               </div>
 
-              <div v-else class="mapping-table">
+              <div
+                v-else
+                class="mapping-table"
+              >
                 <div
-                  class="mapping-row"
                   v-for="(entry, idx) in mappingEntries"
                   :key="entry.source + '-' + idx"
+                  class="mapping-row"
                 >
                   <el-select
                     :model-value="entry.source"
@@ -341,11 +405,15 @@
                     size="small"
                     type="danger"
                     @click="removeMappingRow(entry.source)"
-                  >删除</el-button>
+                  >
+                    删除
+                  </el-button>
                 </div>
               </div>
 
-              <div class="mapping-tips">提示：映射仅在本页面配置中使用，暂不持久化到后端。</div>
+              <div class="mapping-tips">
+                提示：映射仅在本页面配置中使用，暂不持久化到后端。
+              </div>
             </div>
           </el-form-item>
 
@@ -354,21 +422,34 @@
             <div class="response-fields-panel">
               <div class="fields-header">
                 <span>可用字段（{{ responseFieldOptions.length }}）</span>
-                <el-tooltip content="字段从 response_schema 推断，若缺失则回退 example_response 顶层键" placement="top">
-                  <el-icon class="info-tip"><i class="el-icon-info"/></el-icon>
+                <el-tooltip
+                  content="字段从 response_schema 推断，若缺失则回退 example_response 顶层键"
+                  placement="top"
+                >
+                  <el-icon class="info-tip">
+                    <i class="el-icon-info" />
+                  </el-icon>
                 </el-tooltip>
               </div>
-              <div v-if="responseFieldOptions.length === 0" class="empty-fields">
+              <div
+                v-if="responseFieldOptions.length === 0"
+                class="empty-fields"
+              >
                 <el-empty description="暂无可参考字段" />
               </div>
-              <div v-else class="fields-list">
+              <div
+                v-else
+                class="fields-list"
+              >
                 <el-tag
                   v-for="field in responseFieldOptions"
                   :key="field"
                   type="info"
                   size="small"
                   class="field-tag"
-                >{{ field }}</el-tag>
+                >
+                  {{ field }}
+                </el-tag>
               </div>
             </div>
           </el-form-item>
@@ -376,8 +457,15 @@
       </div>
 
       <template #footer>
-        <el-button @click="showApiDetailDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveApiDetail">保存</el-button>
+        <el-button @click="showApiDetailDialog = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveApiDetail"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
   </div>

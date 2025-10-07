@@ -10,43 +10,83 @@
   >
     <!-- 步骤导航 -->
     <div class="step-navigation">
-      <el-steps :active="currentStep" align-center finish-status="success">
-        <el-step title="页面基本信息" description="配置页面基础信息">
+      <el-steps
+        :active="currentStep"
+        align-center
+        finish-status="success"
+      >
+        <el-step
+          title="页面基本信息"
+          description="配置页面基础信息"
+        >
           <template #icon>
-            <el-icon v-if="stepSaveStatus.basic === 'completed'" color="#67c23a">
+            <el-icon
+              v-if="stepSaveStatus.basic === 'completed'"
+              color="#67c23a"
+            >
               <Check />
             </el-icon>
-            <el-icon v-else-if="stepSaveStatus.basic === 'draft'" color="#e6a23c">
+            <el-icon
+              v-else-if="stepSaveStatus.basic === 'draft'"
+              color="#e6a23c"
+            >
               <Edit />
             </el-icon>
           </template>
         </el-step>
-        <el-step title="页面布局设计" description="设计页面布局和组件">
+        <el-step
+          title="页面布局设计"
+          description="设计页面布局和组件"
+        >
           <template #icon>
-            <el-icon v-if="stepSaveStatus.layout === 'completed'" color="#67c23a">
+            <el-icon
+              v-if="stepSaveStatus.layout === 'completed'"
+              color="#67c23a"
+            >
               <Check />
             </el-icon>
-            <el-icon v-else-if="stepSaveStatus.layout === 'draft'" color="#e6a23c">
+            <el-icon
+              v-else-if="stepSaveStatus.layout === 'draft'"
+              color="#e6a23c"
+            >
               <Edit />
             </el-icon>
           </template>
         </el-step>
-        <el-step title="API配置" description="配置API调用和参数">
+        <el-step
+          title="API配置"
+          description="配置API调用和参数"
+        >
           <template #icon>
-            <el-icon v-if="stepSaveStatus.api === 'completed'" color="#67c23a">
+            <el-icon
+              v-if="stepSaveStatus.api === 'completed'"
+              color="#67c23a"
+            >
               <Check />
             </el-icon>
-            <el-icon v-else-if="stepSaveStatus.api === 'draft'" color="#e6a23c">
+            <el-icon
+              v-else-if="stepSaveStatus.api === 'draft'"
+              color="#e6a23c"
+            >
               <Edit />
             </el-icon>
           </template>
         </el-step>
-        <el-step title="页面交互设置" description="设置交互事件和流程">
+        <el-step
+          title="页面交互设置"
+          description="设置交互事件和流程"
+        >
           <template #icon>
-            <el-icon v-if="stepSaveStatus.interaction === 'completed'" color="#67c23a">
+            <el-icon
+              v-if="stepSaveStatus.interaction === 'completed'"
+              color="#67c23a"
+            >
               <Check />
             </el-icon>
-            <el-icon v-else-if="stepSaveStatus.interaction === 'draft'" color="#e6a23c">
+            <el-icon
+              v-else-if="stepSaveStatus.interaction === 'draft'"
+              color="#e6a23c"
+            >
               <Edit />
             </el-icon>
           </template>
@@ -54,17 +94,31 @@
       </el-steps>
       
       <!-- 保存状态提示 -->
-      <div v-if="lastSavedAt" class="save-status">
-        <el-text size="small" type="info">
+      <div
+        v-if="lastSavedAt"
+        class="save-status"
+      >
+        <el-text
+          size="small"
+          type="info"
+        >
           <el-icon><Clock /></el-icon>
           最后保存时间：{{ lastSavedAt }}
         </el-text>
       </div>
       
       <!-- 自动保存提示 -->
-      <div v-if="autoSaving" class="auto-saving">
-        <el-text size="small" type="primary">
-          <el-icon class="is-loading"><Loading /></el-icon>
+      <div
+        v-if="autoSaving"
+        class="auto-saving"
+      >
+        <el-text
+          size="small"
+          type="primary"
+        >
+          <el-icon class="is-loading">
+            <Loading />
+          </el-icon>
           正在保存...
         </el-text>
       </div>
@@ -73,7 +127,10 @@
     <!-- 步骤内容区域 -->
     <div class="step-content">
       <!-- 步骤1: 页面基本信息 -->
-      <div v-show="currentStep === 0" class="step-panel">
+      <div
+        v-show="currentStep === 0"
+        class="step-panel"
+      >
         <PageBasicInfo
           ref="basicInfoRef"
           v-model="formData.basicInfo"
@@ -83,7 +140,10 @@
       </div>
 
       <!-- 步骤2: 页面布局设计 -->
-      <div v-show="currentStep === 1" class="step-panel">
+      <div
+        v-show="currentStep === 1"
+        class="step-panel"
+      >
         <PageLayoutDesigner
           ref="layoutRef"
           v-model="formData.layout"
@@ -92,7 +152,10 @@
       </div>
 
       <!-- 步骤3: API配置 -->
-      <div v-show="currentStep === 2" class="step-panel">
+      <div
+        v-show="currentStep === 2"
+        class="step-panel"
+      >
         <PageApiConfig
           ref="apiConfigRef"
           v-model="formData.apiConfig"
@@ -102,7 +165,10 @@
       </div>
 
       <!-- 步骤4: 页面交互设置 -->
-      <div v-show="currentStep === 3" class="step-panel">
+      <div
+        v-show="currentStep === 3"
+        class="step-panel"
+      >
         <PageInteractionConfig
           ref="interactionRef"
           v-model="formData.interaction"
@@ -117,7 +183,9 @@
     <template #footer>
       <div class="dialog-footer">
         <div class="footer-left">
-          <el-button @click="handleClose">取消</el-button>
+          <el-button @click="handleClose">
+            取消
+          </el-button>
           <el-button 
             v-if="currentStep > 0" 
             @click="prevStep"
@@ -129,17 +197,17 @@
           <el-button 
             v-if="currentStep < 3" 
             type="primary" 
-            @click="nextStep"
             :disabled="!stepValidated[currentStep]"
+            @click="nextStep"
           >
             下一步
           </el-button>
           <el-button 
             v-else 
             type="primary" 
-            @click="handleSave"
             :loading="saving"
             :disabled="!allStepsValid"
+            @click="handleSave"
           >
             确认保存
           </el-button>

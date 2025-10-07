@@ -15,11 +15,16 @@
     >
       <!-- 基本信息 -->
       <div class="form-section">
-        <h4 class="section-title">基本信息</h4>
+        <h4 class="section-title">
+          基本信息
+        </h4>
         
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="需求标题" prop="title">
+            <el-form-item
+              label="需求标题"
+              prop="title"
+            >
               <el-input
                 v-model="form.title"
                 placeholder="请输入需求标题"
@@ -29,7 +34,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="需求ID" prop="id">
+            <el-form-item
+              label="需求ID"
+              prop="id"
+            >
               <el-input
                 v-model="form.id"
                 placeholder="系统自动生成或手动输入"
@@ -41,33 +49,90 @@
 
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="需求类型" prop="type">
-              <el-select v-model="form.type" placeholder="请选择需求类型">
-                <el-option label="功能需求" value="functional" />
-                <el-option label="性能需求" value="performance" />
-                <el-option label="安全需求" value="security" />
-                <el-option label="技术需求" value="technical" />
+            <el-form-item
+              label="需求类型"
+              prop="type"
+            >
+              <el-select
+                v-model="form.type"
+                placeholder="请选择需求类型"
+              >
+                <el-option
+                  label="功能需求"
+                  value="functional"
+                />
+                <el-option
+                  label="性能需求"
+                  value="performance"
+                />
+                <el-option
+                  label="安全需求"
+                  value="security"
+                />
+                <el-option
+                  label="技术需求"
+                  value="technical"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="优先级" prop="priority">
-              <el-select v-model="form.priority" placeholder="请选择优先级">
-                <el-option label="关键" value="critical" />
-                <el-option label="高" value="high" />
-                <el-option label="中" value="medium" />
-                <el-option label="低" value="low" />
+            <el-form-item
+              label="优先级"
+              prop="priority"
+            >
+              <el-select
+                v-model="form.priority"
+                placeholder="请选择优先级"
+              >
+                <el-option
+                  label="关键"
+                  value="critical"
+                />
+                <el-option
+                  label="高"
+                  value="high"
+                />
+                <el-option
+                  label="中"
+                  value="medium"
+                />
+                <el-option
+                  label="低"
+                  value="low"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="状态" prop="status">
-              <el-select v-model="form.status" placeholder="请选择状态">
-                <el-option label="草稿" value="draft" />
-                <el-option label="开发中" value="in_development" />
-                <el-option label="测试中" value="in_testing" />
-                <el-option label="已完成" value="completed" />
-                <el-option label="已取消" value="cancelled" />
+            <el-form-item
+              label="状态"
+              prop="status"
+            >
+              <el-select
+                v-model="form.status"
+                placeholder="请选择状态"
+              >
+                <el-option
+                  label="草稿"
+                  value="draft"
+                />
+                <el-option
+                  label="开发中"
+                  value="in_development"
+                />
+                <el-option
+                  label="测试中"
+                  value="in_testing"
+                />
+                <el-option
+                  label="已完成"
+                  value="completed"
+                />
+                <el-option
+                  label="已取消"
+                  value="cancelled"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -75,8 +140,14 @@
 
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="所属项目" prop="projectId">
-              <el-select v-model="form.projectId" placeholder="请选择项目">
+            <el-form-item
+              label="所属项目"
+              prop="projectId"
+            >
+              <el-select
+                v-model="form.projectId"
+                placeholder="请选择项目"
+              >
                 <el-option
                   v-for="project in projects"
                   :key="project.id"
@@ -87,27 +158,50 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="负责人" prop="assignee">
-              <el-input v-model="form.assignee" placeholder="请输入负责人" />
+            <el-form-item
+              label="负责人"
+              prop="assignee"
+            >
+              <el-input
+                v-model="form.assignee"
+                placeholder="请输入负责人"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="目标版本" prop="targetRelease">
-              <el-input v-model="form.targetRelease" placeholder="如：v2.0.0" />
+            <el-form-item
+              label="目标版本"
+              prop="targetRelease"
+            >
+              <el-input
+                v-model="form.targetRelease"
+                placeholder="如：v2.0.0"
+              />
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-form-item label="预估工作量" prop="estimatedEffort">
-          <el-input v-model="form.estimatedEffort" placeholder="如：8人天、16小时" />
+        <el-form-item
+          label="预估工作量"
+          prop="estimatedEffort"
+        >
+          <el-input
+            v-model="form.estimatedEffort"
+            placeholder="如：8人天、16小时"
+          />
         </el-form-item>
       </div>
 
       <!-- 详细描述 -->
       <div class="form-section">
-        <h4 class="section-title">详细描述</h4>
+        <h4 class="section-title">
+          详细描述
+        </h4>
         
-        <el-form-item label="需求描述" prop="description">
+        <el-form-item
+          label="需求描述"
+          prop="description"
+        >
           <el-input
             v-model="form.description"
             type="textarea"
@@ -118,7 +212,10 @@
           />
         </el-form-item>
 
-        <el-form-item label="业务价值" prop="businessValue">
+        <el-form-item
+          label="业务价值"
+          prop="businessValue"
+        >
           <el-input
             v-model="form.businessValue"
             type="textarea"
@@ -132,7 +229,9 @@
 
       <!-- 验收条件 -->
       <div class="form-section">
-        <h4 class="section-title">验收条件</h4>
+        <h4 class="section-title">
+          验收条件
+        </h4>
         
         <div class="acceptance-criteria">
           <div
@@ -166,7 +265,9 @@
 
       <!-- 依赖关系 -->
       <div class="form-section">
-        <h4 class="section-title">依赖关系</h4>
+        <h4 class="section-title">
+          依赖关系
+        </h4>
         
         <el-form-item label="前置需求">
           <el-select
@@ -194,20 +295,40 @@
             placeholder="请选择或输入干系人"
             style="width: 100%"
           >
-            <el-option label="产品经理" value="产品经理" />
-            <el-option label="开发团队" value="开发团队" />
-            <el-option label="测试团队" value="测试团队" />
-            <el-option label="运维团队" value="运维团队" />
-            <el-option label="业务方" value="业务方" />
+            <el-option
+              label="产品经理"
+              value="产品经理"
+            />
+            <el-option
+              label="开发团队"
+              value="开发团队"
+            />
+            <el-option
+              label="测试团队"
+              value="测试团队"
+            />
+            <el-option
+              label="运维团队"
+              value="运维团队"
+            />
+            <el-option
+              label="业务方"
+              value="业务方"
+            />
           </el-select>
         </el-form-item>
       </div>
 
       <!-- 风险评估 -->
       <div class="form-section">
-        <h4 class="section-title">风险评估</h4>
+        <h4 class="section-title">
+          风险评估
+        </h4>
         
-        <el-form-item label="技术风险" prop="technicalRisk">
+        <el-form-item
+          label="技术风险"
+          prop="technicalRisk"
+        >
           <el-rate
             v-model="form.technicalRisk"
             :max="5"
@@ -216,7 +337,10 @@
           />
         </el-form-item>
 
-        <el-form-item label="业务风险" prop="businessRisk">
+        <el-form-item
+          label="业务风险"
+          prop="businessRisk"
+        >
           <el-rate
             v-model="form.businessRisk"
             :max="5"
@@ -225,7 +349,10 @@
           />
         </el-form-item>
 
-        <el-form-item label="风险说明" prop="riskDescription">
+        <el-form-item
+          label="风险说明"
+          prop="riskDescription"
+        >
           <el-input
             v-model="form.riskDescription"
             type="textarea"
@@ -239,8 +366,14 @@
     </el-form>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleSubmit" :loading="submitting">
+      <el-button @click="handleClose">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         {{ mode === 'create' ? '创建' : '更新' }}
       </el-button>
     </template>

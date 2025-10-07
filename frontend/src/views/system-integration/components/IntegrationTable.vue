@@ -4,8 +4,8 @@
       :data="data"
       :loading="loading"
       v-bind="config"
-      @selection-change="handleSelectionChange"
       style="width: 100%"
+      @selection-change="handleSelectionChange"
     >
       <!-- 选择列 -->
       <el-table-column
@@ -85,7 +85,10 @@
     </el-table>
     
     <!-- 分页 -->
-    <div class="pagination-wrapper" v-if="pagination">
+    <div
+      v-if="pagination"
+      class="pagination-wrapper"
+    >
       <el-pagination
         v-model:current-page="pagination.currentPage"
         v-model:page-size="pagination.pageSize"

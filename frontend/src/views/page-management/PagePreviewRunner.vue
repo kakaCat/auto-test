@@ -1,85 +1,181 @@
 <template>
   <div class="page-preview-runner">
-    <el-card class="box-card" shadow="never">
+    <el-card
+      class="box-card"
+      shadow="never"
+    >
       <template #header>
         <div class="card-header">
           <span>Page Preview Runner · 响应映射演示</span>
-          <el-tag type="success" class="ml8">运行时映射到 Store</el-tag>
+          <el-tag
+            type="success"
+            class="ml8"
+          >
+            运行时映射到 Store
+          </el-tag>
         </div>
       </template>
       <div class="mode-toggle">
-        <el-radio-group v-model="mode" size="small">
-          <el-radio-button label="url">URL模式</el-radio-button>
-          <el-radio-button label="config">配置模式</el-radio-button>
+        <el-radio-group
+          v-model="mode"
+          size="small"
+        >
+          <el-radio-button label="url">
+            URL模式
+          </el-radio-button>
+          <el-radio-button label="config">
+            配置模式
+          </el-radio-button>
         </el-radio-group>
       </div>
 
       <div v-if="mode === 'url'">
-        <el-form label-width="120px" class="runner-form">
+        <el-form
+          label-width="120px"
+          class="runner-form"
+        >
           <el-form-item label="请求URL">
-            <el-input v-model="apiUrl" placeholder="输入一个GET接口URL，例如 /api/api-interfaces/v1/6" />
+            <el-input
+              v-model="apiUrl"
+              placeholder="输入一个GET接口URL，例如 /api/api-interfaces/v1/6"
+            />
           </el-form-item>
 
           <el-form-item label="Extract映射(JSON)">
             <el-input
-              type="textarea"
               v-model="mappingText"
+              type="textarea"
               :rows="6"
-              placeholder='例如 { "id": "apiId", "name": "apiName" }'
+              placeholder="例如 { &quot;id&quot;: &quot;apiId&quot;, &quot;name&quot;: &quot;apiName&quot; }"
             />
-            <div class="form-tip">提示：request封装会将后端响应中的 data 字段直接赋给 resp.data，因此通常从根路径开始映射（例如 id, name）。</div>
+            <div class="form-tip">
+              提示：request封装会将后端响应中的 data 字段直接赋给 resp.data，因此通常从根路径开始映射（例如 id, name）。
+            </div>
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" :loading="loading" @click="runAndApply">执行并应用映射</el-button>
-            <el-button class="ml8" @click="clearStore">清空Store</el-button>
+            <el-button
+              type="primary"
+              :loading="loading"
+              @click="runAndApply"
+            >
+              执行并应用映射
+            </el-button>
+            <el-button
+              class="ml8"
+              @click="clearStore"
+            >
+              清空Store
+            </el-button>
           </el-form-item>
         </el-form>
       </div>
 
       <div v-else>
-        <el-form label-width="120px" class="runner-form">
+        <el-form
+          label-width="120px"
+          class="runner-form"
+        >
           <el-form-item label="PageApiConfig(JSON)">
             <el-input
-              type="textarea"
               v-model="configText"
+              type="textarea"
               :rows="10"
               placeholder="粘贴页面API配置JSON，按order顺序执行并映射到Store"
             />
-            <div class="form-tip">示例：包含一个GET接口及其映射。配置对象需含 apis 数组，元素包含 id/name/method/path/order/response.extract。</div>
+            <div class="form-tip">
+              示例：包含一个GET接口及其映射。配置对象需含 apis 数组，元素包含 id/name/method/path/order/response.extract。
+            </div>
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" :loading="executorRunning" @click="runConfigSerial">运行配置（串行）</el-button>
-            <el-button class="ml8" @click="clearExecutorRecords">清空记录</el-button>
-            <el-button class="ml8" @click="clearStore">清空Store</el-button>
+            <el-button
+              type="primary"
+              :loading="executorRunning"
+              @click="runConfigSerial"
+            >
+              运行配置（串行）
+            </el-button>
+            <el-button
+              class="ml8"
+              @click="clearExecutorRecords"
+            >
+              清空记录
+            </el-button>
+            <el-button
+              class="ml8"
+              @click="clearStore"
+            >
+              清空Store
+            </el-button>
           </el-form-item>
         </el-form>
 
-        <el-card shadow="never" class="mt16">
+        <el-card
+          shadow="never"
+          class="mt16"
+        >
           <template #header>
             <div class="card-header">
               <span>执行记录</span>
-              <el-tag type="info" class="ml8">usePageRuntimeExecutor.runSerial()</el-tag>
+              <el-tag
+                type="info"
+                class="ml8"
+              >
+                usePageRuntimeExecutor.runSerial()
+              </el-tag>
             </div>
           </template>
-          <el-table :data="records" size="small" style="width: 100%">
-            <el-table-column label="名称" prop="name" width="160" />
-            <el-table-column label="方法" width="100">
+          <el-table
+            :data="records"
+            size="small"
+            style="width: 100%"
+          >
+            <el-table-column
+              label="名称"
+              prop="name"
+              width="160"
+            />
+            <el-table-column
+              label="方法"
+              width="100"
+            >
               <template #default="scope">
-                <el-tag size="small" :type="getMethodTag(scope.row.method)">{{ scope.row.method }}</el-tag>
+                <el-tag
+                  size="small"
+                  :type="getMethodTag(scope.row.method)"
+                >
+                  {{ scope.row.method }}
+                </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="路径">
-              <template #default="scope"><code>{{ scope.row.path }}</code></template>
-            </el-table-column>
-            <el-table-column label="耗时(ms)" prop="durationMs" width="100" />
-            <el-table-column label="结果" width="120">
               <template #default="scope">
-                <el-tag :type="scope.row.success ? 'success' : 'danger'" size="small">{{ scope.row.success ? '成功' : '失败' }}</el-tag>
+                <code>{{ scope.row.path }}</code>
               </template>
             </el-table-column>
-            <el-table-column label="消息" prop="message" />
+            <el-table-column
+              label="耗时(ms)"
+              prop="durationMs"
+              width="100"
+            />
+            <el-table-column
+              label="结果"
+              width="120"
+            >
+              <template #default="scope">
+                <el-tag
+                  :type="scope.row.success ? 'success' : 'danger'"
+                  size="small"
+                >
+                  {{ scope.row.success ? '成功' : '失败' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="消息"
+              prop="message"
+            />
           </el-table>
         </el-card>
       </div>
@@ -90,7 +186,12 @@
         <template #header>
           <div class="card-header">
             <span>最近响应</span>
-            <el-tag type="info" class="ml8">仅展示部分字段</el-tag>
+            <el-tag
+              type="info"
+              class="ml8"
+            >
+              仅展示部分字段
+            </el-tag>
           </div>
         </template>
         <pre class="code-block">{{ prettyJson(lastResponse) }}</pre>
@@ -100,7 +201,12 @@
         <template #header>
           <div class="card-header">
             <span>PageRuntime Store数据</span>
-            <el-tag type="warning" class="ml8">ResponseMappingConverter.apply()</el-tag>
+            <el-tag
+              type="warning"
+              class="ml8"
+            >
+              ResponseMappingConverter.apply()
+            </el-tag>
           </div>
         </template>
         <pre class="code-block">{{ prettyJson(runtimeData) }}</pre>

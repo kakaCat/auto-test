@@ -31,8 +31,14 @@
     </div>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleConfirm" :disabled="!selectedIcon">
+      <el-button @click="handleClose">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        :disabled="!selectedIcon"
+        @click="handleConfirm"
+      >
         确认
       </el-button>
     </template>

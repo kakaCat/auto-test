@@ -38,10 +38,17 @@
       </el-form-item>
       
       <el-form-item>
-        <el-button type="primary" @click="handleSearch" :icon="Search">
+        <el-button
+          type="primary"
+          :icon="Search"
+          @click="handleSearch"
+        >
           搜索
         </el-button>
-        <el-button @click="handleReset" :icon="Refresh">
+        <el-button
+          :icon="Refresh"
+          @click="handleReset"
+        >
           重置
         </el-button>
       </el-form-item>

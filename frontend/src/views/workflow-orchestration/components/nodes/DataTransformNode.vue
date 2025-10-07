@@ -1,38 +1,76 @@
 <template>
-  <div class="data-transform-node" :class="{ 
-    selected: data.selected, 
-    running: data.status === 'running',
-    expanded: isExpanded 
-  }">
-    <div class="node-header" @click="toggleExpanded">
-      <el-icon class="node-icon"><Operation /></el-icon>
+  <div
+    class="data-transform-node"
+    :class="{ 
+      selected: data.selected, 
+      running: data.status === 'running',
+      expanded: isExpanded 
+    }"
+  >
+    <div
+      class="node-header"
+      @click="toggleExpanded"
+    >
+      <el-icon class="node-icon">
+        <Operation />
+      </el-icon>
       <span class="node-title">{{ data.label || '数据转换' }}</span>
       <div class="node-controls">
-        <el-icon class="expand-icon" :class="{ expanded: isExpanded }">
+        <el-icon
+          class="expand-icon"
+          :class="{ expanded: isExpanded }"
+        >
           <ArrowDown />
         </el-icon>
         <div class="node-status">
-          <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
-          <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
-          <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+          <el-icon
+            v-if="data.status === 'running'"
+            class="rotating"
+          >
+            <Loading />
+          </el-icon>
+          <el-icon
+            v-else-if="data.status === 'success'"
+            style="color: #67c23a"
+          >
+            <Check />
+          </el-icon>
+          <el-icon
+            v-else-if="data.status === 'error'"
+            style="color: #f56c6c"
+          >
+            <Close />
+          </el-icon>
         </div>
       </div>
     </div>
     
     <!-- 简要信息 -->
-    <div v-if="!isExpanded" class="node-summary">
-      <div v-if="transformType" class="summary-item">
+    <div
+      v-if="!isExpanded"
+      class="node-summary"
+    >
+      <div
+        v-if="transformType"
+        class="summary-item"
+      >
         <span class="label">类型:</span>
         <span class="value">{{ getTransformTypeLabel(transformType) }}</span>
       </div>
-      <div v-if="mappingRules.length" class="summary-item">
+      <div
+        v-if="mappingRules.length"
+        class="summary-item"
+      >
         <span class="label">规则:</span>
         <span class="value">{{ mappingRules.length }} 条</span>
       </div>
     </div>
 
     <!-- 详细配置 -->
-    <div v-if="isExpanded" class="node-config">
+    <div
+      v-if="isExpanded"
+      class="node-config"
+    >
       <!-- 转换类型选择 -->
       <div class="config-section">
         <label class="config-label">转换类型</label>
@@ -42,11 +80,26 @@
           placeholder="请选择转换类型"
           @change="updateNodeConfig"
         >
-          <el-option label="字段映射" value="field_mapping" />
-          <el-option label="数据格式转换" value="format_transform" />
-          <el-option label="数据聚合" value="aggregation" />
-          <el-option label="数据过滤" value="filtering" />
-          <el-option label="自定义脚本" value="custom_script" />
+          <el-option
+            label="字段映射"
+            value="field_mapping"
+          />
+          <el-option
+            label="数据格式转换"
+            value="format_transform"
+          />
+          <el-option
+            label="数据聚合"
+            value="aggregation"
+          />
+          <el-option
+            label="数据过滤"
+            value="filtering"
+          />
+          <el-option
+            label="自定义脚本"
+            value="custom_script"
+          />
         </el-select>
       </div>
 
@@ -57,18 +110,24 @@
           <el-button 
             type="primary" 
             size="small" 
-            @click="addMappingRule"
             :icon="Plus"
+            @click="addMappingRule"
           >
             添加规则
           </el-button>
         </div>
         
-        <div v-if="mappingRules.length === 0" class="empty-rules">
+        <div
+          v-if="mappingRules.length === 0"
+          class="empty-rules"
+        >
           <p>暂无映射规则，点击上方按钮添加</p>
         </div>
         
-        <div v-else class="rules-list">
+        <div
+          v-else
+          class="rules-list"
+        >
           <div 
             v-for="(rule, index) in mappingRules" 
             :key="index" 
@@ -107,16 +166,40 @@
                   placeholder="选择转换函数"
                   @change="updateNodeConfig"
                 >
-                  <el-option label="直接映射" value="direct" />
-                  <el-option label="字符串转数字" value="toNumber" />
-                  <el-option label="数字转字符串" value="toString" />
-                  <el-option label="日期格式化" value="formatDate" />
-                  <el-option label="大写转换" value="toUpperCase" />
-                  <el-option label="小写转换" value="toLowerCase" />
-                  <el-option label="自定义函数" value="custom" />
+                  <el-option
+                    label="直接映射"
+                    value="direct"
+                  />
+                  <el-option
+                    label="字符串转数字"
+                    value="toNumber"
+                  />
+                  <el-option
+                    label="数字转字符串"
+                    value="toString"
+                  />
+                  <el-option
+                    label="日期格式化"
+                    value="formatDate"
+                  />
+                  <el-option
+                    label="大写转换"
+                    value="toUpperCase"
+                  />
+                  <el-option
+                    label="小写转换"
+                    value="toLowerCase"
+                  />
+                  <el-option
+                    label="自定义函数"
+                    value="custom"
+                  />
                 </el-select>
               </div>
-              <div v-if="rule.transformFunction === 'custom'" class="config-row">
+              <div
+                v-if="rule.transformFunction === 'custom'"
+                class="config-row"
+              >
                 <label class="config-label">自定义函数</label>
                 <el-input 
                   v-model="rule.customFunction" 

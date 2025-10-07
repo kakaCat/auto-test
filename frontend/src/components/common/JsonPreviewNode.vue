@@ -14,20 +14,28 @@
             class="expand-toggle"
             text
             size="small"
-            @click="toggleExpand"
             :aria-expanded="isExpanded"
+            @click="toggleExpand"
           >
             <el-icon>
               <component :is="isExpanded ? 'CaretBottom' : 'CaretRight'" />
             </el-icon>
           </el-button>
-          <span v-else class="expand-placeholder"></span>
+          <span
+            v-else
+            class="expand-placeholder"
+          />
           
           <!-- 参数名称 -->
           <span class="param-name">{{ param.name }}</span>
           
           <!-- 层级指示器 -->
-          <el-tag v-if="param.level > 0" size="small" type="info" class="level-tag">
+          <el-tag
+            v-if="param.level > 0"
+            size="small"
+            type="info"
+            class="level-tag"
+          >
             L{{ param.level }}
           </el-tag>
         </div>
@@ -45,18 +53,31 @@
         
         <!-- 必填 -->
         <div class="cell required">
-          <el-icon v-if="param.required" class="required-icon" color="#f56c6c">
+          <el-icon
+            v-if="param.required"
+            class="required-icon"
+            color="#f56c6c"
+          >
             <Star />
           </el-icon>
-          <span v-else class="optional-text">可选</span>
+          <span
+            v-else
+            class="optional-text"
+          >可选</span>
         </div>
         
         <!-- 描述 -->
         <div class="cell description">
-          <span v-if="param.description" class="description-text">
+          <span
+            v-if="param.description"
+            class="description-text"
+          >
             {{ param.description }}
           </span>
-          <span v-else class="no-description">
+          <span
+            v-else
+            class="no-description"
+          >
             {{ getDefaultDescription(param.type) }}
           </span>
         </div>
@@ -64,7 +85,10 @@
     </div>
     
     <!-- 子节点 -->
-    <div v-if="hasChildren && isExpanded" class="children-container">
+    <div
+      v-if="hasChildren && isExpanded"
+      class="children-container"
+    >
       <JsonPreviewNode
         v-for="child in children"
         :key="child.id"

@@ -11,7 +11,10 @@
         <p>左侧选择系统，右侧管理对应的页面和页面中的API调用关系</p>
       </div>
       <div class="header-actions">
-        <el-button type="primary" @click="showAddPageDialog">
+        <el-button
+          type="primary"
+          @click="showAddPageDialog"
+        >
           <el-icon><DocumentAdd /></el-icon>
           新增页面
         </el-button>
@@ -61,21 +64,30 @@
       -->
       <div class="right-panel">
         <!-- 引导占位：未选择系统或模块时展示 -->
-        <div v-if="!(selectedSystemId || selectedModuleId)" class="empty-state">
+        <div
+          v-if="!(selectedSystemId || selectedModuleId)"
+          class="empty-state"
+        >
           <el-empty description="请先在左侧选择系统或模块以加载页面列表" />
         </div>
 
         <!-- 搜索和筛选区域 -->
-        <div class="search-section" v-if="selectedSystemId || selectedModuleId">
+        <div
+          v-if="selectedSystemId || selectedModuleId"
+          class="search-section"
+        >
           <div class="search-form">
-            <el-form :model="searchForm" inline>
+            <el-form
+              :model="searchForm"
+              inline
+            >
               <el-form-item label="关键词">
                 <el-input
                   v-model="searchForm.keyword"
                   placeholder="搜索页面名称或描述"
                   clearable
-                  @keyup.enter="searchPages"
                   style="width: 200px"
+                  @keyup.enter="searchPages"
                 />
               </el-form-item>
               <el-form-item label="页面类型">
@@ -85,9 +97,18 @@
                   clearable
                   style="width: 150px"
                 >
-                  <el-option label="页面" value="page" />
-                  <el-option label="弹框" value="modal" />
-                  <el-option label="抽屉" value="drawer" />
+                  <el-option
+                    label="页面"
+                    value="page"
+                  />
+                  <el-option
+                    label="弹框"
+                    value="modal"
+                  />
+                  <el-option
+                    label="抽屉"
+                    value="drawer"
+                  />
                 </el-select>
               </el-form-item>
               <el-form-item label="状态">
@@ -97,28 +118,48 @@
                   clearable
                   style="width: 120px"
                 >
-                  <el-option label="活跃" value="active" />
-                  <el-option label="非活跃" value="inactive" />
-                  <el-option label="草稿" value="draft" />
+                  <el-option
+                    label="活跃"
+                    value="active"
+                  />
+                  <el-option
+                    label="非活跃"
+                    value="inactive"
+                  />
+                  <el-option
+                    label="草稿"
+                    value="draft"
+                  />
                 </el-select>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="searchPages">
+                <el-button
+                  type="primary"
+                  @click="searchPages"
+                >
                   <el-icon><Search /></el-icon>
                   搜索
                 </el-button>
-                <el-button @click="resetSearch">重置</el-button>
+                <el-button @click="resetSearch">
+                  重置
+                </el-button>
               </el-form-item>
             </el-form>
           </div>
         </div>
 
         <!-- 页面列表区域 -->
-        <div class="pages-section" v-if="selectedSystemId || selectedModuleId">
+        <div
+          v-if="selectedSystemId || selectedModuleId"
+          class="pages-section"
+        >
           <div class="section-header">
             <h3>页面列表</h3>
             <div class="section-actions">
-              <el-button size="small" @click="refreshPages">
+              <el-button
+                size="small"
+                @click="refreshPages"
+              >
                 <el-icon><Refresh /></el-icon>
                 刷新
               </el-button>
@@ -126,74 +167,147 @@
           </div>
 
           <!-- 页面表格列表 -->
-          <div class="pages-table" v-loading="loading">
+          <div
+            v-loading="loading"
+            class="pages-table"
+          >
             <el-table
               :data="filteredPageList"
               stripe
+              highlight-current-row
               @selection-change="handleSelectionChange"
               @row-click="selectPage"
-              highlight-current-row
             >
-              <el-table-column type="selection" width="55" />
+              <el-table-column
+                type="selection"
+                width="55"
+              />
               
-              <el-table-column label="页面名称" prop="name" min-width="150">
+              <el-table-column
+                label="页面名称"
+                prop="name"
+                min-width="150"
+              >
                 <template #default="{ row }">
                   <div class="page-name-cell">
                     <span class="page-name">{{ row.name }}</span>
-                    <el-tag v-if="row.status === 'inactive'" type="info" size="small">已禁用</el-tag>
+                    <el-tag
+                      v-if="row.status === 'inactive'"
+                      type="info"
+                      size="small"
+                    >
+                      已禁用
+                    </el-tag>
                   </div>
                 </template>
               </el-table-column>
               
-              <el-table-column label="类型" prop="page_type" width="100">
+              <el-table-column
+                label="类型"
+                prop="page_type"
+                width="100"
+              >
                 <template #default="{ row }">
-                  <el-tag :type="getPageTypeColor(row.page_type)" size="small">
+                  <el-tag
+                    :type="getPageTypeColor(row.page_type)"
+                    size="small"
+                  >
                     {{ row.page_type_display || row.page_type }}
                   </el-tag>
                 </template>
               </el-table-column>
               
-              <el-table-column label="路由" prop="route_path" min-width="200" show-overflow-tooltip>
+              <el-table-column
+                label="路由"
+                prop="route_path"
+                min-width="200"
+                show-overflow-tooltip
+              >
                 <template #default="{ row }">
-                  <code v-if="row.route_path" class="route-path">{{ row.route_path }}</code>
-                  <span v-else class="no-route">-</span>
+                  <code
+                    v-if="row.route_path"
+                    class="route-path"
+                  >{{ row.route_path }}</code>
+                  <span
+                    v-else
+                    class="no-route"
+                  >-</span>
                 </template>
               </el-table-column>
               
-              <el-table-column label="状态" prop="status" width="100">
+              <el-table-column
+                label="状态"
+                prop="status"
+                width="100"
+              >
                 <template #default="{ row }">
-                  <el-tag :type="getStatusColor(row.status)" size="small">
+                  <el-tag
+                    :type="getStatusColor(row.status)"
+                    size="small"
+                  >
                     {{ row.status_display || row.status }}
                   </el-tag>
                 </template>
               </el-table-column>
               
-              <el-table-column label="系统/模块" prop="system_name" width="150" show-overflow-tooltip>
+              <el-table-column
+                label="系统/模块"
+                prop="system_name"
+                width="150"
+                show-overflow-tooltip
+              >
                 <template #default="{ row }">
                   <span>{{ row.system_name || '-' }}</span>
                 </template>
               </el-table-column>
               
-              <el-table-column label="API数量" prop="api_count" width="100" align="center">
+              <el-table-column
+                label="API数量"
+                prop="api_count"
+                width="100"
+                align="center"
+              >
                 <template #default="{ row }">
-                  <el-badge :value="row.api_count || 0" :max="99" type="primary">
+                  <el-badge
+                    :value="row.api_count || 0"
+                    :max="99"
+                    type="primary"
+                  >
                     <el-icon><Connection /></el-icon>
                   </el-badge>
                 </template>
               </el-table-column>
               
-              <el-table-column label="操作" width="200" fixed="right">
+              <el-table-column
+                label="操作"
+                width="200"
+                fixed="right"
+              >
                 <template #default="{ row }">
-                  <el-button type="text" size="small" @click.stop="editPage(row)">
+                  <el-button
+                    type="text"
+                    size="small"
+                    @click.stop="editPage(row)"
+                  >
                     <el-icon><Edit /></el-icon>
                     编辑
                   </el-button>
-                  <el-button type="text" size="small" @click.stop="managePageApis(row)">
+                  <el-button
+                    type="text"
+                    size="small"
+                    @click.stop="managePageApis(row)"
+                  >
                     <el-icon><Connection /></el-icon>
                     API管理
                   </el-button>
-                  <el-dropdown @command="handlePageAction" @click.stop>
-                    <el-button type="text" size="small">
+                  <el-dropdown
+                    @command="handlePageAction"
+                    @click.stop
+                  >
+                    <el-button
+                      type="text"
+                      size="small"
+                    >
                       <el-icon><MoreFilled /></el-icon>
                     </el-button>
                     <template #dropdown>
@@ -202,7 +316,10 @@
                           <el-icon><CopyDocument /></el-icon>
                           复制页面
                         </el-dropdown-item>
-                        <el-dropdown-item :command="'delete-' + row.id" divided>
+                        <el-dropdown-item
+                          :command="'delete-' + row.id"
+                          divided
+                        >
                           <el-icon><Delete /></el-icon>
                           删除页面
                         </el-dropdown-item>
@@ -215,7 +332,10 @@
           </div>
 
           <!-- 分页 -->
-          <div class="pagination-wrapper" v-if="(selectedSystemId || selectedModuleId) && filteredPageList.length > 0">
+          <div
+            v-if="(selectedSystemId || selectedModuleId) && filteredPageList.length > 0"
+            class="pagination-wrapper"
+          >
             <el-pagination
               v-model:current-page="pagination.page"
               v-model:page-size="pagination.size"
@@ -228,32 +348,55 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-if="!loading && filteredPageList.length === 0" class="empty-state">
+          <div
+            v-if="!loading && filteredPageList.length === 0"
+            class="empty-state"
+          >
             <el-empty description="暂无页面数据">
-              <el-button type="primary" @click="showAddPageDialog">创建第一个页面</el-button>
+              <el-button
+                type="primary"
+                @click="showAddPageDialog"
+              >
+                创建第一个页面
+              </el-button>
             </el-empty>
           </div>
         </div>
 
         <!-- 批量操作区域 -->
-        <div class="batch-actions" v-if="selectedPages.length > 0">
+        <div
+          v-if="selectedPages.length > 0"
+          class="batch-actions"
+        >
           <div class="batch-info">
             <span>已选择 {{ selectedPages.length }} 个页面</span>
           </div>
           <div class="batch-buttons">
-            <el-button type="success" @click="batchEnable">
+            <el-button
+              type="success"
+              @click="batchEnable"
+            >
               <el-icon><Check /></el-icon>
               批量启用
             </el-button>
-            <el-button type="warning" @click="batchDisable">
+            <el-button
+              type="warning"
+              @click="batchDisable"
+            >
               <el-icon><Close /></el-icon>
               批量禁用
             </el-button>
-            <el-button type="primary" @click="batchExport">
+            <el-button
+              type="primary"
+              @click="batchExport"
+            >
               <el-icon><Download /></el-icon>
               批量导出
             </el-button>
-            <el-button type="danger" @click="batchDelete">
+            <el-button
+              type="danger"
+              @click="batchDelete"
+            >
               <el-icon><Delete /></el-icon>
               批量删除
             </el-button>
@@ -261,11 +404,18 @@
         </div>
 
         <!-- 页面API关联管理区域 -->
-        <div class="page-apis-section" v-if="selectedPage">
+        <div
+          v-if="selectedPage"
+          class="page-apis-section"
+        >
           <div class="section-header">
             <h3>页面API关联 - {{ selectedPage.name }}</h3>
             <div class="section-actions">
-              <el-button type="primary" size="small" @click="showAddApiDialog">
+              <el-button
+                type="primary"
+                size="small"
+                @click="showAddApiDialog"
+              >
                 <el-icon><Plus /></el-icon>
                 添加API
               </el-button>
@@ -274,11 +424,21 @@
 
           <!-- API关联列表 -->
           <div class="apis-list">
-            <el-table :data="selectedPage.apis" style="width: 100%">
-              <el-table-column prop="api_name" label="API名称" width="200">
+            <el-table
+              :data="selectedPage.apis"
+              style="width: 100%"
+            >
+              <el-table-column
+                prop="api_name"
+                label="API名称"
+                width="200"
+              >
                 <template #default="{ row }">
                   <div class="api-info">
-                    <el-tag :type="getMethodColor(row.api_method)" size="small">
+                    <el-tag
+                      :type="getMethodColor(row.api_method)"
+                      size="small"
+                    >
                       {{ row.api_method }}
                     </el-tag>
                     <span class="api-name">{{ row.api_name || '未知API' }}</span>
@@ -286,43 +446,83 @@
                 </template>
               </el-table-column>
               
-              <el-table-column prop="api_path" label="API路径" width="250">
+              <el-table-column
+                prop="api_path"
+                label="API路径"
+                width="250"
+              >
                 <template #default="{ row }">
                   <code class="api-path">{{ row.api_path || '-' }}</code>
                 </template>
               </el-table-column>
               
-              <el-table-column prop="execution_type" label="执行类型" width="100">
+              <el-table-column
+                prop="execution_type"
+                label="执行类型"
+                width="100"
+              >
                 <template #default="{ row }">
-                  <el-tag :type="row.execution_type === 'parallel' ? 'success' : 'warning'" size="small">
+                  <el-tag
+                    :type="row.execution_type === 'parallel' ? 'success' : 'warning'"
+                    size="small"
+                  >
                     {{ row.execution_type_display }}
                   </el-tag>
                 </template>
               </el-table-column>
               
-              <el-table-column prop="execution_order" label="执行顺序" width="100" />
+              <el-table-column
+                prop="execution_order"
+                label="执行顺序"
+                width="100"
+              />
               
-              <el-table-column prop="trigger_action" label="触发动作" width="120" />
+              <el-table-column
+                prop="trigger_action"
+                label="触发动作"
+                width="120"
+              />
               
-              <el-table-column prop="api_purpose" label="API作用" width="150">
+              <el-table-column
+                prop="api_purpose"
+                label="API作用"
+                width="150"
+              >
                 <template #default="{ row }">
                   <span class="api-purpose">{{ row.api_purpose || '-' }}</span>
                 </template>
               </el-table-column>
               
-              <el-table-column prop="success_action" label="成功动作" width="150">
+              <el-table-column
+                prop="success_action"
+                label="成功动作"
+                width="150"
+              >
                 <template #default="{ row }">
                   <span class="success-action">{{ row.success_action || '-' }}</span>
                 </template>
               </el-table-column>
               
-              <el-table-column label="操作" width="120" fixed="right">
+              <el-table-column
+                label="操作"
+                width="120"
+                fixed="right"
+              >
                 <template #default="{ row }">
-                  <el-button type="text" size="small" @click="editPageApi(row)">
+                  <el-button
+                    type="text"
+                    size="small"
+                    @click="editPageApi(row)"
+                  >
                     <el-icon><Edit /></el-icon>
                     编辑
                   </el-button>
-                  <el-button type="text" size="small" @click="deletePageApi(row)" class="danger">
+                  <el-button
+                    type="text"
+                    size="small"
+                    class="danger"
+                    @click="deletePageApi(row)"
+                  >
                     <el-icon><Delete /></el-icon>
                     删除
                   </el-button>

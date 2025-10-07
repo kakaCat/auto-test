@@ -161,6 +161,29 @@ def init_database():
     CREATE INDEX IF NOT EXISTS idx_page_apis_execution_order ON page_apis(page_id, execution_order);
     """
 
+    # 测试API配置表
+    create_test_apis_table = """
+    CREATE TABLE IF NOT EXISTS test_apis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        api_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        enabled INTEGER DEFAULT 1 CHECK (enabled IN (0,1)),
+        tags TEXT,
+        request_config TEXT,
+        execution_config TEXT,
+        expected_response TEXT,
+        metadata TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (api_id) REFERENCES api_interfaces(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_test_apis_api_id ON test_apis(api_id);
+    CREATE INDEX IF NOT EXISTS idx_test_apis_enabled ON test_apis(enabled);
+    CREATE INDEX IF NOT EXISTS idx_test_apis_created_at ON test_apis(created_at);
+    """
+
     # 初始化数据
     init_data_sql = """
     INSERT OR IGNORE INTO systems (name, description) VALUES 
@@ -188,6 +211,8 @@ def init_database():
             cursor.executescript(create_api_interfaces_table)
             cursor.executescript(create_pages_table)
             cursor.executescript(create_page_apis_table)
+            # 新增：创建测试API配置表
+            cursor.executescript(create_test_apis_table)
             cursor.executescript(init_data_sql)
 
             # 补丁迁移：为已有的 systems 表增加缺失的 category 列

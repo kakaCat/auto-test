@@ -7,18 +7,43 @@
     @close="handleClose"
   >
     <!-- 步骤指示器 -->
-    <el-steps :active="currentStep" align-center class="wizard-steps">
-      <el-step title="基本信息" icon="Edit" />
-      <el-step title="创建方式" icon="Setting" />
-      <el-step title="完成创建" icon="Check" />
+    <el-steps
+      :active="currentStep"
+      align-center
+      class="wizard-steps"
+    >
+      <el-step
+        title="基本信息"
+        icon="Edit"
+      />
+      <el-step
+        title="创建方式"
+        icon="Setting"
+      />
+      <el-step
+        title="完成创建"
+        icon="Check"
+      />
     </el-steps>
 
     <!-- 步骤内容 -->
     <div class="wizard-content">
       <!-- 步骤1: 基本信息 -->
-      <div v-if="currentStep === 0" class="step-content">
-        <el-form :model="formData" :rules="rules" ref="basicFormRef" label-width="120px">
-          <el-form-item label="工作流名称" prop="name" required>
+      <div
+        v-if="currentStep === 0"
+        class="step-content"
+      >
+        <el-form
+          ref="basicFormRef"
+          :model="formData"
+          :rules="rules"
+          label-width="120px"
+        >
+          <el-form-item
+            label="工作流名称"
+            prop="name"
+            required
+          >
             <el-input 
               v-model="formData.name" 
               placeholder="请输入工作流名称"
@@ -27,7 +52,10 @@
             />
           </el-form-item>
           
-          <el-form-item label="描述" prop="description">
+          <el-form-item
+            label="描述"
+            prop="description"
+          >
             <el-input 
               v-model="formData.description" 
               type="textarea"
@@ -38,18 +66,46 @@
             />
           </el-form-item>
           
-          <el-form-item label="分类" prop="category">
-            <el-select v-model="formData.category" placeholder="请选择分类">
-              <el-option label="API测试" value="api_test" />
-              <el-option label="数据处理" value="data_process" />
-              <el-option label="监控告警" value="monitoring" />
-              <el-option label="自动化部署" value="deployment" />
-              <el-option label="其他" value="other" />
+          <el-form-item
+            label="分类"
+            prop="category"
+          >
+            <el-select
+              v-model="formData.category"
+              placeholder="请选择分类"
+            >
+              <el-option
+                label="API测试"
+                value="api_test"
+              />
+              <el-option
+                label="数据处理"
+                value="data_process"
+              />
+              <el-option
+                label="监控告警"
+                value="monitoring"
+              />
+              <el-option
+                label="自动化部署"
+                value="deployment"
+              />
+              <el-option
+                label="其他"
+                value="other"
+              />
             </el-select>
           </el-form-item>
           
-          <el-form-item label="关联应用" prop="appId">
-            <el-select v-model="formData.appId" placeholder="请选择关联应用" clearable>
+          <el-form-item
+            label="关联应用"
+            prop="appId"
+          >
+            <el-select
+              v-model="formData.appId"
+              placeholder="请选择关联应用"
+              clearable
+            >
               <el-option 
                 v-for="app in applications" 
                 :key="app.id" 
@@ -59,23 +115,47 @@
             </el-select>
           </el-form-item>
           
-          <el-form-item label="标签" prop="tags">
+          <el-form-item
+            label="标签"
+            prop="tags"
+          >
             <el-input 
               v-model="formData.tags" 
               placeholder="多个标签用逗号分隔"
             />
           </el-form-item>
           
-          <el-form-item label="优先级" prop="priority">
-            <el-select v-model="formData.priority" placeholder="请选择优先级">
-              <el-option label="低" value="low" />
-              <el-option label="中等" value="medium" />
-              <el-option label="高" value="high" />
-              <el-option label="紧急" value="urgent" />
+          <el-form-item
+            label="优先级"
+            prop="priority"
+          >
+            <el-select
+              v-model="formData.priority"
+              placeholder="请选择优先级"
+            >
+              <el-option
+                label="低"
+                value="low"
+              />
+              <el-option
+                label="中等"
+                value="medium"
+              />
+              <el-option
+                label="高"
+                value="high"
+              />
+              <el-option
+                label="紧急"
+                value="urgent"
+              />
             </el-select>
           </el-form-item>
           
-          <el-form-item label="超时设置" prop="timeout">
+          <el-form-item
+            label="超时设置"
+            prop="timeout"
+          >
             <el-input-number 
               v-model="formData.timeout" 
               :min="30" 
@@ -88,31 +168,53 @@
       </div>
 
       <!-- 步骤2: 创建方式 -->
-      <div v-if="currentStep === 1" class="step-content">
+      <div
+        v-if="currentStep === 1"
+        class="step-content"
+      >
         <div class="creation-methods">
-          <el-radio-group v-model="formData.creationMethod" class="method-group">
+          <el-radio-group
+            v-model="formData.creationMethod"
+            class="method-group"
+          >
             <div class="method-option">
-              <el-radio value="blank" class="method-radio">
+              <el-radio
+                value="blank"
+                class="method-radio"
+              >
                 <div class="method-content">
                   <div class="method-title">
                     <el-icon><DocumentAdd /></el-icon>
                     从空白开始
                   </div>
-                  <div class="method-desc">创建全新的工作流，从零开始设计</div>
+                  <div class="method-desc">
+                    创建全新的工作流，从零开始设计
+                  </div>
                 </div>
               </el-radio>
             </div>
             
             <div class="method-option">
-              <el-radio value="template" class="method-radio">
+              <el-radio
+                value="template"
+                class="method-radio"
+              >
                 <div class="method-content">
                   <div class="method-title">
                     <el-icon><Document /></el-icon>
                     从模板创建
                   </div>
-                  <div class="method-desc">选择预定义模板快速创建</div>
-                  <div v-if="formData.creationMethod === 'template'" class="template-selector">
-                    <el-select v-model="formData.templateId" placeholder="请选择模板">
+                  <div class="method-desc">
+                    选择预定义模板快速创建
+                  </div>
+                  <div
+                    v-if="formData.creationMethod === 'template'"
+                    class="template-selector"
+                  >
+                    <el-select
+                      v-model="formData.templateId"
+                      placeholder="请选择模板"
+                    >
                       <el-option 
                         v-for="template in templates" 
                         :key="template.id" 
@@ -126,14 +228,22 @@
             </div>
             
             <div class="method-option">
-              <el-radio value="import" class="method-radio">
+              <el-radio
+                value="import"
+                class="method-radio"
+              >
                 <div class="method-content">
                   <div class="method-title">
                     <el-icon><Upload /></el-icon>
                     导入现有文件
                   </div>
-                  <div class="method-desc">上传工作流配置文件 (JSON格式)</div>
-                  <div v-if="formData.creationMethod === 'import'" class="file-upload">
+                  <div class="method-desc">
+                    上传工作流配置文件 (JSON格式)
+                  </div>
+                  <div
+                    v-if="formData.creationMethod === 'import'"
+                    class="file-upload"
+                  >
                     <el-upload
                       ref="uploadRef"
                       :auto-upload="false"
@@ -142,7 +252,9 @@
                       accept=".json"
                       @change="handleFileChange"
                     >
-                      <el-button type="primary">选择文件</el-button>
+                      <el-button type="primary">
+                        选择文件
+                      </el-button>
                       <template #tip>
                         <div class="el-upload__tip">
                           只能上传JSON文件，且不超过2MB
@@ -158,7 +270,10 @@
       </div>
 
       <!-- 步骤3: 确认创建 -->
-      <div v-if="currentStep === 2" class="step-content">
+      <div
+        v-if="currentStep === 2"
+        class="step-content"
+      >
         <div class="confirmation-content">
           <div class="confirm-section">
             <h4>✓ 工作流信息确认</h4>
@@ -190,7 +305,10 @@
             </div>
           </div>
 
-          <div v-if="formData.creationMethod === 'template' && selectedTemplate" class="confirm-section">
+          <div
+            v-if="formData.creationMethod === 'template' && selectedTemplate"
+            class="confirm-section"
+          >
             <h4>✓ 模板预览</h4>
             <div class="template-preview">
               <div class="preview-item">
@@ -209,8 +327,12 @@
           </div>
 
           <div class="options-section">
-            <el-checkbox v-model="formData.openDesigner">创建后立即打开设计器</el-checkbox>
-            <el-checkbox v-model="formData.saveAsTemplate">保存为我的常用模板</el-checkbox>
+            <el-checkbox v-model="formData.openDesigner">
+              创建后立即打开设计器
+            </el-checkbox>
+            <el-checkbox v-model="formData.saveAsTemplate">
+              保存为我的常用模板
+            </el-checkbox>
           </div>
         </div>
       </div>
@@ -219,12 +341,30 @@
     <!-- 底部按钮 -->
     <template #footer>
       <div class="wizard-footer">
-        <el-button v-if="currentStep > 0" @click="prevStep">上一步</el-button>
-        <el-button v-if="currentStep < 2" type="primary" @click="nextStep">下一步</el-button>
-        <el-button v-if="currentStep === 2" type="primary" @click="createWorkflow" :loading="creating">
+        <el-button
+          v-if="currentStep > 0"
+          @click="prevStep"
+        >
+          上一步
+        </el-button>
+        <el-button
+          v-if="currentStep < 2"
+          type="primary"
+          @click="nextStep"
+        >
+          下一步
+        </el-button>
+        <el-button
+          v-if="currentStep === 2"
+          type="primary"
+          :loading="creating"
+          @click="createWorkflow"
+        >
           创建工作流
         </el-button>
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose">
+          取消
+        </el-button>
       </div>
     </template>
   </el-dialog>

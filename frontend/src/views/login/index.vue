@@ -39,8 +39,12 @@
         
         <el-form-item>
           <div class="login-options">
-            <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-            <el-link type="primary">忘记密码？</el-link>
+            <el-checkbox v-model="loginForm.remember">
+              记住密码
+            </el-checkbox>
+            <el-link type="primary">
+              忘记密码？
+            </el-link>
           </div>
         </el-form-item>
         
@@ -49,8 +53,8 @@
             type="primary"
             size="large"
             :loading="loading"
-            @click="handleLogin"
             class="login-button"
+            @click="handleLogin"
           >
             登录
           </el-button>
@@ -58,7 +62,11 @@
       </el-form>
       
       <div class="login-footer">
-        <p>还没有账号？<el-link type="primary">立即注册</el-link></p>
+        <p>
+          还没有账号？<el-link type="primary">
+            立即注册
+          </el-link>
+        </p>
       </div>
     </div>
     

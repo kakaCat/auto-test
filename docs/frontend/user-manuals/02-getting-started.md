@@ -267,7 +267,7 @@
 3. **[API管理指南](./api-management.md)** - 学习API资源管理
 4. **[工作流设计器指南](./workflow-designer.md)** - 精通API流程设计
 5. **[页面调用流程指南](./page-call-flow.md)** - 了解页面流程设计（规划中）
-5. **[测试API管理指南](./08-scenario-management.md)** - 掌握接口测试用例管理
+5. **[API测试场景管理指南](./08-scenario-management.md)** - 掌握接口测试用例管理
 
 ## 获取帮助
 

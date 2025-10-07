@@ -26,7 +26,7 @@
 当前系统采用6层架构：
 ```
 第6层: 需求管理 (/requirement-management) [✅已实现]
-第5层: 测试API管理 (/scenario-management) [✅已实现]
+第5层: API测试场景管理 (/scenario-management) [✅已实现]
 第4层: 调用流程 (Call Flows)
 ├─ 4a. API调用流程 (/workflow-orchestration + /designer) [✅已实现]
 └─ 4b. 页面调用流程 (/page-call-flow) [🚧规划中]

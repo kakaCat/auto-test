@@ -13,8 +13,20 @@
 
     <!-- 操作按钮 -->
     <div class="tree-actions">
-      <el-button size="small" :icon="Plus" @click="handleAddProject">新增项目</el-button>
-      <el-button size="small" :icon="Refresh" @click="refreshTree">刷新</el-button>
+      <el-button
+        size="small"
+        :icon="Plus"
+        @click="handleAddProject"
+      >
+        新增项目
+      </el-button>
+      <el-button
+        size="small"
+        :icon="Refresh"
+        @click="refreshTree"
+      >
+        刷新
+      </el-button>
     </div>
 
     <!-- 树形结构 -->
@@ -37,27 +49,49 @@
                 <component :is="getNodeIcon(data)" />
               </el-icon>
               <span class="node-label">{{ node.label }}</span>
-              <div class="node-badges" v-if="data.type === 'requirement'">
-                <el-tag size="small" :type="getPriorityType(data.priority)">
+              <div
+                v-if="data.type === 'requirement'"
+                class="node-badges"
+              >
+                <el-tag
+                  size="small"
+                  :type="getPriorityType(data.priority)"
+                >
                   {{ getPriorityText(data.priority) }}
                 </el-tag>
-                <el-tag size="small" :type="getStatusType(data.status)">
+                <el-tag
+                  size="small"
+                  :type="getStatusType(data.status)"
+                >
                   {{ getStatusText(data.status) }}
                 </el-tag>
               </div>
             </div>
-            <div class="node-actions" @click.stop>
+            <div
+              class="node-actions"
+              @click.stop
+            >
               <el-dropdown @command="(command) => handleNodeAction(command, data)">
-                <el-button size="small" text :icon="MoreFilled" />
+                <el-button
+                  size="small"
+                  text
+                  :icon="MoreFilled"
+                />
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item v-if="data.type === 'project'" command="add-requirement">
+                    <el-dropdown-item
+                      v-if="data.type === 'project'"
+                      command="add-requirement"
+                    >
                       <el-icon><Plus /></el-icon>添加需求
                     </el-dropdown-item>
                     <el-dropdown-item command="edit">
                       <el-icon><Edit /></el-icon>编辑
                     </el-dropdown-item>
-                    <el-dropdown-item command="delete" divided>
+                    <el-dropdown-item
+                      command="delete"
+                      divided
+                    >
                       <el-icon><Delete /></el-icon>删除
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -81,10 +115,19 @@
         :rules="projectFormRules"
         label-width="100px"
       >
-        <el-form-item label="项目名称" prop="name">
-          <el-input v-model="projectForm.name" placeholder="请输入项目名称" />
+        <el-form-item
+          label="项目名称"
+          prop="name"
+        >
+          <el-input
+            v-model="projectForm.name"
+            placeholder="请输入项目名称"
+          />
         </el-form-item>
-        <el-form-item label="项目描述" prop="description">
+        <el-form-item
+          label="项目描述"
+          prop="description"
+        >
           <el-input
             v-model="projectForm.description"
             type="textarea"
@@ -92,13 +135,26 @@
             placeholder="请输入项目描述"
           />
         </el-form-item>
-        <el-form-item label="项目负责人" prop="owner">
-          <el-input v-model="projectForm.owner" placeholder="请输入负责人" />
+        <el-form-item
+          label="项目负责人"
+          prop="owner"
+        >
+          <el-input
+            v-model="projectForm.owner"
+            placeholder="请输入负责人"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="projectDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleProjectSubmit">确定</el-button>
+        <el-button @click="projectDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="handleProjectSubmit"
+        >
+          确定
+        </el-button>
       </template>
     </el-dialog>
   </div>

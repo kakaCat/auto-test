@@ -17,7 +17,9 @@
       <div class="tab-content-placeholder">
         <el-icon><Folder /></el-icon>
         <span>{{ tab.label }}内容</span>
-        <p class="tab-hint">拖拽组件到此处</p>
+        <p class="tab-hint">
+          拖拽组件到此处
+        </p>
       </div>
     </el-tab-pane>
   </el-tabs>

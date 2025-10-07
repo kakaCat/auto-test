@@ -6,7 +6,10 @@
         <p>智能场景执行代理，支持参数增强、场景解析和自动化执行</p>
       </div>
       <div class="header-actions">
-        <el-button type="primary" @click="createExecution">
+        <el-button
+          type="primary"
+          @click="createExecution"
+        >
           <el-icon><Plus /></el-icon>
           新建执行
         </el-button>
@@ -28,8 +31,12 @@
           <el-icon><Cpu /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.total }}</div>
-          <div class="stat-label">总执行次数</div>
+          <div class="stat-value">
+            {{ stats.total }}
+          </div>
+          <div class="stat-label">
+            总执行次数
+          </div>
         </div>
       </div>
       
@@ -38,8 +45,12 @@
           <el-icon><Loading /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.running }}</div>
-          <div class="stat-label">执行中</div>
+          <div class="stat-value">
+            {{ stats.running }}
+          </div>
+          <div class="stat-label">
+            执行中
+          </div>
         </div>
       </div>
       
@@ -48,8 +59,12 @@
           <el-icon><CircleCheck /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.success }}</div>
-          <div class="stat-label">成功执行</div>
+          <div class="stat-value">
+            {{ stats.success }}
+          </div>
+          <div class="stat-label">
+            成功执行
+          </div>
         </div>
       </div>
       
@@ -58,8 +73,12 @@
           <el-icon><MagicStick /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.enhanced }}</div>
-          <div class="stat-label">AI增强次数</div>
+          <div class="stat-value">
+            {{ stats.enhanced }}
+          </div>
+          <div class="stat-label">
+            AI增强次数
+          </div>
         </div>
       </div>
     </div>
@@ -68,7 +87,10 @@
     <div class="quick-execution">
       <div class="quick-header">
         <h3>快速执行</h3>
-        <el-button type="text" @click="showQuickHelp">
+        <el-button
+          type="text"
+          @click="showQuickHelp"
+        >
           <el-icon><QuestionFilled /></el-icon>
           使用说明
         </el-button>
@@ -95,16 +117,25 @@
             placeholder="增强模式"
             style="width: 150px"
           >
-            <el-option label="智能增强" value="smart" />
-            <el-option label="基础增强" value="basic" />
-            <el-option label="无增强" value="none" />
+            <el-option
+              label="智能增强"
+              value="smart"
+            />
+            <el-option
+              label="基础增强"
+              value="basic"
+            />
+            <el-option
+              label="无增强"
+              value="none"
+            />
           </el-select>
           
           <el-button
             type="primary"
             :loading="quickExecuting"
-            @click="quickExecute"
             :disabled="!quickForm.scenario"
+            @click="quickExecute"
           >
             <el-icon><VideoPlay /></el-icon>
             立即执行
@@ -130,8 +161,8 @@
           v-model="searchForm.keyword"
           placeholder="搜索执行记录"
           clearable
-          @input="handleSearch"
           style="width: 300px"
+          @input="handleSearch"
         >
           <template #prefix>
             <el-icon><Search /></el-icon>
@@ -145,10 +176,22 @@
           style="width: 120px"
           @change="handleSearch"
         >
-          <el-option label="执行中" value="running" />
-          <el-option label="成功" value="success" />
-          <el-option label="失败" value="failed" />
-          <el-option label="已取消" value="cancelled" />
+          <el-option
+            label="执行中"
+            value="running"
+          />
+          <el-option
+            label="成功"
+            value="success"
+          />
+          <el-option
+            label="失败"
+            value="failed"
+          />
+          <el-option
+            label="已取消"
+            value="cancelled"
+          />
         </el-select>
         
         <el-select
@@ -158,9 +201,18 @@
           style="width: 120px"
           @change="handleSearch"
         >
-          <el-option label="智能增强" value="smart" />
-          <el-option label="基础增强" value="basic" />
-          <el-option label="无增强" value="none" />
+          <el-option
+            label="智能增强"
+            value="smart"
+          />
+          <el-option
+            label="基础增强"
+            value="basic"
+          />
+          <el-option
+            label="无增强"
+            value="none"
+          />
         </el-select>
         
         <el-date-picker
@@ -173,7 +225,10 @@
           @change="handleSearch"
         />
         
-        <el-button type="primary" @click="handleSearch">
+        <el-button
+          type="primary"
+          @click="handleSearch"
+        >
           <el-icon><Search /></el-icon>
           搜索
         </el-button>
@@ -193,15 +248,30 @@
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
+        <el-table-column
+          type="selection"
+          width="55"
+        />
         
-        <el-table-column prop="id" label="执行ID" width="100" />
+        <el-table-column
+          prop="id"
+          label="执行ID"
+          width="100"
+        />
         
-        <el-table-column prop="scenarioName" label="场景名称" min-width="150">
+        <el-table-column
+          prop="scenarioName"
+          label="场景名称"
+          min-width="150"
+        >
           <template #default="{ row }">
             <div class="scenario-info">
               <span class="name">{{ row.scenarioName }}</span>
-              <el-tag v-if="row.aiEnhanced" size="small" type="success">
+              <el-tag
+                v-if="row.aiEnhanced"
+                size="small"
+                type="success"
+              >
                 <el-icon><MagicStick /></el-icon>
                 AI增强
               </el-tag>
@@ -209,26 +279,47 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="enhanceMode" label="增强模式" width="100">
+        <el-table-column
+          prop="enhanceMode"
+          label="增强模式"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getEnhanceModeColor(row.enhanceMode)" size="small">
+            <el-tag
+              :type="getEnhanceModeColor(row.enhanceMode)"
+              size="small"
+            >
               {{ getEnhanceModeLabel(row.enhanceMode) }}
             </el-tag>
           </template>
         </el-table-column>
         
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="100"
+        >
           <template #default="{ row }">
             <div class="status-indicator">
-              <el-tag :type="getStatusColor(row.status)" size="small">
+              <el-tag
+                :type="getStatusColor(row.status)"
+                size="small"
+              >
                 {{ getStatusLabel(row.status) }}
               </el-tag>
-              <div v-if="row.status === 'running'" class="running-indicator"></div>
+              <div
+                v-if="row.status === 'running'"
+                class="running-indicator"
+              />
             </div>
           </template>
         </el-table-column>
         
-        <el-table-column prop="progress" label="进度" width="120">
+        <el-table-column
+          prop="progress"
+          label="进度"
+          width="120"
+        >
           <template #default="{ row }">
             <div class="progress-info">
               <el-progress
@@ -242,26 +333,48 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="duration" label="执行时长" width="100">
+        <el-table-column
+          prop="duration"
+          label="执行时长"
+          width="100"
+        >
           <template #default="{ row }">
             {{ formatDuration(row.duration) }}
           </template>
         </el-table-column>
         
-        <el-table-column prop="enhancedParams" label="增强参数" min-width="200" show-overflow-tooltip>
+        <el-table-column
+          prop="enhancedParams"
+          label="增强参数"
+          min-width="200"
+          show-overflow-tooltip
+        >
           <template #default="{ row }">
             <div class="enhanced-params">
               <span v-if="row.enhancedParams">{{ row.enhancedParams }}</span>
-              <span v-else class="no-data">-</span>
+              <span
+                v-else
+                class="no-data"
+              >-</span>
             </div>
           </template>
         </el-table-column>
         
-        <el-table-column prop="result" label="执行结果" min-width="150">
+        <el-table-column
+          prop="result"
+          label="执行结果"
+          min-width="150"
+        >
           <template #default="{ row }">
             <div class="result-info">
-              <span v-if="row.result" class="result-text">{{ row.result }}</span>
-              <span v-else class="no-data">-</span>
+              <span
+                v-if="row.result"
+                class="result-text"
+              >{{ row.result }}</span>
+              <span
+                v-else
+                class="no-data"
+              >-</span>
               <el-button
                 v-if="row.resultDetails"
                 type="text"
@@ -274,25 +387,40 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="startTime" label="开始时间" width="150">
+        <el-table-column
+          prop="startTime"
+          label="开始时间"
+          width="150"
+        >
           <template #default="{ row }">
             {{ formatTime(row.startTime) }}
           </template>
         </el-table-column>
         
-        <el-table-column prop="executor" label="执行者" width="100" />
+        <el-table-column
+          prop="executor"
+          label="执行者"
+          width="100"
+        />
         
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column
+          label="操作"
+          width="200"
+          fixed="right"
+        >
           <template #default="{ row }">
-            <el-button type="text" @click="viewExecution(row)">
+            <el-button
+              type="text"
+              @click="viewExecution(row)"
+            >
               <el-icon><View /></el-icon>
               查看
             </el-button>
             <el-button 
               v-if="row.status === 'running'"
               type="text" 
-              @click="stopExecution(row)"
               style="color: var(--warning-color)"
+              @click="stopExecution(row)"
             >
               <el-icon><VideoPause /></el-icon>
               停止
@@ -305,7 +433,11 @@
               <el-icon><Refresh /></el-icon>
               重新执行
             </el-button>
-            <el-button type="text" @click="deleteExecution(row)" style="color: var(--danger-color)">
+            <el-button
+              type="text"
+              style="color: var(--danger-color)"
+              @click="deleteExecution(row)"
+            >
               <el-icon><Delete /></el-icon>
               删除
             </el-button>
@@ -328,11 +460,23 @@
     </div>
     
     <!-- 批量操作 -->
-    <div v-if="selectedExecutions.length > 0" class="batch-actions">
+    <div
+      v-if="selectedExecutions.length > 0"
+      class="batch-actions"
+    >
       <span>已选择 {{ selectedExecutions.length }} 项</span>
-      <el-button @click="batchStop">批量停止</el-button>
-      <el-button @click="batchReExecute">批量重新执行</el-button>
-      <el-button type="danger" @click="batchDelete">批量删除</el-button>
+      <el-button @click="batchStop">
+        批量停止
+      </el-button>
+      <el-button @click="batchReExecute">
+        批量重新执行
+      </el-button>
+      <el-button
+        type="danger"
+        @click="batchDelete"
+      >
+        批量删除
+      </el-button>
     </div>
     
     <!-- 执行结果详情对话框 -->
@@ -341,18 +485,30 @@
       title="执行结果详情"
       width="800px"
     >
-      <div v-if="currentResult" class="result-details">
+      <div
+        v-if="currentResult"
+        class="result-details"
+      >
         <div class="result-section">
           <h4>基本信息</h4>
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="执行ID">{{ currentResult.id }}</el-descriptions-item>
-            <el-descriptions-item label="场景名称">{{ currentResult.scenarioName }}</el-descriptions-item>
+          <el-descriptions
+            :column="2"
+            border
+          >
+            <el-descriptions-item label="执行ID">
+              {{ currentResult.id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="场景名称">
+              {{ currentResult.scenarioName }}
+            </el-descriptions-item>
             <el-descriptions-item label="状态">
               <el-tag :type="getStatusColor(currentResult.status)">
                 {{ getStatusLabel(currentResult.status) }}
               </el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="执行时长">{{ formatDuration(currentResult.duration) }}</el-descriptions-item>
+            <el-descriptions-item label="执行时长">
+              {{ formatDuration(currentResult.duration) }}
+            </el-descriptions-item>
           </el-descriptions>
         </div>
         
@@ -376,8 +532,15 @@
       </div>
       
       <template #footer>
-        <el-button @click="resultDialogVisible = false">关闭</el-button>
-        <el-button type="primary" @click="downloadResult">下载报告</el-button>
+        <el-button @click="resultDialogVisible = false">
+          关闭
+        </el-button>
+        <el-button
+          type="primary"
+          @click="downloadResult"
+        >
+          下载报告
+        </el-button>
       </template>
     </el-dialog>
   </div>

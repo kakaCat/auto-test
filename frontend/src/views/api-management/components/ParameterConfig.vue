@@ -2,7 +2,10 @@
   <div class="parameter-config">
     <!-- 模式切换 -->
     <div class="mode-switcher">
-      <el-radio-group v-model="currentMode" @change="handleModeChange">
+      <el-radio-group
+        v-model="currentMode"
+        @change="handleModeChange"
+      >
         <el-radio-button label="table">
           <el-icon><Grid /></el-icon>
           表格模式
@@ -14,11 +17,21 @@
       </el-radio-group>
       
       <div class="mode-actions">
-        <el-button v-if="currentMode === 'json'" size="small" @click="generateFromJson" :disabled="!jsonContent.trim()">
+        <el-button
+          v-if="currentMode === 'json'"
+          size="small"
+          :disabled="!jsonContent.trim()"
+          @click="generateFromJson"
+        >
           <el-icon><Upload /></el-icon>
           从JSON生成表格
         </el-button>
-        <el-button v-if="currentMode === 'table'" size="small" @click="exportToJson" :disabled="!parameters.length">
+        <el-button
+          v-if="currentMode === 'table'"
+          size="small"
+          :disabled="!parameters.length"
+          @click="exportToJson"
+        >
           <el-icon><Download /></el-icon>
           导出JSON
         </el-button>
@@ -26,18 +39,35 @@
     </div>
 
     <!-- 表格模式 -->
-    <div v-if="currentMode === 'table'" class="table-mode">
+    <div
+      v-if="currentMode === 'table'"
+      class="table-mode"
+    >
       <div class="table-header">
-        <el-button type="primary" size="small" @click="addParameter">
+        <el-button
+          type="primary"
+          size="small"
+          @click="addParameter"
+        >
           <el-icon><Plus /></el-icon>
           添加参数
         </el-button>
-        <el-button v-if="parameters.length > 0" size="small" @click="clearAll">
+        <el-button
+          v-if="parameters.length > 0"
+          size="small"
+          @click="clearAll"
+        >
           <el-icon><Delete /></el-icon>
           清空所有
         </el-button>
         <div class="table-search">
-          <el-input v-model="searchText" size="small" clearable placeholder="搜索参数名/描述（自动展开匹配路径）" @input="handleSearchInput">
+          <el-input
+            v-model="searchText"
+            size="small"
+            clearable
+            placeholder="搜索参数名/描述（自动展开匹配路径）"
+            @input="handleSearchInput"
+          >
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
@@ -45,63 +75,144 @@
         </div>
       </div>
 
-      <div v-if="parameters.length > 0" class="parameter-table">
+      <div
+        v-if="parameters.length > 0"
+        class="parameter-table"
+      >
         <div class="table-headers">
-          <div class="header-cell name">参数名</div>
-          <div class="header-cell type">类型</div>
-          <div class="header-cell required">必填</div>
-          <div class="header-cell description">描述</div>
-          <div class="header-cell actions">操作</div>
+          <div class="header-cell name">
+            参数名
+          </div>
+          <div class="header-cell type">
+            类型
+          </div>
+          <div class="header-cell required">
+            必填
+          </div>
+          <div class="header-cell description">
+            描述
+          </div>
+          <div class="header-cell actions">
+            操作
+          </div>
         </div>
         
-        <draggable v-model="parameters" item-key="id" handle=".drag-handle" @end="handleDragEnd">
+        <draggable
+          v-model="parameters"
+          item-key="id"
+          handle=".drag-handle"
+          @end="handleDragEnd"
+        >
           <template #item="{ element: param, index }">
-            <div :class="['parameter-row', { 'is-child': param.level > 0 }]" :style="{ paddingLeft: `${param.level * 20}px` }" v-show="isRowVisible(param)">
+            <div
+              v-show="isRowVisible(param)"
+              :class="['parameter-row', { 'is-child': param.level > 0 }, `level-${param.level || 0}`]"
+              :style="{ paddingLeft: `${param.level * 20}px` }"
+            >
               <div class="row-content">
                 <div class="cell name">
-                  <el-icon class="drag-handle"><Rank /></el-icon>
-                  <el-button v-if="param.type === 'object' || param.type === 'array'" class="collapse-toggle" text size="small" aria-label="展开/折叠子参数" @click="toggleCollapse(param)">
+                  <el-icon class="drag-handle">
+                    <Rank />
+                  </el-icon>
+                  <el-button
+                    v-if="param.type === 'object' || param.type === 'array'"
+                    class="collapse-toggle"
+                    text
+                    size="small"
+                    aria-label="展开/折叠子参数"
+                    @click="toggleCollapse(param)"
+                  >
                     <el-icon>
                       <component :is="isCollapsed(param.id) ? 'CaretRight' : 'CaretBottom'" />
                     </el-icon>
                   </el-button>
-                  <el-input v-model="param.name" placeholder="参数名" size="small" @blur="validateParameterName(param, index)" />
-                  <el-button v-if="param.type === 'object' || param.type === 'array'" size="small" text @click="addChildParameter(index)">
+                  <el-input
+                    v-model="param.name"
+                    placeholder="参数名"
+                    size="small"
+                    @blur="validateParameterName(param, index)"
+                  />
+                  <el-button
+                    v-if="param.type === 'object' || param.type === 'array'"
+                    size="small"
+                    text
+                    @click="addChildParameter(index)"
+                  >
                     <el-icon><Plus /></el-icon>
                   </el-button>
                 </div>
                 
                 <div class="cell type">
-                  <el-select v-model="param.type" size="small" @change="handleTypeChange(param, index)">
-                    <el-option label="string" value="string" />
-                    <el-option label="number" value="number" />
-                    <el-option label="boolean" value="boolean" />
-                    <el-option label="object" value="object" />
-                    <el-option label="array" value="array" />
-                    <el-option label="file" value="file" />
+                  <el-select
+                    v-model="param.type"
+                    size="small"
+                    @change="handleTypeChange(param, index)"
+                  >
+                    <el-option
+                      label="string"
+                      value="string"
+                    />
+                    <el-option
+                      label="number"
+                      value="number"
+                    />
+                    <el-option
+                      label="boolean"
+                      value="boolean"
+                    />
+                    <el-option
+                      label="object"
+                      value="object"
+                    />
+                    <el-option
+                      label="array"
+                      value="array"
+                    />
+                    <el-option
+                      label="file"
+                      value="file"
+                    />
                   </el-select>
                 </div>
                 
                 <div class="cell required">
-                  <el-switch v-model="param.required" size="small" />
+                  <el-switch
+                    v-model="param.required"
+                    size="small"
+                  />
                 </div>
                 
                 <div class="cell description">
-                  <el-input v-model="param.description" placeholder="参数描述" size="small" />
+                  <el-input
+                    v-model="param.description"
+                    placeholder="参数描述"
+                    size="small"
+                    type="textarea"
+                    :autosize="{ minRows: 1, maxRows: 3 }"
+                  />
                 </div>
                 
                 <div class="cell actions">
                   <el-button-group size="small">
-                    <el-button @click="moveUp(index)" :disabled="index === 0">
+                    <el-button
+                      :disabled="index === 0"
+                      @click="moveUp(index)"
+                    >
                       <el-icon><ArrowUp /></el-icon>
                     </el-button>
-                    <el-button @click="moveDown(index)" :disabled="index === parameters.length - 1">
+                    <el-button
+                      :disabled="index === parameters.length - 1"
+                      @click="moveDown(index)"
+                    >
                       <el-icon><ArrowDown /></el-icon>
                     </el-button>
                     <el-button @click="copyParameter(index)">
                       <el-icon><CopyDocument /></el-icon>
                     </el-button>
-                    <el-button type="danger" @click="removeParameter(index)">
+                    <el-button
+                      type="danger"
+                      @click="removeParameter(index)"
+                    >
                       <el-icon><Delete /></el-icon>
                     </el-button>
                   </el-button-group>
@@ -112,23 +223,40 @@
         </draggable>
       </div>
 
-      <div v-else class="empty-state">
+      <div
+        v-else
+        class="empty-state"
+      >
         <el-empty description="暂无参数配置">
-          <el-button type="primary" @click="addParameter">添加第一个参数</el-button>
+          <el-button
+            type="primary"
+            @click="addParameter"
+          >
+            添加第一个参数
+          </el-button>
         </el-empty>
       </div>
     </div>
 
     <!-- JSON模式 -->
-    <div v-if="currentMode === 'json'" class="json-mode">
+    <div
+      v-if="currentMode === 'json'"
+      class="json-mode"
+    >
       <div class="json-header">
         <span class="json-title">JSON Schema 编辑器</span>
         <div class="json-actions">
-          <el-button size="small" @click="formatJson">
+          <el-button
+            size="small"
+            @click="formatJson"
+          >
             <el-icon><MagicStick /></el-icon>
             格式化
           </el-button>
-          <el-button size="small" @click="validateJson">
+          <el-button
+            size="small"
+            @click="validateJson"
+          >
             <el-icon><CircleCheck /></el-icon>
             验证
           </el-button>
@@ -136,18 +264,38 @@
       </div>
       
       <div class="json-editor">
-        <el-input v-model="jsonContent" type="textarea" :rows="15" placeholder="请输入JSON Schema或参数示例..." @blur="validateJson" />
+        <el-input
+          v-model="jsonContent"
+          type="textarea"
+          :rows="15"
+          placeholder="请输入JSON Schema或参数示例..."
+          @blur="validateJson"
+        />
       </div>
       
-      <div v-if="jsonError" class="json-error">
-        <el-alert :title="jsonError" type="error" show-icon :closable="false" />
+      <div
+        v-if="jsonError"
+        class="json-error"
+      >
+        <el-alert
+          :title="jsonError"
+          type="error"
+          show-icon
+          :closable="false"
+        />
       </div>
     </div>
 
     <!-- 参数示例展示 -->
-    <div v-if="parameters.length > 0 && currentMode === 'table'" class="parameter-example">
+    <div
+      v-if="parameters.length > 0 && currentMode === 'table'"
+      class="parameter-example"
+    >
       <el-collapse>
-        <el-collapse-item title="参数示例预览" name="example">
+        <el-collapse-item
+          title="参数示例预览"
+          name="example"
+        >
           <pre class="example-json">{{ parameterExample }}</pre>
         </el-collapse-item>
       </el-collapse>
@@ -205,6 +353,11 @@ watch(() => props.modelValue, (newValue) => {
       id: param.id || ++parameterIdCounter,
       level: param.level || 0
     }))
+    // 同步ID计数器到当前最大ID，避免后续新增产生重复ID而影响折叠判断
+    parameterIdCounter = parameters.value.reduce((max, p) => {
+      const idNum = typeof p.id === 'number' ? p.id : 0
+      return idNum > max ? idNum : max
+    }, 0)
     // 外部数据回填后：清空搜索并根据当前模式同步展示
     searchText.value = ''
     jsonError.value = ''
@@ -224,6 +377,8 @@ watch(parameters, (newValue) => {
   isInternalUpdate = true
   emit('update:modelValue', newValue)
   emit('change', newValue)
+  // 清理无效的折叠ID，避免因ID变化/重复导致折叠状态异常
+  collapsedIds.value = collapsedIds.value.filter(id => newValue.some(p => p.id === id))
   // 如果当前在JSON模式，保持JSON内容与表格同步
   try {
     if (currentMode.value === 'json') {
@@ -807,8 +962,8 @@ defineExpose({
 }
 
 .header-cell.name { flex: 2; }
-.header-cell.type { flex: 1; }
-.header-cell.required { flex: 0.8; }
+.header-cell.type { flex: 0 0 120px; }
+.header-cell.required { flex: 0 0 70px; }
 .header-cell.description { flex: 2; }
 .header-cell.actions { flex: 1.5; }
 
@@ -843,9 +998,9 @@ defineExpose({
 }
 
 .cell.name { flex: 2; }
-.cell.type { flex: 1; }
-.cell.required { flex: 0.8; justify-content: center; }
-.cell.description { flex: 2; }
+.cell.type { flex: 0 0 120px; }
+.cell.required { flex: 0 0 70px; justify-content: center; }
+.cell.description { flex: 2; align-items: flex-start; }
 .cell.actions { flex: 1.5; justify-content: center; }
 
 .drag-handle {
@@ -927,4 +1082,33 @@ defineExpose({
 :deep(.el-button-group .el-button) {
   padding: 4px 8px;
 }
+.parameter-row.level-0 {
+  background: #f0f7ff; /* 一级：浅蓝背景 */
+  border-left: 3px solid rgba(64, 158, 255, 0.35);
+}
+.parameter-row.level-1 {
+  background: #f7fff0; /* 二级：浅绿背景 */
+  border-left: 3px solid rgba(103, 194, 58, 0.35);
+}
+.parameter-row.level-2 {
+  background: #fff7f0; /* 三级：浅橙背景 */
+  border-left: 3px solid rgba(230, 162, 60, 0.35);
+}
+.parameter-row.level-3 {
+  background: #fff0f7; /* 四级：浅红背景 */
+  border-left: 3px solid rgba(245, 108, 108, 0.35);
+}
+.parameter-row.level-4 {
+  background: #f5f5ff; /* 五级：浅灰蓝背景 */
+  border-left: 3px solid rgba(144, 147, 153, 0.35);
+}
+.parameter-row[class*='level-']:hover {
+  filter: brightness(0.98);
+}
+
+.cell.description :deep(.el-textarea__inner) {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 </style>

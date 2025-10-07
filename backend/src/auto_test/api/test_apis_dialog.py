@@ -1,6 +1,6 @@
 """
-测试API管理 - 弹框路由模块
-Test APIs Management - Dialog API Module
+API测试场景管理 - 弹框路由模块
+API Test Scenario Management - Dialog API Module
 
 遵循极简控制器(API)编码规范。
 """

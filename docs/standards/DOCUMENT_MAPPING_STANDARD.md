@@ -35,7 +35,7 @@
 | `/page-call-flow` | `06-page-call-flow.md` | 页面调用流程变更 → 页面流程指南更新 |
 | `/workflow-orchestration` | `07-workflow-designer.md` | 工作流设计器变更 → 工作流指南更新 |
 | `/workflow-orchestration/designer` | `07-workflow-designer.md` | 工作流设计器变更 → 工作流指南更新 |
-| `/scenario-management` | `08-scenario-management.md` | 测试API管理页面变更 → 测试API管理指南更新 |
+| `/scenario-management` | `08-scenario-management.md` | API测试场景管理页面变更 → API测试场景管理指南更新 |
 | `/requirement-management` | `09-requirement-management.md` | 需求管理页面变更 → 需求管理指南更新 |
 | `/ai-orchestration` | `10-ai-orchestration-and-execution.md` | AI编排页面变更 → AI编排指南更新 |
 

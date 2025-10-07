@@ -6,17 +6,27 @@
         <div class="config-header">
           <h3>交互事件配置</h3>
           <p>配置页面的交互事件和触发条件</p>
-          <el-button type="primary" size="small" @click="addEvent">
+          <el-button
+            type="primary"
+            size="small"
+            @click="addEvent"
+          >
             添加事件
           </el-button>
         </div>
 
         <div class="event-list">
-          <div v-if="interactionData.events.length === 0" class="empty-state">
+          <div
+            v-if="interactionData.events.length === 0"
+            class="empty-state"
+          >
             <el-empty description="暂无交互事件" />
           </div>
 
-          <div v-else class="event-items">
+          <div
+            v-else
+            class="event-items"
+          >
             <div
               v-for="(event, index) in interactionData.events"
               :key="event.id"
@@ -27,7 +37,10 @@
               <div class="event-header">
                 <div class="event-info">
                   <span class="event-name">{{ event.name }}</span>
-                  <el-tag :type="getEventTypeTag(event.trigger.type)" size="small">
+                  <el-tag
+                    :type="getEventTypeTag(event.trigger.type)"
+                    size="small"
+                  >
                     {{ getEventTypeLabel(event.trigger.type) }}
                   </el-tag>
                   <el-switch
@@ -37,10 +50,17 @@
                   />
                 </div>
                 <div class="event-actions">
-                  <el-button size="small" @click.stop="editEvent(event)">
+                  <el-button
+                    size="small"
+                    @click.stop="editEvent(event)"
+                  >
                     编辑
                   </el-button>
-                  <el-button size="small" type="danger" @click.stop="removeEvent(index)">
+                  <el-button
+                    size="small"
+                    type="danger"
+                    @click.stop="removeEvent(index)"
+                  >
                     删除
                   </el-button>
                 </div>
@@ -55,7 +75,10 @@
                   <span class="detail-label">动作数量:</span>
                   <span class="detail-value">{{ event.actions.length }} 个</span>
                 </div>
-                <div v-if="event.condition" class="detail-row">
+                <div
+                  v-if="event.condition"
+                  class="detail-row"
+                >
                   <span class="detail-label">触发条件:</span>
                   <span class="detail-value">{{ event.condition }}</span>
                 </div>
@@ -70,17 +93,26 @@
         <div class="panel-header">
           <h3>交互流程图</h3>
           <p>可视化展示交互事件的执行流程</p>
-          <el-button size="small" @click="refreshFlowChart">
+          <el-button
+            size="small"
+            @click="refreshFlowChart"
+          >
             刷新流程图
           </el-button>
         </div>
 
         <div class="flow-chart-container">
-          <div v-if="interactionData.events.length === 0" class="empty-chart">
+          <div
+            v-if="interactionData.events.length === 0"
+            class="empty-chart"
+          >
             <el-empty description="暂无交互流程" />
           </div>
 
-          <div v-else class="flow-chart">
+          <div
+            v-else
+            class="flow-chart"
+          >
             <div class="chart-canvas">
               <div
                 v-for="event in interactionData.events"
@@ -90,7 +122,10 @@
               >
                 <div class="node-header">
                   <span class="node-title">{{ event.name }}</span>
-                  <el-tag :type="getEventTypeTag(event.trigger.type)" size="small">
+                  <el-tag
+                    :type="getEventTypeTag(event.trigger.type)"
+                    size="small"
+                  >
                     {{ getEventTypeLabel(event.trigger.type) }}
                   </el-tag>
                 </div>
@@ -125,14 +160,32 @@
       :title="isEditMode ? '编辑交互事件' : '添加交互事件'"
       width="800px"
     >
-      <div v-if="editingEvent" class="event-config-form">
-        <el-form :model="editingEvent" label-width="120px">
-          <el-form-item label="事件名称" required>
-            <el-input v-model="editingEvent.name" placeholder="请输入事件名称" />
+      <div
+        v-if="editingEvent"
+        class="event-config-form"
+      >
+        <el-form
+          :model="editingEvent"
+          label-width="120px"
+        >
+          <el-form-item
+            label="事件名称"
+            required
+          >
+            <el-input
+              v-model="editingEvent.name"
+              placeholder="请输入事件名称"
+            />
           </el-form-item>
 
-          <el-form-item label="触发类型" required>
-            <el-select v-model="editingEvent.trigger.type" style="width: 100%">
+          <el-form-item
+            label="触发类型"
+            required
+          >
+            <el-select
+              v-model="editingEvent.trigger.type"
+              style="width: 100%"
+            >
               <el-option
                 v-for="type in eventTypes"
                 :key="type.value"
@@ -183,7 +236,10 @@
               >
                 <div class="action-header">
                   <span class="action-index">{{ index + 1 }}</span>
-                  <el-select v-model="action.type" style="width: 150px">
+                  <el-select
+                    v-model="action.type"
+                    style="width: 150px"
+                  >
                     <el-option
                       v-for="type in actionTypes"
                       :key="type.value"
@@ -196,7 +252,11 @@
                     placeholder="目标对象"
                     style="width: 150px"
                   />
-                  <el-button size="small" type="danger" @click="removeAction(index)">
+                  <el-button
+                    size="small"
+                    type="danger"
+                    @click="removeAction(index)"
+                  >
                     删除
                   </el-button>
                 </div>
@@ -211,7 +271,10 @@
                 </div>
               </div>
               
-              <el-button @click="addAction" style="width: 100%">
+              <el-button
+                style="width: 100%"
+                @click="addAction"
+              >
                 添加动作
               </el-button>
             </div>
@@ -224,8 +287,15 @@
       </div>
 
       <template #footer>
-        <el-button @click="showEventDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveEvent">保存</el-button>
+        <el-button @click="showEventDialog = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveEvent"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
   </div>

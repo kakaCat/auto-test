@@ -1,10 +1,10 @@
 <template>
   <el-dialog
     :model-value="visible"
-    @update:model-value="$emit('update:visible', $event)"
     :title="dialogTitle"
     width="700px"
     :close-on-click-modal="false"
+    @update:model-value="$emit('update:visible', $event)"
   >
     <el-form
       ref="formRef"
@@ -13,7 +13,10 @@
       label-width="120px"
       @submit.prevent
     >
-      <el-form-item label="选择API" prop="api_id">
+      <el-form-item
+        label="选择API"
+        prop="api_id"
+      >
         <el-select
           v-model="form.api_id"
           placeholder="请选择API接口"
@@ -28,12 +31,17 @@
           >
             <div class="api-option">
               <div class="api-main">
-                <el-tag :type="getMethodColor(api.method)" size="small">
+                <el-tag
+                  :type="getMethodColor(api.method)"
+                  size="small"
+                >
                   {{ api.method }}
                 </el-tag>
                 <span class="api-name">{{ api.name }}</span>
               </div>
-              <div class="api-path">{{ api.path }}</div>
+              <div class="api-path">
+                {{ api.path }}
+              </div>
             </div>
           </el-option>
         </el-select>
@@ -41,10 +49,17 @@
 
       <el-row :gutter="16">
         <el-col :span="12">
-          <el-form-item label="执行类型" prop="execution_type">
+          <el-form-item
+            label="执行类型"
+            prop="execution_type"
+          >
             <el-radio-group v-model="form.execution_type">
-              <el-radio label="parallel">并行执行</el-radio>
-              <el-radio label="serial">串行执行</el-radio>
+              <el-radio label="parallel">
+                并行执行
+              </el-radio>
+              <el-radio label="serial">
+                串行执行
+              </el-radio>
             </el-radio-group>
             <div class="form-tip">
               并行：与其他API同时执行；串行：按顺序依次执行
@@ -52,7 +67,10 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="执行顺序" prop="execution_order">
+          <el-form-item
+            label="执行顺序"
+            prop="execution_order"
+          >
             <el-input-number
               v-model="form.execution_order"
               :min="0"
@@ -67,29 +85,71 @@
         </el-col>
       </el-row>
 
-      <el-form-item label="触发动作" prop="trigger_action">
+      <el-form-item
+        label="触发动作"
+        prop="trigger_action"
+      >
         <el-select
           v-model="form.trigger_action"
           placeholder="请选择触发动作"
           style="width: 100%"
           clearable
         >
-          <el-option label="页面加载" value="load" />
-          <el-option label="按钮点击" value="click" />
-          <el-option label="表单提交" value="submit" />
-          <el-option label="输入变化" value="change" />
-          <el-option label="搜索操作" value="search" />
-          <el-option label="弹框打开" value="open" />
-          <el-option label="弹框关闭" value="close" />
-          <el-option label="编辑操作" value="edit" />
-          <el-option label="删除操作" value="delete" />
-          <el-option label="刷新操作" value="refresh" />
-          <el-option label="成功回调" value="success" />
-          <el-option label="失败回调" value="error" />
+          <el-option
+            label="页面加载"
+            value="load"
+          />
+          <el-option
+            label="按钮点击"
+            value="click"
+          />
+          <el-option
+            label="表单提交"
+            value="submit"
+          />
+          <el-option
+            label="输入变化"
+            value="change"
+          />
+          <el-option
+            label="搜索操作"
+            value="search"
+          />
+          <el-option
+            label="弹框打开"
+            value="open"
+          />
+          <el-option
+            label="弹框关闭"
+            value="close"
+          />
+          <el-option
+            label="编辑操作"
+            value="edit"
+          />
+          <el-option
+            label="删除操作"
+            value="delete"
+          />
+          <el-option
+            label="刷新操作"
+            value="refresh"
+          />
+          <el-option
+            label="成功回调"
+            value="success"
+          />
+          <el-option
+            label="失败回调"
+            value="error"
+          />
         </el-select>
       </el-form-item>
 
-      <el-form-item label="API作用" prop="api_purpose">
+      <el-form-item
+        label="API作用"
+        prop="api_purpose"
+      >
         <el-input
           v-model="form.api_purpose"
           placeholder="描述这个API在页面中的作用，如：获取用户列表、提交表单数据"
@@ -100,42 +160,102 @@
 
       <el-row :gutter="16">
         <el-col :span="12">
-          <el-form-item label="成功后动作" prop="success_action">
+          <el-form-item
+            label="成功后动作"
+            prop="success_action"
+          >
             <el-select
               v-model="form.success_action"
               placeholder="API成功后的动作"
               style="width: 100%"
               clearable
             >
-              <el-option label="跳转页面" value="跳转页面" />
-              <el-option label="刷新页面" value="刷新页面" />
-              <el-option label="关闭弹框" value="关闭弹框" />
-              <el-option label="打开弹框" value="打开弹框" />
-              <el-option label="显示成功提示" value="显示成功提示" />
-              <el-option label="更新列表" value="更新列表" />
-              <el-option label="重置表单" value="重置表单" />
-              <el-option label="设置用户状态" value="设置用户状态" />
-              <el-option label="渲染数据" value="渲染数据" />
-              <el-option label="显示统计" value="显示统计" />
+              <el-option
+                label="跳转页面"
+                value="跳转页面"
+              />
+              <el-option
+                label="刷新页面"
+                value="刷新页面"
+              />
+              <el-option
+                label="关闭弹框"
+                value="关闭弹框"
+              />
+              <el-option
+                label="打开弹框"
+                value="打开弹框"
+              />
+              <el-option
+                label="显示成功提示"
+                value="显示成功提示"
+              />
+              <el-option
+                label="更新列表"
+                value="更新列表"
+              />
+              <el-option
+                label="重置表单"
+                value="重置表单"
+              />
+              <el-option
+                label="设置用户状态"
+                value="设置用户状态"
+              />
+              <el-option
+                label="渲染数据"
+                value="渲染数据"
+              />
+              <el-option
+                label="显示统计"
+                value="显示统计"
+              />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="失败后动作" prop="error_action">
+          <el-form-item
+            label="失败后动作"
+            prop="error_action"
+          >
             <el-select
               v-model="form.error_action"
               placeholder="API失败后的动作"
               style="width: 100%"
               clearable
             >
-              <el-option label="显示错误提示" value="显示错误提示" />
-              <el-option label="显示加载失败" value="显示加载失败" />
-              <el-option label="使用默认数据" value="使用默认数据" />
-              <el-option label="重试请求" value="重试请求" />
-              <el-option label="跳转错误页" value="跳转错误页" />
-              <el-option label="隐藏组件" value="隐藏组件" />
-              <el-option label="禁用功能" value="禁用功能" />
-              <el-option label="记录错误日志" value="记录错误日志" />
+              <el-option
+                label="显示错误提示"
+                value="显示错误提示"
+              />
+              <el-option
+                label="显示加载失败"
+                value="显示加载失败"
+              />
+              <el-option
+                label="使用默认数据"
+                value="使用默认数据"
+              />
+              <el-option
+                label="重试请求"
+                value="重试请求"
+              />
+              <el-option
+                label="跳转错误页"
+                value="跳转错误页"
+              />
+              <el-option
+                label="隐藏组件"
+                value="隐藏组件"
+              />
+              <el-option
+                label="禁用功能"
+                value="禁用功能"
+              />
+              <el-option
+                label="记录错误日志"
+                value="记录错误日志"
+              />
             </el-select>
           </el-form-item>
         </el-col>
@@ -157,8 +277,14 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting">
+        <el-button @click="handleCancel">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           {{ mode === 'create' ? '添加' : '更新' }}
         </el-button>
       </div>

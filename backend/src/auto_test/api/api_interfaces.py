@@ -69,7 +69,6 @@ async def get_api_interfaces(query_request: ApiInterfaceQueryRequest = Depends(c
         
         response_data = ApiInterfaceResponse(
             list=[ApiInterface(**api) for api in apis],
-            apis=[ApiInterface(**api) for api in apis],  # 兼容字段（已弃用）
             total=len(apis),
             page=query_request.page,
             size=query_request.size
@@ -137,7 +136,6 @@ async def search_api_interfaces(query: ApiInterfaceQueryRequest):
         apis = ApiInterfaceService.search_api_interfaces(query)
         response_data = ApiInterfaceResponse(
             list=[ApiInterface(**api) for api in apis],
-            apis=[ApiInterface(**api) for api in apis],  # 兼容字段（已弃用）
             total=len(apis),
             page=query.page,
             size=query.size

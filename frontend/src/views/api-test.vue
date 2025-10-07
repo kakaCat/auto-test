@@ -7,7 +7,10 @@
       
       <div class="test-section">
         <h3>当前API状态</h3>
-        <el-descriptions :column="2" border>
+        <el-descriptions
+          :column="2"
+          border
+        >
           <el-descriptions-item label="API类型">
             {{ apiStatus.currentApi }}
           </el-descriptions-item>
@@ -22,12 +25,19 @@
       <div class="test-section">
         <h3>API调用测试</h3>
         <el-space>
-          <el-button type="success" @click="testApiCall" :loading="testing">
+          <el-button
+            type="success"
+            :loading="testing"
+            @click="testApiCall"
+          >
             测试API调用
           </el-button>
         </el-space>
         
-        <div v-if="testResult" class="test-result">
+        <div
+          v-if="testResult"
+          class="test-result"
+        >
           <h4>测试结果:</h4>
           <el-alert 
             :type="testResult.success ? 'success' : 'error'"

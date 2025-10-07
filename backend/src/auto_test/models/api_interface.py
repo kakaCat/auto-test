@@ -139,8 +139,6 @@ class ApiInterfaceQueryRequest(BaseModel):
 
 class ApiInterfaceResponse(BaseModel):
     """API接口响应模型"""
-    # 兼容字段（存量）：apis
-    apis: List[ApiInterface] = Field(default_factory=list, description="接口列表（兼容字段，将逐步废弃）")
     # 统一规范字段：list
     list: List[ApiInterface] = Field(default_factory=list, description="接口列表（统一规范字段）")
     total: int = Field(0, description="总数量")

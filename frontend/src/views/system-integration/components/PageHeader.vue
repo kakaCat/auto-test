@@ -2,8 +2,15 @@
   <div class="page-header">
     <div class="header-content">
       <div class="title-section">
-        <h1 class="page-title">{{ title }}</h1>
-        <p class="page-description" v-if="description">{{ description }}</p>
+        <h1 class="page-title">
+          {{ title }}
+        </h1>
+        <p
+          v-if="description"
+          class="page-description"
+        >
+          {{ description }}
+        </p>
       </div>
       <div class="action-section">
         <el-button

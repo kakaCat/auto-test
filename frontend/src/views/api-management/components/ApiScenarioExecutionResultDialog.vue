@@ -1,5 +1,10 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="批量执行结果" width="80%" :before-close="handleClose">
+  <el-dialog
+    v-model="dialogVisible"
+    title="批量执行结果"
+    width="80%"
+    :before-close="handleClose"
+  >
     <!-- 执行统计 -->
     <el-card class="stats-card">
       <template #header>
@@ -9,76 +14,147 @@
       <el-row :gutter="20">
         <el-col :span="6">
           <div class="stat-item">
-            <div class="stat-value">{{ totalCount }}</div>
-            <div class="stat-label">总数</div>
+            <div class="stat-value">
+              {{ totalCount }}
+            </div>
+            <div class="stat-label">
+              总数
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="stat-item success">
-            <div class="stat-value">{{ successCount }}</div>
-            <div class="stat-label">成功</div>
+            <div class="stat-value">
+              {{ successCount }}
+            </div>
+            <div class="stat-label">
+              成功
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="stat-item failure">
-            <div class="stat-value">{{ failureCount }}</div>
-            <div class="stat-label">失败</div>
+            <div class="stat-value">
+              {{ failureCount }}
+            </div>
+            <div class="stat-label">
+              失败
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="stat-item">
-            <div class="stat-value">{{ successRate }}%</div>
-            <div class="stat-label">成功率</div>
+            <div class="stat-value">
+              {{ successRate }}%
+            </div>
+            <div class="stat-label">
+              成功率
+            </div>
           </div>
         </el-col>
       </el-row>
     </el-card>
 
     <!-- 执行结果列表 -->
-    <el-table :data="executionResults" style="width: 100%; margin-top: 20px" max-height="400">
-      <el-table-column prop="testCase.name" label="场景名称" min-width="150" />
-      <el-table-column label="执行状态" width="100">
+    <el-table
+      :data="executionResults"
+      style="width: 100%; margin-top: 20px"
+      max-height="400"
+    >
+      <el-table-column
+        prop="testCase.name"
+        label="场景名称"
+        min-width="150"
+      />
+      <el-table-column
+        label="执行状态"
+        width="100"
+      >
         <template #default="{ row }">
           <el-tag :type="row.success ? 'success' : 'danger'">
             {{ row.success ? '成功' : '失败' }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="statusCode" label="状态码" width="100" />
-      <el-table-column label="响应时间" width="120">
+      <el-table-column
+        prop="statusCode"
+        label="状态码"
+        width="100"
+      />
+      <el-table-column
+        label="响应时间"
+        width="120"
+      >
         <template #default="{ row }">
           {{ row.responseTime }}ms
         </template>
       </el-table-column>
-      <el-table-column prop="executedAt" label="执行时间" width="180">
+      <el-table-column
+        prop="executedAt"
+        label="执行时间"
+        width="180"
+      >
         <template #default="{ row }">
           {{ formatTime(row.executedAt) }}
         </template>
       </el-table-column>
-      <el-table-column label="错误信息" min-width="200">
+      <el-table-column
+        label="错误信息"
+        min-width="200"
+      >
         <template #default="{ row }">
-          <span v-if="row.error" class="error-text">{{ row.error }}</span>
-          <span v-else class="success-text">-</span>
+          <span
+            v-if="row.error"
+            class="error-text"
+          >{{ row.error }}</span>
+          <span
+            v-else
+            class="success-text"
+          >-</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120">
+      <el-table-column
+        label="操作"
+        width="120"
+      >
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click="viewDetails(row)">查看详情</el-button>
+          <el-button
+            type="primary"
+            size="small"
+            @click="viewDetails(row)"
+          >
+            查看详情
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleExport">导出结果</el-button>
-        <el-button type="primary" @click="handleClose">关闭</el-button>
+        <el-button @click="handleExport">
+          导出结果
+        </el-button>
+        <el-button
+          type="primary"
+          @click="handleClose"
+        >
+          关闭
+        </el-button>
       </div>
     </template>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="detailDialogVisible" title="执行详情" width="60%" append-to-body>
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="执行详情"
+      width="60%"
+      append-to-body
+    >
       <div v-if="currentDetail">
-        <el-descriptions :column="2" border>
+        <el-descriptions
+          :column="2"
+          border
+        >
           <el-descriptions-item label="场景名称">
             {{ currentDetail.testCase.name }}
           </el-descriptions-item>
@@ -96,7 +172,10 @@
           <el-descriptions-item label="执行时间">
             {{ formatTime(currentDetail.executedAt) }}
           </el-descriptions-item>
-          <el-descriptions-item label="错误信息" v-if="currentDetail.error">
+          <el-descriptions-item
+            v-if="currentDetail.error"
+            label="错误信息"
+          >
             <span class="error-text">{{ currentDetail.error }}</span>
           </el-descriptions-item>
         </el-descriptions>
@@ -110,7 +189,10 @@
         </el-card>
 
         <!-- 响应信息 -->
-        <el-card style="margin-top: 20px" v-if="currentDetail.response">
+        <el-card
+          v-if="currentDetail.response"
+          style="margin-top: 20px"
+        >
           <template #header>
             <span>响应信息</span>
           </template>

@@ -2,7 +2,9 @@
   <div class="error-page">
     <div class="error-content">
       <div class="error-illustration">
-        <div class="error-number">404</div>
+        <div class="error-number">
+          404
+        </div>
         <div class="error-icon">
           <el-icon><DocumentDelete /></el-icon>
         </div>
@@ -23,7 +25,10 @@
         </div>
         
         <div class="error-actions">
-          <el-button type="primary" @click="goHome">
+          <el-button
+            type="primary"
+            @click="goHome"
+          >
             <el-icon><House /></el-icon>
             返回首页
           </el-button>

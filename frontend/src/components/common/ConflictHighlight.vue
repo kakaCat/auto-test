@@ -1,7 +1,10 @@
 <template>
   <div class="conflict-highlight">
     <!-- 冲突总览 -->
-    <div v-if="conflicts.length > 0" class="conflict-summary">
+    <div
+      v-if="conflicts.length > 0"
+      class="conflict-summary"
+    >
       <el-alert
         :title="`发现 ${conflicts.length} 个冲突`"
         type="warning"
@@ -12,13 +15,25 @@
           <div class="conflict-summary-content">
             <p>在合并参数时发现以下冲突，请选择处理方式：</p>
             <div class="conflict-stats">
-              <el-tag v-if="typeConflicts > 0" type="warning" size="small">
+              <el-tag
+                v-if="typeConflicts > 0"
+                type="warning"
+                size="small"
+              >
                 类型冲突: {{ typeConflicts }}
               </el-tag>
-              <el-tag v-if="requiredConflicts > 0" type="info" size="small">
+              <el-tag
+                v-if="requiredConflicts > 0"
+                type="info"
+                size="small"
+              >
                 必填冲突: {{ requiredConflicts }}
               </el-tag>
-              <el-tag v-if="duplicateConflicts > 0" type="danger" size="small">
+              <el-tag
+                v-if="duplicateConflicts > 0"
+                type="danger"
+                size="small"
+              >
                 重复名称: {{ duplicateConflicts }}
               </el-tag>
             </div>
@@ -28,7 +43,10 @@
     </div>
 
     <!-- 冲突列表 -->
-    <div v-if="conflicts.length > 0" class="conflict-list">
+    <div
+      v-if="conflicts.length > 0"
+      class="conflict-list"
+    >
       <div
         v-for="(conflict, index) in conflicts"
         :key="`conflict-${index}`"
@@ -83,7 +101,9 @@
         <div class="conflict-details">
           <div class="conflict-comparison">
             <div class="existing-value">
-              <div class="value-label">现有值</div>
+              <div class="value-label">
+                现有值
+              </div>
               <div class="value-content">
                 <ParamValueDisplay :param="conflict.existing" />
               </div>
@@ -94,7 +114,9 @@
             </div>
             
             <div class="incoming-value">
-              <div class="value-label">新值</div>
+              <div class="value-label">
+                新值
+              </div>
               <div class="value-content">
                 <ParamValueDisplay :param="conflict.incoming" />
               </div>
@@ -102,29 +124,63 @@
           </div>
 
           <!-- 手动处理区域 -->
-          <div v-if="conflict.resolution === 'manual'" class="manual-resolution">
-            <el-divider content-position="left">手动编辑</el-divider>
+          <div
+            v-if="conflict.resolution === 'manual'"
+            class="manual-resolution"
+          >
+            <el-divider content-position="left">
+              手动编辑
+            </el-divider>
             <div class="manual-form">
-              <el-form :model="conflict.manualValue" label-width="80px" size="small">
+              <el-form
+                :model="conflict.manualValue"
+                label-width="80px"
+                size="small"
+              >
                 <el-form-item label="参数名">
                   <el-input v-model="conflict.manualValue.name" />
                 </el-form-item>
                 <el-form-item label="类型">
                   <el-select v-model="conflict.manualValue.type">
-                    <el-option label="字符串" value="string" />
-                    <el-option label="数字" value="number" />
-                    <el-option label="布尔值" value="boolean" />
-                    <el-option label="对象" value="object" />
-                    <el-option label="数组" value="array" />
-                    <el-option label="文件" value="file" />
-                    <el-option label="空值" value="null" />
+                    <el-option
+                      label="字符串"
+                      value="string"
+                    />
+                    <el-option
+                      label="数字"
+                      value="number"
+                    />
+                    <el-option
+                      label="布尔值"
+                      value="boolean"
+                    />
+                    <el-option
+                      label="对象"
+                      value="object"
+                    />
+                    <el-option
+                      label="数组"
+                      value="array"
+                    />
+                    <el-option
+                      label="文件"
+                      value="file"
+                    />
+                    <el-option
+                      label="空值"
+                      value="null"
+                    />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="必填">
                   <el-switch v-model="conflict.manualValue.required" />
                 </el-form-item>
                 <el-form-item label="描述">
-                  <el-input v-model="conflict.manualValue.description" type="textarea" :rows="2" />
+                  <el-input
+                    v-model="conflict.manualValue.description"
+                    type="textarea"
+                    :rows="2"
+                  />
                 </el-form-item>
                 <el-form-item label="示例值">
                   <el-input v-model="conflict.manualValue.value" />
@@ -137,23 +193,41 @@
     </div>
 
     <!-- 批量操作 -->
-    <div v-if="conflicts.length > 1" class="batch-actions">
-      <el-divider content-position="left">批量操作</el-divider>
+    <div
+      v-if="conflicts.length > 1"
+      class="batch-actions"
+    >
+      <el-divider content-position="left">
+        批量操作
+      </el-divider>
       <div class="batch-buttons">
-        <el-button size="small" @click="resolveAllConflicts('keep_existing')">
+        <el-button
+          size="small"
+          @click="resolveAllConflicts('keep_existing')"
+        >
           全部保留现有
         </el-button>
-        <el-button size="small" @click="resolveAllConflicts('use_incoming')">
+        <el-button
+          size="small"
+          @click="resolveAllConflicts('use_incoming')"
+        >
           全部使用新值
         </el-button>
-        <el-button size="small" type="danger" @click="clearAllResolutions">
+        <el-button
+          size="small"
+          type="danger"
+          @click="clearAllResolutions"
+        >
           清除所有选择
         </el-button>
       </div>
     </div>
 
     <!-- 解决状态 -->
-    <div v-if="conflicts.length > 0" class="resolution-status">
+    <div
+      v-if="conflicts.length > 0"
+      class="resolution-status"
+    >
       <el-progress
         :percentage="resolutionProgress"
         :status="resolutionProgress === 100 ? 'success' : 'warning'"

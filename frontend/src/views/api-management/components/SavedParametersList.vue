@@ -1,25 +1,65 @@
 <template>
-  <el-dialog v-model="visibleLocal" title="已保存参数" width="720px" :close-on-click-modal="false" destroy-on-close>
+  <el-dialog
+    v-model="visibleLocal"
+    title="已保存参数"
+    width="720px"
+    :close-on-click-modal="false"
+    destroy-on-close
+  >
     <div class="list-toolbar">
-      <el-input v-model="keyword" placeholder="搜索场景名称/描述" clearable style="width: 300px" @input="loadSavedScenarios" />
+      <el-input
+        v-model="keyword"
+        placeholder="搜索场景名称/描述"
+        clearable
+        style="width: 300px"
+        @input="loadSavedScenarios"
+      />
       <el-button @click="loadSavedScenarios">
         刷新
       </el-button>
     </div>
 
-    <el-table :data="savedList" v-loading="loading" height="420">
-      <el-table-column prop="name" label="场景名称" min-width="200" />
-      <el-table-column prop="saved_parameters_id" label="参数ID" width="180" />
-      <el-table-column prop="scenario_type" label="类型" width="120" />
-      <el-table-column label="操作" width="140" fixed="right">
+    <el-table
+      v-loading="loading"
+      :data="savedList"
+      height="420"
+    >
+      <el-table-column
+        prop="name"
+        label="场景名称"
+        min-width="200"
+      />
+      <el-table-column
+        prop="saved_parameters_id"
+        label="参数ID"
+        width="180"
+      />
+      <el-table-column
+        prop="scenario_type"
+        label="类型"
+        width="120"
+      />
+      <el-table-column
+        label="操作"
+        width="140"
+        fixed="right"
+      >
         <template #default="{ row }">
-          <el-button type="primary" link @click="applyParameters(row)">应用</el-button>
+          <el-button
+            type="primary"
+            link
+            @click="applyParameters(row)"
+          >
+            应用
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <template #footer>
-      <el-button @click="visibleLocal = false">关闭</el-button>
+      <el-button @click="visibleLocal = false">
+        关闭
+      </el-button>
     </template>
   </el-dialog>
 </template>

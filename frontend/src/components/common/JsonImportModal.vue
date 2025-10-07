@@ -27,8 +27,14 @@
         </div>
         
         <!-- JSON 统计信息 -->
-        <div v-if="jsonStats.isValid" class="json-stats">
-          <el-tag size="small" type="success">
+        <div
+          v-if="jsonStats.isValid"
+          class="json-stats"
+        >
+          <el-tag
+            size="small"
+            type="success"
+          >
             <el-icon><CircleCheck /></el-icon>
             有效 JSON
           </el-tag>
@@ -46,11 +52,19 @@
             <h3>导入选项</h3>
           </div>
           
-          <el-form :model="importOptions" label-width="120px" size="small">
+          <el-form
+            :model="importOptions"
+            label-width="120px"
+            size="small"
+          >
             <el-form-item label="导入模式">
               <el-radio-group v-model="importOptions.mode">
-                <el-radio label="merge">合并模式</el-radio>
-                <el-radio label="override">覆盖模式</el-radio>
+                <el-radio label="merge">
+                  合并模式
+                </el-radio>
+                <el-radio label="override">
+                  覆盖模式
+                </el-radio>
               </el-radio-group>
               <div class="option-description">
                 {{ importOptions.mode === 'merge' ? '与现有参数合并，保留未冲突的参数' : '完全替换现有参数' }}
@@ -58,10 +72,22 @@
             </el-form-item>
             
             <el-form-item label="数组处理">
-              <el-select v-model="importOptions.arrayStyle" placeholder="选择数组处理方式">
-                <el-option label="展开数组项" value="expand" />
-                <el-option label="仅数组类型" value="type-only" />
-                <el-option label="首项示例" value="first-item" />
+              <el-select
+                v-model="importOptions.arrayStyle"
+                placeholder="选择数组处理方式"
+              >
+                <el-option
+                  label="展开数组项"
+                  value="expand"
+                />
+                <el-option
+                  label="仅数组类型"
+                  value="type-only"
+                />
+                <el-option
+                  label="首项示例"
+                  value="first-item"
+                />
               </el-select>
               <div class="option-description">
                 {{ getArrayStyleDescription(importOptions.arrayStyle) }}
@@ -69,10 +95,22 @@
             </el-form-item>
             
             <el-form-item label="空值处理">
-              <el-select v-model="importOptions.nullHandling" placeholder="选择空值处理方式">
-                <el-option label="保留为 null" value="keep" />
-                <el-option label="转为字符串" value="string" />
-                <el-option label="跳过空值" value="skip" />
+              <el-select
+                v-model="importOptions.nullHandling"
+                placeholder="选择空值处理方式"
+              >
+                <el-option
+                  label="保留为 null"
+                  value="keep"
+                />
+                <el-option
+                  label="转为字符串"
+                  value="string"
+                />
+                <el-option
+                  label="跳过空值"
+                  value="skip"
+                />
               </el-select>
             </el-form-item>
             
@@ -101,7 +139,10 @@
         </div>
 
         <!-- 冲突检测 -->
-        <div v-if="conflicts.length > 0 && importOptions.mode === 'merge'" class="conflict-section">
+        <div
+          v-if="conflicts.length > 0 && importOptions.mode === 'merge'"
+          class="conflict-section"
+        >
           <ConflictHighlight
             :conflicts="conflicts"
             @resolve="handleConflictResolve"
@@ -114,24 +155,41 @@
           <div class="section-header">
             <h3>预览结果</h3>
             <div class="preview-tags">
-              <el-tag v-if="previewData.length > 0" size="small" type="primary">
+              <el-tag
+                v-if="previewData.length > 0"
+                size="small"
+                type="primary"
+              >
                 {{ previewData.length }} 个参数
               </el-tag>
-              <el-tag v-if="conflicts.length > 0" size="small" type="warning">
+              <el-tag
+                v-if="conflicts.length > 0"
+                size="small"
+                type="warning"
+              >
                 {{ conflicts.length }} 个冲突
               </el-tag>
             </div>
           </div>
           
-          <div v-if="previewData.length > 0" class="tree-container">
+          <div
+            v-if="previewData.length > 0"
+            class="tree-container"
+          >
             <JsonPreviewTree :data="previewData" />
           </div>
           
-          <div v-else-if="jsonContent.trim() && !jsonError" class="preview-empty">
+          <div
+            v-else-if="jsonContent.trim() && !jsonError"
+            class="preview-empty"
+          >
             <el-empty description="解析中..." />
           </div>
           
-          <div v-else class="preview-placeholder">
+          <div
+            v-else
+            class="preview-placeholder"
+          >
             <el-empty description="请输入 JSON 数据查看预览" />
           </div>
         </div>
@@ -142,19 +200,24 @@
     <template #footer>
       <div class="modal-footer">
         <div class="footer-info">
-          <span v-if="previewData.length > 0" class="import-summary">
+          <span
+            v-if="previewData.length > 0"
+            class="import-summary"
+          >
             将导入 {{ previewData.length }} 个参数
             <span v-if="importOptions.mode === 'merge'">（合并模式）</span>
             <span v-else>（覆盖模式）</span>
           </span>
         </div>
         <div class="footer-actions">
-          <el-button @click="handleClose">取消</el-button>
+          <el-button @click="handleClose">
+            取消
+          </el-button>
           <el-button 
             type="primary" 
-            @click="handleImport"
             :disabled="!canImport"
             :loading="importing"
+            @click="handleImport"
           >
             <el-icon><Upload /></el-icon>
             导入参数

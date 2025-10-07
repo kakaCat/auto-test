@@ -62,8 +62,12 @@
           <el-icon><Connection /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.apiCount }}</div>
-          <div class="stat-label">API接口</div>
+          <div class="stat-value">
+            {{ stats.apiCount }}
+          </div>
+          <div class="stat-label">
+            API接口
+          </div>
         </div>
       </div>
       
@@ -72,8 +76,12 @@
           <el-icon><Document /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.scenarioCount }}</div>
-          <div class="stat-label">测试场景</div>
+          <div class="stat-value">
+            {{ stats.scenarioCount }}
+          </div>
+          <div class="stat-label">
+            测试场景
+          </div>
         </div>
       </div>
       
@@ -82,8 +90,12 @@
           <el-icon><Share /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.workflowCount }}</div>
-          <div class="stat-label">工作流</div>
+          <div class="stat-value">
+            {{ stats.workflowCount }}
+          </div>
+          <div class="stat-label">
+            工作流
+          </div>
         </div>
       </div>
       
@@ -92,8 +104,12 @@
           <el-icon><VideoPlay /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.executionCount }}</div>
-          <div class="stat-label">执行次数</div>
+          <div class="stat-value">
+            {{ stats.executionCount }}
+          </div>
+          <div class="stat-label">
+            执行次数
+          </div>
         </div>
       </div>
     </div>
@@ -114,7 +130,10 @@
           class="module-card"
           @click="navigateToModule(module.path)"
         >
-          <div class="module-icon" :class="module.color">
+          <div
+            class="module-icon"
+            :class="module.color"
+          >
             <el-icon>
               <component :is="module.icon" />
             </el-icon>
@@ -140,7 +159,10 @@
     <div class="activity-section">
       <div class="section-header">
         <h2>最近活动</h2>
-        <el-button type="text" @click="refreshActivity">
+        <el-button
+          type="text"
+          @click="refreshActivity"
+        >
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
@@ -152,15 +174,24 @@
           :key="activity.id"
           class="activity-item"
         >
-          <div class="activity-icon" :class="activity.type">
+          <div
+            class="activity-icon"
+            :class="activity.type"
+          >
             <el-icon>
               <component :is="getActivityIcon(activity.type)" />
             </el-icon>
           </div>
           <div class="activity-content">
-            <div class="activity-title">{{ activity.title }}</div>
-            <div class="activity-desc">{{ activity.description }}</div>
-            <div class="activity-time">{{ formatTime(activity.time) }}</div>
+            <div class="activity-title">
+              {{ activity.title }}
+            </div>
+            <div class="activity-desc">
+              {{ activity.description }}
+            </div>
+            <div class="activity-time">
+              {{ formatTime(activity.time) }}
+            </div>
           </div>
           <div class="activity-status">
             <el-tag 
@@ -179,27 +210,55 @@
       <h2>系统状态</h2>
       <div class="status-grid">
         <div class="status-item">
-          <div class="status-label">数据库连接</div>
+          <div class="status-label">
+            数据库连接
+          </div>
           <div class="status-value">
-            <el-tag type="success" size="small">正常</el-tag>
+            <el-tag
+              type="success"
+              size="small"
+            >
+              正常
+            </el-tag>
           </div>
         </div>
         <div class="status-item">
-          <div class="status-label">API服务</div>
+          <div class="status-label">
+            API服务
+          </div>
           <div class="status-value">
-            <el-tag type="success" size="small">运行中</el-tag>
+            <el-tag
+              type="success"
+              size="small"
+            >
+              运行中
+            </el-tag>
           </div>
         </div>
         <div class="status-item">
-          <div class="status-label">执行引擎</div>
+          <div class="status-label">
+            执行引擎
+          </div>
           <div class="status-value">
-            <el-tag type="success" size="small">就绪</el-tag>
+            <el-tag
+              type="success"
+              size="small"
+            >
+              就绪
+            </el-tag>
           </div>
         </div>
         <div class="status-item">
-          <div class="status-label">AI服务</div>
+          <div class="status-label">
+            AI服务
+          </div>
           <div class="status-value">
-            <el-tag type="warning" size="small">部分可用</el-tag>
+            <el-tag
+              type="warning"
+              size="small"
+            >
+              部分可用
+            </el-tag>
           </div>
         </div>
       </div>

@@ -1,5 +1,8 @@
 <template>
-  <div class="action-panel" v-if="selectedCount > 0">
+  <div
+    v-if="selectedCount > 0"
+    class="action-panel"
+  >
     <div class="panel-content">
       <div class="selection-info">
         <el-icon><Select /></el-icon>
@@ -20,8 +23,8 @@
         
         <el-button
           size="small"
-          @click="handleClearSelection"
           :icon="Close"
+          @click="handleClearSelection"
         >
           取消选择
         </el-button>

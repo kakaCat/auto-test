@@ -285,16 +285,16 @@ interface NodeUpdateEvent {
 
 *最后更新: 2024年1月*  
 *版本: v2.0.0*
-## [2025.09] - 文档迁移：统一为“测试API管理”
+## [2025.09] - 文档迁移：统一为“API测试场景管理”
 
 ### 📚 变更说明
-- 将前端用户文档的“场景管理”体系统一迁移为“测试API管理（以接口为中心）”。
-- 统一使用 `docs/frontend/user-manuals/08-scenario-management.md` 作为第08章节手册（标题为“测试API管理”）。
+- 将前端用户文档的“场景管理”体系统一迁移为“API测试场景管理（以接口为中心）”。
+- 统一使用 `docs/frontend/user-manuals/08-scenario-management.md` 作为第08章节手册（标题为“API测试场景管理”）。
 - 原 `08-scenario-management.md` 标注为“已废弃”，顶部提供跳转与历史说明。
 - 更新导航与映射：
   - `docs/frontend/user-manuals/README.md`、`docs/frontend/README.md` 链接与标签改为“测试API管理”。
   - `docs/DOCUMENT_MAPPING_GUIDE.md` 将 `/scenario-management` 映射到新指南。
-  - `docs/SYSTEM_ARCHITECTURE.md`、`docs/frontend/standards/DOCUMENTATION_STANDARDS.md` 第5层标签改为“测试API管理”。
+  - `docs/SYSTEM_ARCHITECTURE.md`、`docs/frontend/standards/DOCUMENTATION_STANDARDS.md` 第5层标签改为“API测试场景管理”。
 
 -### 🔗 关联入口
 - 前端用户手册：`docs/frontend/user-manuals/08-scenario-management.md`

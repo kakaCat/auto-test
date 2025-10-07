@@ -1,22 +1,48 @@
 <template>
-  <div class="parallel-node" :class="{ selected: data.selected, running: data.status === 'running' }">
+  <div
+    class="parallel-node"
+    :class="{ selected: data.selected, running: data.status === 'running' }"
+  >
     <div class="node-header">
-      <el-icon class="node-icon"><Timer /></el-icon>
+      <el-icon class="node-icon">
+        <Timer />
+      </el-icon>
       <span class="node-title">{{ data.label || '并行执行' }}</span>
       <div class="node-status">
-        <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
-        <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
-        <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+        <el-icon
+          v-if="data.status === 'running'"
+          class="rotating"
+        >
+          <Loading />
+        </el-icon>
+        <el-icon
+          v-else-if="data.status === 'success'"
+          style="color: #67c23a"
+        >
+          <Check />
+        </el-icon>
+        <el-icon
+          v-else-if="data.status === 'error'"
+          style="color: #f56c6c"
+        >
+          <Close />
+        </el-icon>
       </div>
     </div>
     
     <div class="node-body">
       <div class="config-display">
-        <div v-if="data.config && data.config.maxConcurrency" class="config-item">
+        <div
+          v-if="data.config && data.config.maxConcurrency"
+          class="config-item"
+        >
           <span class="label">并发:</span>
           <span class="value">{{ data.config.maxConcurrency }}</span>
         </div>
-        <div v-if="data.config && data.config.waitForAll !== undefined" class="config-item">
+        <div
+          v-if="data.config && data.config.waitForAll !== undefined"
+          class="config-item"
+        >
           <span class="label">等待:</span>
           <span class="value">{{ data.config.waitForAll ? '全部' : '任一' }}</span>
         </div>

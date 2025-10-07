@@ -6,8 +6,11 @@
       :alt="componentData.props?.alt || '图片'"
       :style="imageStyle"
       @error="handleImageError"
-    />
-    <div v-else class="image-placeholder">
+    >
+    <div
+      v-else
+      class="image-placeholder"
+    >
       <el-icon :size="24">
         <Picture />
       </el-icon>

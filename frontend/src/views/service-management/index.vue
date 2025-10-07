@@ -7,21 +7,32 @@
       type="error"
       show-icon
       closable
-      @close="clearError"
       style="margin-bottom: 16px"
+      @close="clearError"
     />
     
     <!-- 页面头部 -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">系统管理</h1>
-        <p class="page-description">管理系统和模块的配置信息</p>
+        <h1 class="page-title">
+          系统管理
+        </h1>
+        <p class="page-description">
+          管理系统和模块的配置信息
+        </p>
       </div>
       <div class="header-actions">
-        <el-button type="primary" :icon="Plus" @click="showAddSystemDialog">
+        <el-button
+          type="primary"
+          :icon="Plus"
+          @click="showAddSystemDialog"
+        >
           新增系统
         </el-button>
-        <el-button :icon="Refresh" @click="refreshData">
+        <el-button
+          :icon="Refresh"
+          @click="refreshData"
+        >
           刷新
         </el-button>
       </div>
@@ -36,12 +47,21 @@
           <el-select
             v-model="systemTypeFilter"
             placeholder="选择系统类型"
-            @change="handleSystemTypeChange"
             style="width: 100%;"
+            @change="handleSystemTypeChange"
           >
-            <el-option label="全部系统" value="all" />
-            <el-option label="前端应用" value="frontend" />
-            <el-option label="后端服务" value="backend" />
+            <el-option
+              label="全部系统"
+              value="all"
+            />
+            <el-option
+              label="前端应用"
+              value="frontend"
+            />
+            <el-option
+              label="后端服务"
+              value="backend"
+            />
           </el-select>
         </div>
         
@@ -61,9 +81,15 @@
 
       <!-- 右侧详情面板 -->
       <div class="right-panel">
-        <div v-if="!selectedNode" class="empty-detail">
+        <div
+          v-if="!selectedNode"
+          class="empty-detail"
+        >
           <el-empty description="请选择左侧的系统或模块查看详情">
-            <el-button type="primary" @click="showAddSystemDialog">
+            <el-button
+              type="primary"
+              @click="showAddSystemDialog"
+            >
               <el-icon><Plus /></el-icon>
               新增系统
             </el-button>
@@ -71,22 +97,37 @@
         </div>
 
         <!-- 系统详情 -->
-        <div v-else-if="!selectedNode.isModule" class="system-detail">
+        <div
+          v-else-if="!selectedNode.isModule"
+          class="system-detail"
+        >
           <div class="detail-header">
             <div class="detail-title">
-              <el-icon class="title-icon" :size="24">
+              <el-icon
+                class="title-icon"
+                :size="24"
+              >
                 <component :is="getSystemIcon(selectedNode.category)" />
               </el-icon>
               <div>
                 <h2>{{ selectedNode.name }}</h2>
-                <p class="detail-subtitle">{{ selectedNode.description || '暂无描述' }}</p>
+                <p class="detail-subtitle">
+                  {{ selectedNode.description || '暂无描述' }}
+                </p>
               </div>
             </div>
             <div class="detail-actions">
-              <el-button type="primary" :icon="Edit" @click="editSystem(selectedNode)">
+              <el-button
+                type="primary"
+                :icon="Edit"
+                @click="editSystem(selectedNode)"
+              >
                 编辑
               </el-button>
-              <el-button :icon="Plus" @click="showAddModuleDialog(selectedNode.id)">
+              <el-button
+                :icon="Plus"
+                @click="showAddModuleDialog(selectedNode.id)"
+              >
                 添加模块
               </el-button>
             </div>
@@ -94,29 +135,54 @@
 
           <div class="detail-content">
             <!-- 基本信息 -->
-            <el-card class="info-card" shadow="never">
+            <el-card
+              class="info-card"
+              shadow="never"
+            >
               <template #header>
                 <span class="card-title">基本信息</span>
               </template>
-              <el-descriptions :column="2" border>
-                <el-descriptions-item label="系统名称">{{ selectedNode.name }}</el-descriptions-item>
+              <el-descriptions
+                :column="2"
+                border
+              >
+                <el-descriptions-item label="系统名称">
+                  {{ selectedNode.name }}
+                </el-descriptions-item>
                 <el-descriptions-item label="系统分类">
-                   <el-tag :type="getCategoryTagType(selectedNode.category)" size="small">
-                     {{ SystemCategoryLabels[selectedNode.category as SystemCategory] }}
-                   </el-tag>
-                 </el-descriptions-item>
+                  <el-tag
+                    :type="getCategoryTagType(selectedNode.category)"
+                    size="small"
+                  >
+                    {{ SystemCategoryLabels[selectedNode.category as SystemCategory] }}
+                  </el-tag>
+                </el-descriptions-item>
                 <el-descriptions-item label="访问地址">
-                  <el-link v-if="selectedNode.url" :href="selectedNode.url" target="_blank" type="primary">
+                  <el-link
+                    v-if="selectedNode.url"
+                    :href="selectedNode.url"
+                    target="_blank"
+                    type="primary"
+                  >
                     {{ selectedNode.url }}
                   </el-link>
-                  <span v-else class="text-placeholder">未设置</span>
+                  <span
+                    v-else
+                    class="text-placeholder"
+                  >未设置</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="状态">
-                  <el-tag :type="selectedNode.enabled ? 'success' : 'danger'" size="small">
+                  <el-tag
+                    :type="selectedNode.enabled ? 'success' : 'danger'"
+                    size="small"
+                  >
                     {{ selectedNode.enabled ? '启用' : '禁用' }}
                   </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="创建时间" :span="2">
+                <el-descriptions-item
+                  label="创建时间"
+                  :span="2"
+                >
                   {{ formatTime(selectedNode.created_at) }}
                 </el-descriptions-item>
               </el-descriptions>
@@ -125,46 +191,86 @@
         </div>
 
         <!-- 模块详情 -->
-        <div v-else class="module-detail">
+        <div
+          v-else
+          class="module-detail"
+        >
           <div class="detail-header">
             <div class="detail-title">
-              <el-icon class="title-icon" :size="24">
+              <el-icon
+                class="title-icon"
+                :size="24"
+              >
                 <component :is="getModuleIcon(selectedNode.tags)" />
               </el-icon>
               <div>
                 <h2>{{ selectedNode.name }}</h2>
-                <p class="detail-subtitle">{{ selectedNode.description || '暂无描述' }}</p>
+                <p class="detail-subtitle">
+                  {{ selectedNode.description || '暂无描述' }}
+                </p>
               </div>
             </div>
             <div class="detail-actions">
-              <el-button type="primary" :icon="Edit" @click="editModule(selectedNode)">
+              <el-button
+                type="primary"
+                :icon="Edit"
+                @click="editModule(selectedNode)"
+              >
                 编辑
               </el-button>
-              <el-button :icon="Switch" @click="handleModuleToggle(selectedNode.id)">
+              <el-button
+                :icon="Switch"
+                @click="handleModuleToggle(selectedNode.id)"
+              >
                 {{ selectedNode.enabled ? '禁用' : '启用' }}
               </el-button>
-              <el-button type="danger" :icon="Delete" @click="deleteModule(selectedNode.id)">
+              <el-button
+                type="danger"
+                :icon="Delete"
+                @click="deleteModule(selectedNode.id)"
+              >
                 删除
               </el-button>
             </div>
           </div>
 
           <div class="detail-content">
-            <el-card class="info-card" shadow="never">
+            <el-card
+              class="info-card"
+              shadow="never"
+            >
               <template #header>
                 <span class="card-title">模块信息</span>
               </template>
-              <el-descriptions :column="2" border>
-                <el-descriptions-item label="模块名称">{{ selectedNode.name }}</el-descriptions-item>
-                <el-descriptions-item label="版本号">{{ selectedNode.version || '未设置' }}</el-descriptions-item>
-                <el-descriptions-item label="路由路径">{{ selectedNode.path || '未设置' }}</el-descriptions-item>
+              <el-descriptions
+                :column="2"
+                border
+              >
+                <el-descriptions-item label="模块名称">
+                  {{ selectedNode.name }}
+                </el-descriptions-item>
+                <el-descriptions-item label="版本号">
+                  {{ selectedNode.version || '未设置' }}
+                </el-descriptions-item>
+                <el-descriptions-item label="路由路径">
+                  {{ selectedNode.path || '未设置' }}
+                </el-descriptions-item>
                 <el-descriptions-item label="状态">
-                  <el-tag :type="selectedNode.enabled ? 'success' : 'danger'" size="small">
+                  <el-tag
+                    :type="selectedNode.enabled ? 'success' : 'danger'"
+                    size="small"
+                  >
                     {{ selectedNode.enabled ? '启用' : '禁用' }}
                   </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="标签" :span="2">
-                  <div v-if="selectedNode.tags && selectedNode.tags.length > 0" class="tag-list">
+                <el-descriptions-item
+                  label="标签"
+                  :span="2"
+                >
+                  <div
+                    v-if="selectedNode.tags && selectedNode.tags.length > 0"
+                    class="tag-list"
+                  >
                     <el-tag
                       v-for="tag in selectedNode.tags"
                       :key="tag"
@@ -174,9 +280,15 @@
                       {{ tag }}
                     </el-tag>
                   </div>
-                  <span v-else class="text-placeholder">暂无标签</span>
+                  <span
+                    v-else
+                    class="text-placeholder"
+                  >暂无标签</span>
                 </el-descriptions-item>
-                <el-descriptions-item label="创建时间" :span="2">
+                <el-descriptions-item
+                  label="创建时间"
+                  :span="2"
+                >
                   {{ formatTime(selectedNode.created_at) }}
                 </el-descriptions-item>
               </el-descriptions>
@@ -199,14 +311,34 @@
         :rules="systemRules"
         label-width="100px"
       >
-        <el-form-item label="系统名称" prop="name">
-          <el-input v-model="systemForm.name" placeholder="请输入系统名称" />
+        <el-form-item
+          label="系统名称"
+          prop="name"
+        >
+          <el-input
+            v-model="systemForm.name"
+            placeholder="请输入系统名称"
+          />
         </el-form-item>
-        <el-form-item label="系统描述" prop="description">
-          <el-input v-model="systemForm.description" type="textarea" placeholder="请输入系统描述" />
+        <el-form-item
+          label="系统描述"
+          prop="description"
+        >
+          <el-input
+            v-model="systemForm.description"
+            type="textarea"
+            placeholder="请输入系统描述"
+          />
         </el-form-item>
-        <el-form-item label="系统分类" prop="category">
-          <el-select v-model="systemForm.category" placeholder="请选择系统分类" style="width: 100%">
+        <el-form-item
+          label="系统分类"
+          prop="category"
+        >
+          <el-select
+            v-model="systemForm.category"
+            placeholder="请选择系统分类"
+            style="width: 100%"
+          >
             <el-option 
               v-for="option in systemCategoryOptions" 
               :key="option.value" 
@@ -215,16 +347,32 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="访问地址" prop="url">
-          <el-input v-model="systemForm.url" placeholder="例如：https://api.example.com 或 http://localhost:8080" />
+        <el-form-item
+          label="访问地址"
+          prop="url"
+        >
+          <el-input
+            v-model="systemForm.url"
+            placeholder="例如：https://api.example.com 或 http://localhost:8080"
+          />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enabled">
+        <el-form-item
+          label="启用状态"
+          prop="enabled"
+        >
           <el-switch v-model="systemForm.enabled" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="systemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveSystemWithTreeRefresh">保存</el-button>
+        <el-button @click="systemDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveSystemWithTreeRefresh"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
 
@@ -241,7 +389,10 @@
         :rules="moduleRules"
         label-width="100px"
       >
-        <el-form-item label="所属系统" v-if="moduleForm.system_id">
+        <el-form-item
+          v-if="moduleForm.system_id"
+          label="所属系统"
+        >
           <el-input 
             :value="getSystemNameById(moduleForm.system_id)" 
             readonly 
@@ -249,26 +400,56 @@
             style="background-color: #f5f7fa;"
           >
             <template #prepend>
-              <el-icon style="color: #409eff;"><Monitor /></el-icon>
+              <el-icon style="color: #409eff;">
+                <Monitor />
+              </el-icon>
             </template>
           </el-input>
           <div style="font-size: 12px; color: #909399; margin-top: 4px;">
             该模块将归属于上述系统
           </div>
         </el-form-item>
-        <el-form-item label="模块名称" prop="name">
-          <el-input v-model="moduleForm.name" placeholder="请输入模块名称" />
+        <el-form-item
+          label="模块名称"
+          prop="name"
+        >
+          <el-input
+            v-model="moduleForm.name"
+            placeholder="请输入模块名称"
+          />
         </el-form-item>
-        <el-form-item label="模块描述" prop="description">
-          <el-input v-model="moduleForm.description" type="textarea" placeholder="请输入模块描述" />
+        <el-form-item
+          label="模块描述"
+          prop="description"
+        >
+          <el-input
+            v-model="moduleForm.description"
+            type="textarea"
+            placeholder="请输入模块描述"
+          />
         </el-form-item>
-        <el-form-item label="路由路径" prop="path">
-          <el-input v-model="moduleForm.path" placeholder="请输入路由路径，如：/user-management" />
+        <el-form-item
+          label="路由路径"
+          prop="path"
+        >
+          <el-input
+            v-model="moduleForm.path"
+            placeholder="请输入路由路径，如：/user-management"
+          />
         </el-form-item>
-        <el-form-item label="版本号" prop="version">
-          <el-input v-model="moduleForm.version" placeholder="请输入版本号" />
+        <el-form-item
+          label="版本号"
+          prop="version"
+        >
+          <el-input
+            v-model="moduleForm.version"
+            placeholder="请输入版本号"
+          />
         </el-form-item>
-        <el-form-item label="标签" prop="tags">
+        <el-form-item
+          label="标签"
+          prop="tags"
+        >
           <el-select
             v-model="moduleForm.tags"
             multiple
@@ -285,13 +466,23 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="启用状态" prop="enabled">
+        <el-form-item
+          label="启用状态"
+          prop="enabled"
+        >
           <el-switch v-model="moduleForm.enabled" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="moduleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveModuleWithTreeRefresh">保存</el-button>
+        <el-button @click="moduleDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveModuleWithTreeRefresh"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -489,7 +680,7 @@ const handleNodeContextMenu = (event: MouseEvent, data: any) => {
 
 
 // 根据系统ID获取系统名称
-const getSystemNameById = (systemId: string) => {
+const getSystemNameById = (systemId: number) => {
   const system = filteredSystems.value.find(s => s.id === systemId)
   return system ? system.name : '未知系统'
 }
@@ -509,7 +700,7 @@ const handleTreeAction = (command: string) => {
   if (firstDashIndex === -1) return
   
   const action = command.substring(0, firstDashIndex)
-  const id = command.substring(firstDashIndex + 1)
+  const id = Number(command.substring(firstDashIndex + 1))
   
   switch (action) {
     case 'add':
@@ -551,7 +742,7 @@ const selectModule = (module: Module) => {
 }
 
 // 删除系统
-const deleteSystem = async (systemId: string) => {
+const deleteSystem = async (systemId: number) => {
   try {
     await ElMessageBox.confirm('确定要删除该系统吗？这将同时删除该系统下的所有模块。', '确认删除', {
       confirmButtonText: '确定',
@@ -576,7 +767,7 @@ const deleteSystem = async (systemId: string) => {
 }
 
 // 删除模块
-const deleteModule = async (moduleId: string) => {
+const deleteModule = async (moduleId: number) => {
   try {
     await ElMessageBox.confirm('确定要删除该模块吗？删除后将无法恢复。', '确认删除', {
       confirmButtonText: '确定',

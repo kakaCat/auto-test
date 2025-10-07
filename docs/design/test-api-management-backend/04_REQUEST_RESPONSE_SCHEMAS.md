@@ -1,4 +1,4 @@
-# 测试API管理请求/响应Schema（JSON Schema草案）
+# API测试场景管理请求/响应Schema（JSON Schema草案）
 
 ## 1. TestApi（测试API配置）
 ```json

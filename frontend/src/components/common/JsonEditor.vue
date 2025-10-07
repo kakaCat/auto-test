@@ -7,8 +7,8 @@
           size="small" 
           type="primary" 
           :icon="DocumentChecked"
-          @click="formatJson"
           :disabled="!modelValue"
+          @click="formatJson"
         >
           格式化
         </el-button>
@@ -16,8 +16,8 @@
           size="small" 
           type="success" 
           :icon="CircleCheck"
-          @click="validateJson"
           :disabled="!modelValue"
+          @click="validateJson"
         >
           验证
         </el-button>
@@ -25,14 +25,17 @@
           size="small" 
           type="warning" 
           :icon="Delete"
-          @click="clearContent"
           :disabled="!modelValue"
+          @click="clearContent"
         >
           清空
         </el-button>
       </div>
       <div class="toolbar-right">
-        <span class="editor-stats" v-if="stats.lines > 0">
+        <span
+          v-if="stats.lines > 0"
+          class="editor-stats"
+        >
           {{ stats.lines }} 行 | {{ stats.characters }} 字符
         </span>
       </div>
@@ -43,10 +46,13 @@
       ref="editorContainer" 
       class="editor-container"
       :style="{ height: height }"
-    ></div>
+    />
 
     <!-- 错误信息显示 -->
-    <div v-if="error" class="error-panel">
+    <div
+      v-if="error"
+      class="error-panel"
+    >
       <el-alert
         :title="error.title"
         :description="error.description"
@@ -63,12 +69,18 @@
           <el-icon><Document /></el-icon>
           JSON
         </span>
-        <span class="status-item" v-if="cursorPosition.line > 0">
+        <span
+          v-if="cursorPosition.line > 0"
+          class="status-item"
+        >
           行 {{ cursorPosition.line }}, 列 {{ cursorPosition.column }}
         </span>
       </div>
       <div class="status-right">
-        <span class="status-item" :class="{ 'status-valid': isValid, 'status-invalid': !isValid }">
+        <span
+          class="status-item"
+          :class="{ 'status-valid': isValid, 'status-invalid': !isValid }"
+        >
           <el-icon>
             <CircleCheck v-if="isValid" />
             <CircleClose v-else />

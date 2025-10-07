@@ -10,7 +10,9 @@
       <!-- 需求信息展示 -->
       <div class="requirement-info">
         <h4>当前需求：{{ requirement?.title }}</h4>
-        <p class="requirement-desc">{{ requirement?.description }}</p>
+        <p class="requirement-desc">
+          {{ requirement?.description }}
+        </p>
       </div>
 
       <!-- 场景选择区域 -->
@@ -25,7 +27,12 @@
               style="width: 200px"
               clearable
             />
-            <el-button :icon="Refresh" @click="loadAvailableScenarios">刷新</el-button>
+            <el-button
+              :icon="Refresh"
+              @click="loadAvailableScenarios"
+            >
+              刷新
+            </el-button>
           </div>
         </div>
 
@@ -34,11 +41,18 @@
           <el-table
             ref="scenarioTableRef"
             :data="filteredScenarios"
-            @selection-change="handleSelectionChange"
             height="300"
+            @selection-change="handleSelectionChange"
           >
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="name" label="场景名称" min-width="200">
+            <el-table-column
+              type="selection"
+              width="55"
+            />
+            <el-table-column
+              prop="name"
+              label="场景名称"
+              min-width="200"
+            >
               <template #default="{ row }">
                 <div class="scenario-name">
                   <el-icon class="scenario-icon">
@@ -48,29 +62,58 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="type" label="场景类型" width="120">
+            <el-table-column
+              prop="type"
+              label="场景类型"
+              width="120"
+            >
               <template #default="{ row }">
-                <el-tag :type="getScenarioTypeTag(row.type)" size="small">
+                <el-tag
+                  :type="getScenarioTypeTag(row.type)"
+                  size="small"
+                >
                   {{ getScenarioTypeText(row.type) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="priority" label="优先级" width="100">
+            <el-table-column
+              prop="priority"
+              label="优先级"
+              width="100"
+            >
               <template #default="{ row }">
-                <el-tag :type="getPriorityType(row.priority)" size="small">
+                <el-tag
+                  :type="getPriorityType(row.priority)"
+                  size="small"
+                >
                   {{ getPriorityText(row.priority) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="status" label="状态" width="100">
+            <el-table-column
+              prop="status"
+              label="状态"
+              width="100"
+            >
               <template #default="{ row }">
-                <el-tag :type="getStatusType(row.status)" size="small">
+                <el-tag
+                  :type="getStatusType(row.status)"
+                  size="small"
+                >
                   {{ getStatusText(row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-            <el-table-column label="操作" width="80">
+            <el-table-column
+              prop="description"
+              label="描述"
+              min-width="200"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              label="操作"
+              width="80"
+            >
               <template #default="{ row }">
                 <el-button
                   size="small"
@@ -86,7 +129,10 @@
       </div>
 
       <!-- 已关联场景展示 -->
-      <div class="linked-scenarios" v-if="linkedScenarios?.length">
+      <div
+        v-if="linkedScenarios?.length"
+        class="linked-scenarios"
+      >
         <h4>已关联场景 ({{ linkedScenarios.length }})</h4>
         <div class="linked-list">
           <div
@@ -99,7 +145,10 @@
                 <component :is="getScenarioIcon(scenario.type)" />
               </el-icon>
               <span class="scenario-name">{{ scenario.name }}</span>
-              <el-tag :type="getScenarioTypeTag(scenario.type)" size="small">
+              <el-tag
+                :type="getScenarioTypeTag(scenario.type)"
+                size="small"
+              >
                 {{ getScenarioTypeText(scenario.type) }}
               </el-tag>
             </div>
@@ -125,7 +174,10 @@
       </div>
 
       <!-- 关联配置 -->
-      <div class="link-config" v-if="selectedScenarios.length">
+      <div
+        v-if="selectedScenarios.length"
+        class="link-config"
+      >
         <h4>关联配置</h4>
         <div class="config-list">
           <div
@@ -137,15 +189,36 @@
               <span class="scenario-name">{{ scenario.name }}</span>
             </div>
             <div class="config-options">
-              <el-form-item label="覆盖类型" size="small">
-                <el-select v-model="scenario.coverageType" size="small">
-                  <el-option label="正常路径" value="happy_path" />
-                  <el-option label="异常处理" value="error_handling" />
-                  <el-option label="边界条件" value="boundary" />
-                  <el-option label="性能测试" value="performance" />
+              <el-form-item
+                label="覆盖类型"
+                size="small"
+              >
+                <el-select
+                  v-model="scenario.coverageType"
+                  size="small"
+                >
+                  <el-option
+                    label="正常路径"
+                    value="happy_path"
+                  />
+                  <el-option
+                    label="异常处理"
+                    value="error_handling"
+                  />
+                  <el-option
+                    label="边界条件"
+                    value="boundary"
+                  />
+                  <el-option
+                    label="性能测试"
+                    value="performance"
+                  />
                 </el-select>
               </el-form-item>
-              <el-form-item label="覆盖权重" size="small">
+              <el-form-item
+                label="覆盖权重"
+                size="small"
+              >
                 <el-input-number
                   v-model="scenario.coverageWeight"
                   :min="1"
@@ -167,12 +240,14 @@
           </span>
         </div>
         <div class="footer-actions">
-          <el-button @click="handleClose">取消</el-button>
+          <el-button @click="handleClose">
+            取消
+          </el-button>
           <el-button
             type="primary"
-            @click="handleSubmit"
             :loading="submitting"
             :disabled="!selectedScenarios.length"
+            @click="handleSubmit"
           >
             确认关联
           </el-button>

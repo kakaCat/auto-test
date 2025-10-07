@@ -6,7 +6,10 @@
         <p>创建和管理测试场景，支持接口编排、并行/顺序执行</p>
       </div>
       <div class="header-actions">
-        <el-button type="primary" @click="showCreateDialog">
+        <el-button
+          type="primary"
+          @click="showCreateDialog"
+        >
           <el-icon><Plus /></el-icon>
           新建场景
         </el-button>
@@ -24,8 +27,12 @@
           <el-icon><Document /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.total }}</div>
-          <div class="stat-label">总场景数</div>
+          <div class="stat-value">
+            {{ stats.total }}
+          </div>
+          <div class="stat-label">
+            总场景数
+          </div>
         </div>
       </div>
       
@@ -34,8 +41,12 @@
           <el-icon><VideoPlay /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.active }}</div>
-          <div class="stat-label">活跃场景</div>
+          <div class="stat-value">
+            {{ stats.active }}
+          </div>
+          <div class="stat-label">
+            活跃场景
+          </div>
         </div>
       </div>
       
@@ -44,8 +55,12 @@
           <el-icon><CircleCheck /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.success }}</div>
-          <div class="stat-label">成功执行</div>
+          <div class="stat-value">
+            {{ stats.success }}
+          </div>
+          <div class="stat-label">
+            成功执行
+          </div>
         </div>
       </div>
       
@@ -54,8 +69,12 @@
           <el-icon><CircleClose /></el-icon>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.failed }}</div>
-          <div class="stat-label">执行失败</div>
+          <div class="stat-value">
+            {{ stats.failed }}
+          </div>
+          <div class="stat-label">
+            执行失败
+          </div>
         </div>
       </div>
     </div>
@@ -67,8 +86,8 @@
           v-model="searchForm.keyword"
           placeholder="搜索场景名称或描述"
           clearable
-          @input="handleSearch"
           style="width: 300px"
+          @input="handleSearch"
         >
           <template #prefix>
             <el-icon><Search /></el-icon>
@@ -115,7 +134,10 @@
               >
                 {{ opt.label }}
               </el-tag>
-              <span v-if="opt.group" class="tag-group">{{ opt.group }}</span>
+              <span
+                v-if="opt.group"
+                class="tag-group"
+              >{{ opt.group }}</span>
             </div>
           </el-option>
         </el-select>
@@ -129,9 +151,9 @@
           style="width: 180px"
           :remote-method="loadCreatorOptions"
           :loading="creatorLoading"
+          clearable
           @change="handleSearch"
           @focus="loadCreatorOptions('')"
-          clearable
         >
           <el-option 
             v-for="u in creatorOptions"
@@ -159,7 +181,10 @@
           @change="handleSearch"
         />
         
-        <el-button type="primary" @click="handleSearch">
+        <el-button
+          type="primary"
+          @click="handleSearch"
+        >
           <el-icon><Search /></el-icon>
           搜索
         </el-button>
@@ -179,42 +204,84 @@
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
+        <el-table-column
+          type="selection"
+          width="55"
+        />
         
-        <el-table-column prop="name" label="场景名称" min-width="150">
+        <el-table-column
+          prop="name"
+          label="场景名称"
+          min-width="150"
+        >
           <template #default="{ row }">
             <div class="scenario-name">
               <span class="name">{{ row.name }}</span>
-              <el-tag v-if="row.version" size="small" type="info">
+              <el-tag
+                v-if="row.version"
+                size="small"
+                type="info"
+              >
                 v{{ row.version }}
               </el-tag>
             </div>
           </template>
         </el-table-column>
         
-        <el-table-column prop="scenario_type" label="场景类型" width="100">
+        <el-table-column
+          prop="scenario_type"
+          label="场景类型"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getTypeColor(row.scenario_type)" size="small">
+            <el-tag
+              :type="getTypeColor(row.scenario_type)"
+              size="small"
+            >
               {{ getTypeLabel(row.scenario_type) }}
             </el-tag>
           </template>
         </el-table-column>
         
-        <el-table-column prop="apiCount" label="接口数量" width="80" />
+        <el-table-column
+          prop="apiCount"
+          label="接口数量"
+          width="80"
+        />
         
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column
+          prop="description"
+          label="描述"
+          min-width="200"
+          show-overflow-tooltip
+        />
         
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="80"
+        >
           <template #default="{ row }">
-            <el-tag :type="getStatusColor(row.status)" size="small">
+            <el-tag
+              :type="getStatusColor(row.status)"
+              size="small"
+            >
               {{ getStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
         
-        <el-table-column prop="executionCount" label="执行次数" width="100" />
+        <el-table-column
+          prop="executionCount"
+          label="执行次数"
+          width="100"
+        />
         
-        <el-table-column prop="successRate" label="成功率" width="100">
+        <el-table-column
+          prop="successRate"
+          label="成功率"
+          width="100"
+        >
           <template #default="{ row }">
             <div class="success-rate">
               <span>{{ row.successRate }}%</span>
@@ -228,31 +295,55 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="lastExecutionTime" label="最后执行" width="150">
+        <el-table-column
+          prop="lastExecutionTime"
+          label="最后执行"
+          width="150"
+        >
           <template #default="{ row }">
             {{ formatTime(row.lastExecutionTime) }}
           </template>
         </el-table-column>
         
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column
+          label="操作"
+          width="250"
+          fixed="right"
+        >
           <template #default="{ row }">
-            <el-button type="text" @click="viewScenario(row)">
+            <el-button
+              type="text"
+              @click="viewScenario(row)"
+            >
               <el-icon><View /></el-icon>
               查看
             </el-button>
-            <el-button type="text" @click="editScenario(row)">
+            <el-button
+              type="text"
+              @click="editScenario(row)"
+            >
               <el-icon><Edit /></el-icon>
               编辑
             </el-button>
-            <el-button type="text" @click="executeScenario(row)">
+            <el-button
+              type="text"
+              @click="executeScenario(row)"
+            >
               <el-icon><VideoPlay /></el-icon>
               执行
             </el-button>
-            <el-button type="text" @click="copyScenario(row)">
+            <el-button
+              type="text"
+              @click="copyScenario(row)"
+            >
               <el-icon><CopyDocument /></el-icon>
               复制
             </el-button>
-            <el-button type="text" @click="deleteScenario(row)" style="color: var(--danger-color)">
+            <el-button
+              type="text"
+              style="color: var(--danger-color)"
+              @click="deleteScenario(row)"
+            >
               <el-icon><Delete /></el-icon>
               删除
             </el-button>
@@ -264,12 +355,26 @@
     </div>
     
     <!-- 批量操作 -->
-    <div v-if="selectedScenarios.length > 0" class="batch-actions">
+    <div
+      v-if="selectedScenarios.length > 0"
+      class="batch-actions"
+    >
       <span>已选择 {{ selectedScenarios.length }} 项</span>
-      <el-button @click="batchExecute">批量执行</el-button>
-      <el-button @click="batchEnable">批量启用</el-button>
-      <el-button @click="batchDisable">批量禁用</el-button>
-      <el-button type="danger" @click="batchDelete">批量删除</el-button>
+      <el-button @click="batchExecute">
+        批量执行
+      </el-button>
+      <el-button @click="batchEnable">
+        批量启用
+      </el-button>
+      <el-button @click="batchDisable">
+        批量禁用
+      </el-button>
+      <el-button
+        type="danger"
+        @click="batchDelete"
+      >
+        批量删除
+      </el-button>
     </div>
     
     <!-- 创建场景对话框 -->
@@ -285,11 +390,20 @@
         :rules="createRules"
         label-width="100px"
       >
-        <el-form-item label="场景名称" prop="name">
-          <el-input v-model="createForm.name" placeholder="请输入场景名称" />
+        <el-form-item
+          label="场景名称"
+          prop="name"
+        >
+          <el-input
+            v-model="createForm.name"
+            placeholder="请输入场景名称"
+          />
         </el-form-item>
         
-        <el-form-item label="场景类型" prop="scenario_type">
+        <el-form-item
+          label="场景类型"
+          prop="scenario_type"
+        >
           <el-radio-group v-model="createForm.scenario_type">
             <el-radio 
               v-for="type in scenarioTypeOptions" 
@@ -301,7 +415,10 @@
           </el-radio-group>
         </el-form-item>
         
-        <el-form-item label="场景描述" prop="description">
+        <el-form-item
+          label="场景描述"
+          prop="description"
+        >
           <el-input
             v-model="createForm.description"
             type="textarea"
@@ -315,8 +432,8 @@
             v-for="tag in createForm.tags"
             :key="tag"
             closable
-            @close="removeTag(tag)"
             style="margin-right: 8px"
+            @close="removeTag(tag)"
           >
             {{ tag }}
           </el-tag>
@@ -340,8 +457,15 @@
       </el-form>
       
       <template #footer>
-        <el-button @click="createDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="createScenario">创建</el-button>
+        <el-button @click="createDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="createScenario"
+        >
+          创建
+        </el-button>
       </template>
     </el-dialog>
   </div>

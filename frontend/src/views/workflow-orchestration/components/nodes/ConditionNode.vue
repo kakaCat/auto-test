@@ -1,38 +1,89 @@
 <template>
-  <div class="condition-node" :class="{ selected: data.selected, running: data.status === 'running', expanded: isExpanded }">
-    <div class="node-header" @click="toggleExpanded">
-      <el-icon class="node-icon"><Share /></el-icon>
+  <div
+    class="condition-node"
+    :class="{ selected: data.selected, running: data.status === 'running', expanded: isExpanded }"
+  >
+    <div
+      class="node-header"
+      @click="toggleExpanded"
+    >
+      <el-icon class="node-icon">
+        <Share />
+      </el-icon>
       <span class="node-title">{{ data.label || '条件分支' }}</span>
       <div class="node-controls">
-        <el-icon class="expand-icon" :class="{ rotated: isExpanded }"><ArrowDown /></el-icon>
+        <el-icon
+          class="expand-icon"
+          :class="{ rotated: isExpanded }"
+        >
+          <ArrowDown />
+        </el-icon>
         <div class="node-status">
-          <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
-          <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
-          <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+          <el-icon
+            v-if="data.status === 'running'"
+            class="rotating"
+          >
+            <Loading />
+          </el-icon>
+          <el-icon
+            v-else-if="data.status === 'success'"
+            style="color: #67c23a"
+          >
+            <Check />
+          </el-icon>
+          <el-icon
+            v-else-if="data.status === 'error'"
+            style="color: #f56c6c"
+          >
+            <Close />
+          </el-icon>
         </div>
       </div>
     </div>
     
     <!-- 折叠状态下的简要信息 -->
-    <div v-if="!isExpanded" class="node-summary">
-      <div v-if="data.config?.logicalOperator" class="summary-item">
+    <div
+      v-if="!isExpanded"
+      class="node-summary"
+    >
+      <div
+        v-if="data.config?.logicalOperator"
+        class="summary-item"
+      >
         <span class="label">逻辑:</span>
         <span class="value">{{ data.config.logicalOperator }}</span>
       </div>
-      <div v-if="data.config?.conditions?.length" class="summary-item">
+      <div
+        v-if="data.config?.conditions?.length"
+        class="summary-item"
+      >
         <span class="label">条件:</span>
         <span class="value">{{ data.config.conditions.length }} 个</span>
       </div>
     </div>
 
     <!-- 展开状态下的完整配置界面 -->
-    <div v-if="isExpanded" class="node-config">
+    <div
+      v-if="isExpanded"
+      class="node-config"
+    >
       <!-- 逻辑操作符选择 -->
       <div class="config-section">
         <label class="config-label">逻辑操作符:</label>
-        <el-select v-model="logicalOperator" size="small" style="width: 100%" @change="updateNodeConfig">
-          <el-option label="AND (所有条件都满足)" value="AND" />
-          <el-option label="OR (任一条件满足)" value="OR" />
+        <el-select
+          v-model="logicalOperator"
+          size="small"
+          style="width: 100%"
+          @change="updateNodeConfig"
+        >
+          <el-option
+            label="AND (所有条件都满足)"
+            value="AND"
+          />
+          <el-option
+            label="OR (任一条件满足)"
+            value="OR"
+          />
         </el-select>
       </div>
 
@@ -40,20 +91,38 @@
       <div class="config-section">
         <div class="section-header">
           <label class="config-label">条件列表:</label>
-          <el-button size="small" type="primary" @click="addCondition">
+          <el-button
+            size="small"
+            type="primary"
+            @click="addCondition"
+          >
             <el-icon><Plus /></el-icon>
             添加条件
           </el-button>
         </div>
         
-        <div v-if="conditions.length === 0" class="empty-conditions">
-          <el-text type="info">暂无条件，点击上方按钮添加</el-text>
+        <div
+          v-if="conditions.length === 0"
+          class="empty-conditions"
+        >
+          <el-text type="info">
+            暂无条件，点击上方按钮添加
+          </el-text>
         </div>
 
-        <div v-for="(condition, index) in conditions" :key="index" class="condition-item">
+        <div
+          v-for="(condition, index) in conditions"
+          :key="index"
+          class="condition-item"
+        >
           <div class="condition-header">
             <span class="condition-index">条件 {{ index + 1 }}</span>
-            <el-button size="small" type="danger" text @click="removeCondition(index)">
+            <el-button
+              size="small"
+              type="danger"
+              text
+              @click="removeCondition(index)"
+            >
               <el-icon><Delete /></el-icon>
             </el-button>
           </div>
@@ -71,15 +140,43 @@
             
             <div class="config-row">
               <label class="config-label">操作符:</label>
-              <el-select v-model="condition.operator" size="small" @change="updateNodeConfig">
-                <el-option label="等于 (==)" value="==" />
-                <el-option label="不等于 (!=)" value="!=" />
-                <el-option label="大于 (>)" value=">" />
-                <el-option label="大于等于 (>=)" value=">=" />
-                <el-option label="小于 (<)" value="<" />
-                <el-option label="小于等于 (<=)" value="<=" />
-                <el-option label="包含 (contains)" value="contains" />
-                <el-option label="不包含 (not contains)" value="not_contains" />
+              <el-select
+                v-model="condition.operator"
+                size="small"
+                @change="updateNodeConfig"
+              >
+                <el-option
+                  label="等于 (==)"
+                  value="=="
+                />
+                <el-option
+                  label="不等于 (!=)"
+                  value="!="
+                />
+                <el-option
+                  label="大于 (>)"
+                  value=">"
+                />
+                <el-option
+                  label="大于等于 (>=)"
+                  value=">="
+                />
+                <el-option
+                  label="小于 (<)"
+                  value="<"
+                />
+                <el-option
+                  label="小于等于 (<=)"
+                  value="<="
+                />
+                <el-option
+                  label="包含 (contains)"
+                  value="contains"
+                />
+                <el-option
+                  label="不包含 (not contains)"
+                  value="not_contains"
+                />
               </el-select>
             </div>
             
@@ -108,20 +205,20 @@
 
     <!-- 输出端口 - True -->
     <Handle
+      id="true"
       type="source"
       :position="Position.Right"
       :style="{ top: '30%' }"
       class="node-handle true-handle"
-      id="true"
     />
 
     <!-- 输出端口 - False -->
     <Handle
+      id="false"
       type="source"
       :position="Position.Right"
       :style="{ top: '70%' }"
       class="node-handle false-handle"
-      id="false"
     />
   </div>
 </template>

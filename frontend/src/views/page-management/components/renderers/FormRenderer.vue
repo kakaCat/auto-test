@@ -9,7 +9,9 @@
     <div class="form-placeholder">
       <el-icon><Document /></el-icon>
       <span>表单容器</span>
-      <p class="form-hint">拖拽表单项到此处</p>
+      <p class="form-hint">
+        拖拽表单项到此处
+      </p>
     </div>
   </el-form>
 </template>

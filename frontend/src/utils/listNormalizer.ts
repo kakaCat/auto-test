@@ -27,14 +27,13 @@ export function normalizeList<T = unknown>(resp: ApiResponse<unknown> | unknown[
   const dataObj = (!Array.isArray(raw) && raw ? (raw as Record<string, unknown>) : {})
   const listValue = dataObj['list']
   const itemsValue = dataObj['items']
-  const apisValue = dataObj['apis']
   const listArr: unknown[] = Array.isArray(raw)
     ? (raw as unknown[])
     : (Array.isArray(listValue)
         ? (listValue as unknown[])
         : (Array.isArray(itemsValue)
             ? (itemsValue as unknown[])
-            : (Array.isArray(apisValue) ? (apisValue as unknown[]) : [])))
+            : []))
   const pageRaw = dataObj['page']
   const sizeRaw = dataObj['size']
   const pageSizeRaw = dataObj['pageSize']

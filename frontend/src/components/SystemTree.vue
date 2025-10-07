@@ -53,9 +53,9 @@
       <div class="tree-actions">
         <el-button
           size="small"
-          @click="handleRefresh"
           :loading="refreshing"
           title="刷新"
+          @click="handleRefresh"
         >
           <el-icon>
             <Refresh />
@@ -63,8 +63,8 @@
         </el-button>
         <el-button
           size="small"
-          @click="toggleExpandAll"
           :title="expandAll ? '收起所有' : '展开所有'"
+          @click="toggleExpandAll"
         >
           <el-icon>
             <component :is="IconManager.getArrowIcon(expandAll)" />
@@ -89,18 +89,44 @@
         @node-contextmenu="handleNodeContextMenu"
       >
         <template #default="{ node, data }">
-          <div class="tree-node" :class="{ 'disabled-node': data.enabled === false }">
-            <el-icon class="node-icon" :size="16" :class="{ 'disabled-icon': data.enabled === false }">
+          <div
+            class="tree-node"
+            :class="{ 'disabled-node': data.enabled === false }"
+          >
+            <el-icon
+              class="node-icon"
+              :size="16"
+              :class="{ 'disabled-icon': data.enabled === false }"
+            >
               <component :is="getNodeIcon(data)" />
             </el-icon>
-            <span class="node-label" :class="{ 'disabled-label': data.enabled === false }">{{ node.label }}</span>
-            <span v-if="data.enabled === false" class="disabled-tag">已禁用</span>
-            <span v-if="showCount && data.apiCount !== undefined" class="node-count">
+            <span
+              class="node-label"
+              :class="{ 'disabled-label': data.enabled === false }"
+            >{{ node.label }}</span>
+            <span
+              v-if="data.enabled === false"
+              class="disabled-tag"
+            >已禁用</span>
+            <span
+              v-if="showCount && data.apiCount !== undefined"
+              class="node-count"
+            >
               ({{ data.apiCount }})
             </span>
-            <div class="node-actions" v-if="showActions && !data.isModule">
-              <el-dropdown @command="handleTreeAction" trigger="click" @click.stop>
-                <el-icon class="action-icon" :size="14">
+            <div
+              v-if="showActions && !data.isModule"
+              class="node-actions"
+            >
+              <el-dropdown
+                trigger="click"
+                @command="handleTreeAction"
+                @click.stop
+              >
+                <el-icon
+                  class="action-icon"
+                  :size="14"
+                >
                   <MoreFilled />
                 </el-icon>
                 <template #dropdown>
@@ -113,7 +139,10 @@
                       <el-icon><Edit /></el-icon>
                       编辑系统
                     </el-dropdown-item>
-                    <el-dropdown-item :command="'delete-' + data.id" divided>
+                    <el-dropdown-item
+                      :command="'delete-' + data.id"
+                      divided
+                    >
                       <el-icon><Delete /></el-icon>
                       删除系统
                     </el-dropdown-item>

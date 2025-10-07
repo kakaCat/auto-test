@@ -15,11 +15,16 @@
     >
       <!-- 基本信息 -->
       <div class="form-section">
-        <h4 class="section-title">基本信息</h4>
+        <h4 class="section-title">
+          基本信息
+        </h4>
         
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="计划名称" prop="name">
+            <el-form-item
+              label="计划名称"
+              prop="name"
+            >
               <el-input
                 v-model="form.name"
                 placeholder="请输入测试计划名称"
@@ -29,15 +34,24 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="目标版本" prop="targetRelease">
-              <el-input v-model="form.targetRelease" placeholder="如：v2.0.0" />
+            <el-form-item
+              label="目标版本"
+              prop="targetRelease"
+            >
+              <el-input
+                v-model="form.targetRelease"
+                placeholder="如：v2.0.0"
+              />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="开始日期" prop="startDate">
+            <el-form-item
+              label="开始日期"
+              prop="startDate"
+            >
               <el-date-picker
                 v-model="form.startDate"
                 type="date"
@@ -47,7 +61,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="结束日期" prop="endDate">
+            <el-form-item
+              label="结束日期"
+              prop="endDate"
+            >
               <el-date-picker
                 v-model="form.endDate"
                 type="date"
@@ -58,7 +75,10 @@
           </el-col>
         </el-row>
 
-        <el-form-item label="计划描述" prop="description">
+        <el-form-item
+          label="计划描述"
+          prop="description"
+        >
           <el-input
             v-model="form.description"
             type="textarea"
@@ -72,27 +92,55 @@
 
       <!-- 需求范围 -->
       <div class="form-section">
-        <h4 class="section-title">需求范围</h4>
+        <h4 class="section-title">
+          需求范围
+        </h4>
         
         <div class="requirements-scope">
           <div class="scope-header">
             <span>包含的需求 ({{ form.requirementsInScope.length }})</span>
-            <el-button size="small" :icon="Plus" @click="handleAddRequirement">
+            <el-button
+              size="small"
+              :icon="Plus"
+              @click="handleAddRequirement"
+            >
               添加需求
             </el-button>
           </div>
           
-          <el-table :data="form.requirementsInScope" style="width: 100%">
-            <el-table-column prop="title" label="需求名称" min-width="200" />
-            <el-table-column prop="priority" label="优先级" width="100">
+          <el-table
+            :data="form.requirementsInScope"
+            style="width: 100%"
+          >
+            <el-table-column
+              prop="title"
+              label="需求名称"
+              min-width="200"
+            />
+            <el-table-column
+              prop="priority"
+              label="优先级"
+              width="100"
+            >
               <template #default="{ row }">
-                <el-tag :type="getPriorityType(row.priority)" size="small">
+                <el-tag
+                  :type="getPriorityType(row.priority)"
+                  size="small"
+                >
                   {{ getPriorityText(row.priority) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="estimatedEffort" label="预估工作量" width="120" />
-            <el-table-column prop="assignee" label="负责人" width="120">
+            <el-table-column
+              prop="estimatedEffort"
+              label="预估工作量"
+              width="120"
+            />
+            <el-table-column
+              prop="assignee"
+              label="负责人"
+              width="120"
+            >
               <template #default="{ $index }">
                 <el-select
                   v-model="form.requirementsInScope[$index].assignee"
@@ -108,7 +156,10 @@
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="80">
+            <el-table-column
+              label="操作"
+              width="80"
+            >
               <template #default="{ $index }">
                 <el-button
                   size="small"
@@ -124,27 +175,69 @@
 
       <!-- 测试环境 -->
       <div class="form-section">
-        <h4 class="section-title">测试环境</h4>
+        <h4 class="section-title">
+          测试环境
+        </h4>
         
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="测试环境" prop="testEnvironment">
-              <el-select v-model="form.testEnvironment" placeholder="请选择测试环境">
-                <el-option label="开发环境" value="dev" />
-                <el-option label="测试环境" value="test" />
-                <el-option label="预发布环境" value="staging" />
-                <el-option label="生产环境" value="production" />
+            <el-form-item
+              label="测试环境"
+              prop="testEnvironment"
+            >
+              <el-select
+                v-model="form.testEnvironment"
+                placeholder="请选择测试环境"
+              >
+                <el-option
+                  label="开发环境"
+                  value="dev"
+                />
+                <el-option
+                  label="测试环境"
+                  value="test"
+                />
+                <el-option
+                  label="预发布环境"
+                  value="staging"
+                />
+                <el-option
+                  label="生产环境"
+                  value="production"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="测试类型" prop="testTypes">
-              <el-select v-model="form.testTypes" multiple placeholder="请选择测试类型">
-                <el-option label="功能测试" value="functional" />
-                <el-option label="性能测试" value="performance" />
-                <el-option label="安全测试" value="security" />
-                <el-option label="集成测试" value="integration" />
-                <el-option label="回归测试" value="regression" />
+            <el-form-item
+              label="测试类型"
+              prop="testTypes"
+            >
+              <el-select
+                v-model="form.testTypes"
+                multiple
+                placeholder="请选择测试类型"
+              >
+                <el-option
+                  label="功能测试"
+                  value="functional"
+                />
+                <el-option
+                  label="性能测试"
+                  value="performance"
+                />
+                <el-option
+                  label="安全测试"
+                  value="security"
+                />
+                <el-option
+                  label="集成测试"
+                  value="integration"
+                />
+                <el-option
+                  label="回归测试"
+                  value="regression"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -153,7 +246,9 @@
 
       <!-- 准入准出条件 -->
       <div class="form-section">
-        <h4 class="section-title">准入准出条件</h4>
+        <h4 class="section-title">
+          准入准出条件
+        </h4>
         
         <el-row :gutter="20">
           <el-col :span="12">
@@ -219,7 +314,9 @@
 
       <!-- 风险评估 -->
       <div class="form-section">
-        <h4 class="section-title">风险评估</h4>
+        <h4 class="section-title">
+          风险评估
+        </h4>
         
         <el-form-item label="主要风险">
           <div class="risk-list">
@@ -238,10 +335,22 @@
                 placeholder="风险等级"
                 style="width: 120px"
               >
-                <el-option label="低" value="low" />
-                <el-option label="中" value="medium" />
-                <el-option label="高" value="high" />
-                <el-option label="极高" value="critical" />
+                <el-option
+                  label="低"
+                  value="low"
+                />
+                <el-option
+                  label="中"
+                  value="medium"
+                />
+                <el-option
+                  label="高"
+                  value="high"
+                />
+                <el-option
+                  label="极高"
+                  value="critical"
+                />
               </el-select>
               <el-input
                 v-model="form.risks[index].mitigation"
@@ -267,8 +376,14 @@
     </el-form>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleSubmit" :loading="submitting">
+      <el-button @click="handleClose">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         {{ mode === 'create' ? '创建' : '更新' }}
       </el-button>
     </template>
@@ -284,26 +399,54 @@
         :data="availableRequirements"
         @selection-change="handleRequirementSelection"
       >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="title" label="需求名称" min-width="200" />
-        <el-table-column prop="priority" label="优先级" width="100">
+        <el-table-column
+          type="selection"
+          width="55"
+        />
+        <el-table-column
+          prop="title"
+          label="需求名称"
+          min-width="200"
+        />
+        <el-table-column
+          prop="priority"
+          label="优先级"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getPriorityType(row.priority)" size="small">
+            <el-tag
+              :type="getPriorityType(row.priority)"
+              size="small"
+            >
               {{ getPriorityText(row.priority) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="100"
+        >
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" size="small">
+            <el-tag
+              :type="getStatusType(row.status)"
+              size="small"
+            >
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
       </el-table>
       <template #footer>
-        <el-button @click="requirementSelectVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmRequirementSelection">确定</el-button>
+        <el-button @click="requirementSelectVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmRequirementSelection"
+        >
+          确定
+        </el-button>
       </template>
     </el-dialog>
   </el-dialog>

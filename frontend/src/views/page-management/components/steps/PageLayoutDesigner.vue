@@ -2,15 +2,20 @@
   <div class="page-layout-designer">
     <div class="designer-container">
       <!-- 左侧组件库 -->
-      <div class="component-library" :class="{ collapsed: leftPanelCollapsed }">
+      <div
+        class="component-library"
+        :class="{ collapsed: leftPanelCollapsed }"
+      >
         <div class="library-header">
           <div class="header-content">
-            <h3 v-show="!leftPanelCollapsed">组件库</h3>
+            <h3 v-show="!leftPanelCollapsed">
+              组件库
+            </h3>
             <el-button
               type="text"
               size="small"
-              @click="toggleLeftPanel"
               class="collapse-btn"
+              @click="toggleLeftPanel"
             >
               <el-icon>
                 <component :is="leftPanelCollapsed ? 'Expand' : 'Fold'" />
@@ -32,7 +37,9 @@
             :key="category.name"
             class="category-section"
           >
-            <div class="category-title">{{ category.label }}</div>
+            <div class="category-title">
+              {{ category.label }}
+            </div>
             <div class="component-list">
               <div
                 v-for="component in category.components"
@@ -56,36 +63,62 @@
         <div class="canvas-toolbar">
           <div class="toolbar-left">
             <el-button-group>
-              <el-button size="small" @click="zoomOut">
+              <el-button
+                size="small"
+                @click="zoomOut"
+              >
                 <el-icon><ZoomOut /></el-icon>
               </el-button>
-              <el-button size="small">{{ Math.round(canvasScale * 100) }}%</el-button>
-              <el-button size="small" @click="zoomIn">
+              <el-button size="small">
+                {{ Math.round(canvasScale * 100) }}%
+              </el-button>
+              <el-button
+                size="small"
+                @click="zoomIn"
+              >
                 <el-icon><ZoomIn /></el-icon>
               </el-button>
             </el-button-group>
             <el-divider direction="vertical" />
-            <el-button size="small" @click="toggleGrid">
+            <el-button
+              size="small"
+              @click="toggleGrid"
+            >
               <el-icon><Grid /></el-icon>
               网格
             </el-button>
           </div>
           <div class="toolbar-right">
             <el-button-group>
-              <el-button size="small" @click="previewMode = 'desktop'" :type="previewMode === 'desktop' ? 'primary' : ''">
+              <el-button
+                size="small"
+                :type="previewMode === 'desktop' ? 'primary' : ''"
+                @click="previewMode = 'desktop'"
+              >
                 <el-icon><Monitor /></el-icon>
               </el-button>
-              <el-button size="small" @click="previewMode = 'tablet'" :type="previewMode === 'tablet' ? 'primary' : ''">
+              <el-button
+                size="small"
+                :type="previewMode === 'tablet' ? 'primary' : ''"
+                @click="previewMode = 'tablet'"
+              >
                 <el-icon><Monitor /></el-icon>
               </el-button>
-              <el-button size="small" @click="previewMode = 'mobile'" :type="previewMode === 'mobile' ? 'primary' : ''">
+              <el-button
+                size="small"
+                :type="previewMode === 'mobile' ? 'primary' : ''"
+                @click="previewMode = 'mobile'"
+              >
                 <el-icon><Iphone /></el-icon>
               </el-button>
             </el-button-group>
           </div>
         </div>
 
-        <div class="canvas-container" :style="canvasContainerStyle">
+        <div
+          class="canvas-container"
+          :style="canvasContainerStyle"
+        >
           <div
             class="canvas"
             :class="{ 'show-grid': showGrid }"
@@ -99,8 +132,8 @@
               :key="component.id"
               class="canvas-component"
               :style="getComponentStyle(component)"
-              @click="selectComponent(component)"
               :class="{ selected: selectedComponent?.id === component.id }"
+              @click="selectComponent(component)"
             >
               <component
                 :is="getComponentRenderer(component.type)"
@@ -108,11 +141,14 @@
               />
               
               <!-- 选中状态的控制点 -->
-              <div v-if="selectedComponent?.id === component.id" class="resize-handles">
-                <div class="resize-handle nw"></div>
-                <div class="resize-handle ne"></div>
-                <div class="resize-handle sw"></div>
-                <div class="resize-handle se"></div>
+              <div
+                v-if="selectedComponent?.id === component.id"
+                class="resize-handles"
+              >
+                <div class="resize-handle nw" />
+                <div class="resize-handle ne" />
+                <div class="resize-handle sw" />
+                <div class="resize-handle se" />
               </div>
             </div>
           </div>
@@ -120,15 +156,20 @@
       </div>
 
       <!-- 右侧属性面板 -->
-      <div class="property-panel" :class="{ collapsed: rightPanelCollapsed }">
+      <div
+        class="property-panel"
+        :class="{ collapsed: rightPanelCollapsed }"
+      >
         <div class="panel-header">
           <div class="header-content">
-            <h3 v-show="!rightPanelCollapsed">属性配置</h3>
+            <h3 v-show="!rightPanelCollapsed">
+              属性配置
+            </h3>
             <el-button
               type="text"
               size="small"
-              @click="toggleRightPanel"
               class="collapse-btn"
+              @click="toggleRightPanel"
             >
               <el-icon>
                 <component :is="rightPanelCollapsed ? 'Expand' : 'Fold'" />
@@ -137,9 +178,15 @@
           </div>
         </div>
         
-        <div v-if="!rightPanelCollapsed" class="property-content">
+        <div
+          v-if="!rightPanelCollapsed"
+          class="property-content"
+        >
           <div v-if="selectedComponent">
-            <el-form label-width="80px" size="small">
+            <el-form
+              label-width="80px"
+              size="small"
+            >
               <el-form-item label="组件名称">
                 <el-input v-model="selectedComponent.name" />
               </el-form-item>
@@ -180,7 +227,10 @@
             </el-form>
           </div>
           
-          <div v-else class="no-selection">
+          <div
+            v-else
+            class="no-selection"
+          >
             <p>请选择一个组件来编辑属性</p>
           </div>
         </div>

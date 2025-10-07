@@ -40,7 +40,10 @@
           <el-icon class="logo-icon">
             <MagicStick />
           </el-icon>
-          <span v-show="!appStore.sidebarCollapsed" class="logo-text">
+          <span
+            v-show="!appStore.sidebarCollapsed"
+            class="logo-text"
+          >
             AI自动化测试
           </span>
         </div>
@@ -54,7 +57,10 @@
           router
           class="sidebar-menu"
         >
-          <template v-for="route in menuRoutes" :key="route.path">
+          <template
+            v-for="route in menuRoutes"
+            :key="route.path"
+          >
             <el-sub-menu 
               v-if="route.children && route.children.length > 1" 
               :index="route.path"
@@ -109,8 +115,8 @@
         <div class="navbar-left">
           <el-button
             type="text"
-            @click="appStore.toggleSidebar"
             class="sidebar-toggle"
+            @click="appStore.toggleSidebar"
           >
             <el-icon>
               <Expand v-if="appStore.sidebarCollapsed" />
@@ -132,8 +138,8 @@
         <div class="navbar-right">
           <el-button
             type="text"
-            @click="appStore.toggleTheme"
             class="theme-toggle"
+            @click="appStore.toggleTheme"
           >
             <el-icon>
               <Sunny v-if="appStore.isDark" />
@@ -143,7 +149,10 @@
           
           <el-dropdown @command="handleUserCommand">
             <div class="user-info">
-              <el-avatar :size="32" :src="appStore.user?.avatar">
+              <el-avatar
+                :size="32"
+                :src="appStore.user?.avatar"
+              >
                 {{ appStore.user?.name?.charAt(0) || 'U' }}
               </el-avatar>
               <span class="username">{{ appStore.user?.name || '用户' }}</span>
@@ -159,7 +168,10 @@
                   <el-icon><Setting /></el-icon>
                   系统设置
                 </el-dropdown-item>
-                <el-dropdown-item divided command="logout">
+                <el-dropdown-item
+                  divided
+                  command="logout"
+                >
                   <el-icon><SwitchButton /></el-icon>
                   退出登录
                 </el-dropdown-item>
@@ -177,7 +189,10 @@
       -->
       <div class="page-content">
         <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
+          <transition
+            name="fade"
+            mode="out-in"
+          >
             <component :is="Component" />
           </transition>
         </router-view>
@@ -190,7 +205,10 @@
       - 阻止用户交互
       - 半透明背景
     -->
-    <div v-if="appStore.loading" class="global-loading">
+    <div
+      v-if="appStore.loading"
+      class="global-loading"
+    >
       <el-loading-directive />
     </div>
   </div>

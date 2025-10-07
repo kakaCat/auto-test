@@ -76,7 +76,7 @@
           accept=".json,.yaml,.yml"
           style="display: none"
           @change="handleImportFile"
-        />
+        >
       </div>
     </div>
 
@@ -259,13 +259,13 @@
                   <el-icon><Edit /></el-icon>
                   编辑
                 </el-button>
-                <el-button type="text" @click="mockApi(row)" style="color: var(--el-color-warning)">
-                  <el-icon><Star /></el-icon>
-                  Mock
-                </el-button>
                 <el-button type="text" @click="testApi(row)" style="color: var(--el-color-success)">
                   <el-icon><VideoPlay /></el-icon>
                   测试
+                </el-button>
+                <el-button type="text" @click="mockApi(row)" style="color: var(--el-color-warning)">
+                  <el-icon><Star /></el-icon>
+                  Mock
                 </el-button>
                 <el-button type="text" @click="deleteApi(row)" style="color: var(--el-color-danger)">
                   <el-icon><Delete /></el-icon>
@@ -319,10 +319,10 @@
       @mock-generated="handleMockGenerated"
     />
     
-    <!-- 测试API管理弹框 -->
+    <!-- API测试场景管理弹框 -->
     <el-dialog
       v-model="testCaseDialogVisible"
-      :title="'测试API管理 - ' + (currentTestApi?.name || '')"
+      :title="'API测试场景管理 - ' + (currentTestApi?.name || '')"
       width="90%"
       :close-on-click-modal="false"
       destroy-on-close
@@ -333,31 +333,25 @@
         :visible="testCaseDialogVisible"
       />
     </el-dialog>
-    <!-- 测试抽屉 -->
-    <ApiTestScenarioDrawer
-      v-if="scenarioDrawerVisible && currentScenarioApi"
-      v-model:visible="scenarioDrawerVisible"
-      :api-info="(currentScenarioApi as any)"
-      @params-applied="handleParamsAppliedFromDrawer"
-    />
+    <!-- 已移除：测试抽屉（ApiTestScenarioDrawer，统一收敛至“API测试场景管理”弹框） -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { 
-  DocumentAdd, Upload, Download, Search, Refresh, ArrowDown, ArrowRight,
+  DocumentAdd, Upload, Download, Search, Refresh,
   View, Edit, Delete, Check, Close, Monitor, Document,
-  Link, Cloudy, Phone, Connection, DataBoard, Cpu, Platform, Star
+  Link, Cloudy, Phone, Connection, DataBoard, Cpu, Platform, Star, VideoPlay
 } from '@element-plus/icons-vue'
 import { apiManagementApi, systemApi, moduleApi } from '@/api/unified-api'
 import ApiFormDialog from './components/ApiFormDialog.vue'
 import MockDataGenerator from './components/MockDataGenerator.vue'
 import TestApiManagement from './components/TestApiManagement.vue'
 import SystemTree from '@/components/SystemTree.vue'
-import ApiTestScenarioDrawer from './components/ApiTestScenarioDrawer.vue'
+// 已移除：ApiTestScenarioDrawer 组件（统一由“API测试场景管理”弹框承载）
 import type { ApiItem } from './data/tableColumns'
 import type { ApiData } from '@/api/api-management'
 import { useServiceStore } from '@/stores/service'
@@ -408,18 +402,7 @@ const currentMockApi = ref<ApiItem | null>(null)
 // 测试API管理相关
 const testCaseDialogVisible = ref(false)
 const currentTestApi = ref<ApiItem | null>(null)
-// 已应用的参数（从场景抽屉抛出）
-interface AppliedParamsPayload {
-  scenarioId: string
-  variables: Record<string, any>
-  config: Record<string, any>
-  detail: any
-}
-const appliedParams = ref<AppliedParamsPayload | null>(null)
-// 已移除测试抽屉功能
-// 新增：场景测试抽屉
-const scenarioDrawerVisible = ref(false)
-const currentScenarioApi = ref<ApiItem | null>(null)
+// 已移除：场景抽屉相关类型与状态（统一由“API测试场景管理”弹框承载）
 
 // 系统相关数据
 interface TreeNode { id: string | number; label: string; type: 'system' | 'module'; category?: string; systemId?: string | number; children?: TreeNode[] }
@@ -637,7 +620,10 @@ const loadModuleList = async (retryCount = 0): Promise<void> => {
         throw new Error('serviceStore.setSystemModules 方法不可用')
       }
       for (const sid in grouped) {
-        (serviceStore as any).setSystemModules(sid, grouped[sid])
+        const setModulesFn = (serviceStore as unknown as { setSystemModules?: (sid: string, mods: ModuleItem[]) => void }).setSystemModules
+        if (typeof setModulesFn === 'function') {
+          setModulesFn(sid, grouped[sid])
+        }
       }
     } else {
       console.warn('模块列表数据格式不正确:', payload)
@@ -937,7 +923,7 @@ const showEditApiDialog = async (api: ApiItem): Promise<void> => {
 }
 
 
-// 修复：列表"测试"按钮应该打开测试用例管理弹框
+// 修复：列表"测试"按钮应该打开测试API管理弹框
 const testApi = (api: ApiItem): void => {
   manageTestCases(api)
 }
@@ -976,10 +962,6 @@ const manageTestCases = (api: ApiItem): void => {
   testCaseDialogVisible.value = true
 }
 
-const handleParamsAppliedFromDrawer = (payload: AppliedParamsPayload): void => {
-  appliedParams.value = payload
-  ElMessage.success('参数已接收，可用于后续测试或编排')
-}
 
 const saveApi = async (formData: ApiFormShape): Promise<void> => {
   try {
@@ -1187,7 +1169,7 @@ const resetForm = (preserveSelection = false): void => {
     // 如果Object.assign失败，逐个赋值
     for (const key in resetData as any) {
       if ((form as any).hasOwnProperty(key)) {
-        ;(form as any)[key] = (resetData as any)[key]
+        (form as any)[key] = (resetData as any)[key]
       }
     }
   }

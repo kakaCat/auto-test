@@ -1,5 +1,5 @@
 """
-测试API管理 Service 层占位实现
+API测试场景管理 Service 层占位实现
 遵循：业务编排、规则复用、事务控制（后续接入仓储层）。
 当前为骨架实现，返回示例数据结构以便前端联调。
 """
@@ -20,29 +20,26 @@ class TestApiService:
             "List test apis, keyword=%s, api_id=%s, enabled_only=%s, tags=%s, page=%s, size=%s",
             keyword, api_id, enabled_only, tags, page, size,
         )
-        items: List[Dict[str, Any]] = [
-            {
-                "id": 1,
-                "name": "Sample Test API",
-                "api_id": api_id or 1001,
-                "enabled": True,
-                "tags": "smoke,login",
-                "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z",
-            }
-        ]
-        return {"items": items, "page": page, "size": size, "total": 1}
+        from ..data_services.test_api_data_service import TestApiDataService
+        items, total = TestApiDataService.list(keyword, api_id, enabled_only, tags, page, size)
+        return {"items": items, "page": page, "size": size, "total": total}
 
     @staticmethod
     def create_test_api(payload: Any) -> Dict[str, Any]:
         data = TestApiService._to_dict(payload)
-        logger.info("Create test api, payload=%s", data)
-        return {"id": 2, **data}
+        # 通过DataService持久化
+        from ..data_services.test_api_data_service import TestApiDataService
+        new_id = TestApiDataService.create(data)
+        logger.info("Create test api persisted, id=%s, payload=%s", new_id, data)
+        detail = TestApiDataService.get_by_id(new_id)
+        return detail or {"id": new_id, **data}
 
     @staticmethod
     def get_test_api_by_id(test_api_id: int) -> Dict[str, Any]:
         logger.info("Get test api by id=%s", test_api_id)
-        return {
+        from ..data_services.test_api_data_service import TestApiDataService
+        detail = TestApiDataService.get_by_id(test_api_id)
+        return detail or {
             "id": test_api_id,
             "name": "Sample Test API Detail",
             "enabled": True,
@@ -53,8 +50,11 @@ class TestApiService:
     @staticmethod
     def update_test_api(test_api_id: int, payload: Any) -> Dict[str, Any]:
         data = TestApiService._to_dict(payload)
-        logger.info("Update test api id=%s, payload=%s", test_api_id, data)
-        return {"id": test_api_id, **data}
+        from ..data_services.test_api_data_service import TestApiDataService
+        updated = TestApiDataService.update(test_api_id, data)
+        logger.info("Update test api id=%s, updated=%s, payload=%s", test_api_id, updated, data)
+        detail = TestApiDataService.get_by_id(test_api_id)
+        return detail or {"id": test_api_id, **data}
 
     @staticmethod
     def delete_test_api(test_api_id: int) -> bool:

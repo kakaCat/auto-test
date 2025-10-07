@@ -1,60 +1,164 @@
 <template>
-  <el-drawer v-model="visible" title="Mock数据生成器" size="60%" direction="rtl" :before-close="handleClose">
+  <el-drawer
+    v-model="visible"
+    title="Mock数据生成器"
+    size="60%"
+    direction="rtl"
+    :before-close="handleClose"
+  >
     <div class="mock-generator">
       <!-- API信息展示 -->
       <div class="api-info">
         <h3>API信息</h3>
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="API名称">{{ apiInfo.name }}</el-descriptions-item>
-          <el-descriptions-item label="请求方法">
-            <el-tag :type="getMethodType(apiInfo.method)">{{ apiInfo.method }}</el-tag>
+        <el-descriptions
+          :column="2"
+          border
+        >
+          <el-descriptions-item label="API名称">
+            {{ apiInfo.name }}
           </el-descriptions-item>
-          <el-descriptions-item label="请求URL">{{ apiInfo.url }}</el-descriptions-item>
-          <el-descriptions-item label="描述">{{ apiInfo.description || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="请求方法">
+            <el-tag :type="getMethodType(apiInfo.method)">
+              {{ apiInfo.method }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="请求URL">
+            {{ apiInfo.url }}
+          </el-descriptions-item>
+          <el-descriptions-item label="描述">
+            {{ apiInfo.description || '-' }}
+          </el-descriptions-item>
         </el-descriptions>
       </div>
 
       <!-- Mock配置 -->
       <div class="mock-config">
         <h3>Mock配置</h3>
-        <el-form :model="mockConfig" label-width="120px">
+        <el-form
+          :model="mockConfig"
+          label-width="120px"
+        >
           <el-form-item label="数据类型">
-            <el-select v-model="mockConfig.dataType" placeholder="选择数据类型">
-              <el-option label="JSON对象" value="object" />
-              <el-option label="JSON数组" value="array" />
-              <el-option label="字符串" value="string" />
-              <el-option label="数字" value="number" />
-              <el-option label="布尔值" value="boolean" />
+            <el-select
+              v-model="mockConfig.dataType"
+              placeholder="选择数据类型"
+            >
+              <el-option
+                label="JSON对象"
+                value="object"
+              />
+              <el-option
+                label="JSON数组"
+                value="array"
+              />
+              <el-option
+                label="字符串"
+                value="string"
+              />
+              <el-option
+                label="数字"
+                value="number"
+              />
+              <el-option
+                label="布尔值"
+                value="boolean"
+              />
             </el-select>
           </el-form-item>
           
-          <el-form-item label="数据条数" v-if="mockConfig.dataType === 'array'">
-            <el-input-number v-model="mockConfig.arraySize" :min="1" :max="100" />
+          <el-form-item
+            v-if="mockConfig.dataType === 'array'"
+            label="数据条数"
+          >
+            <el-input-number
+              v-model="mockConfig.arraySize"
+              :min="1"
+              :max="100"
+            />
           </el-form-item>
 
-          <el-form-item label="字段配置" v-if="['object', 'array'].includes(mockConfig.dataType)">
+          <el-form-item
+            v-if="['object', 'array'].includes(mockConfig.dataType)"
+            label="字段配置"
+          >
             <div class="field-config">
-              <div v-for="(field, index) in mockConfig.fields" :key="index" class="field-item">
-                <el-input v-model="field.name" placeholder="字段名" style="width: 150px; margin-right: 10px;" />
-                <el-select v-model="field.type" placeholder="字段类型" style="width: 120px; margin-right: 10px;">
-                  <el-option label="字符串" value="string" />
-                  <el-option label="数字" value="number" />
-                  <el-option label="布尔值" value="boolean" />
-                  <el-option label="日期" value="date" />
-                  <el-option label="邮箱" value="email" />
-                  <el-option label="手机号" value="phone" />
-                  <el-option label="URL" value="url" />
-                  <el-option label="UUID" value="uuid" />
+              <div
+                v-for="(field, index) in mockConfig.fields"
+                :key="index"
+                class="field-item"
+              >
+                <el-input
+                  v-model="field.name"
+                  placeholder="字段名"
+                  style="width: 150px; margin-right: 10px;"
+                />
+                <el-select
+                  v-model="field.type"
+                  placeholder="字段类型"
+                  style="width: 120px; margin-right: 10px;"
+                >
+                  <el-option
+                    label="字符串"
+                    value="string"
+                  />
+                  <el-option
+                    label="数字"
+                    value="number"
+                  />
+                  <el-option
+                    label="布尔值"
+                    value="boolean"
+                  />
+                  <el-option
+                    label="日期"
+                    value="date"
+                  />
+                  <el-option
+                    label="邮箱"
+                    value="email"
+                  />
+                  <el-option
+                    label="手机号"
+                    value="phone"
+                  />
+                  <el-option
+                    label="URL"
+                    value="url"
+                  />
+                  <el-option
+                    label="UUID"
+                    value="uuid"
+                  />
                 </el-select>
-                <el-input v-model="field.description" placeholder="字段描述" style="width: 150px; margin-right: 10px;" />
-                <el-button type="danger" size="small" @click="removeField(index)" :disabled="mockConfig.fields.length <= 1">删除</el-button>
+                <el-input
+                  v-model="field.description"
+                  placeholder="字段描述"
+                  style="width: 150px; margin-right: 10px;"
+                />
+                <el-button
+                  type="danger"
+                  size="small"
+                  :disabled="mockConfig.fields.length <= 1"
+                  @click="removeField(index)"
+                >
+                  删除
+                </el-button>
               </div>
-              <el-button type="primary" size="small" @click="addField">添加字段</el-button>
+              <el-button
+                type="primary"
+                size="small"
+                @click="addField"
+              >
+                添加字段
+              </el-button>
             </div>
           </el-form-item>
 
           <el-form-item label="智能推荐">
-            <el-button type="success" @click="generateSmartFields">
+            <el-button
+              type="success"
+              @click="generateSmartFields"
+            >
               <el-icon><Star /></el-icon>
               根据API自动推荐字段
             </el-button>
@@ -66,22 +170,42 @@
       <div class="mock-preview">
         <h3>
           Mock数据预览
-          <el-button type="primary" size="small" @click="generateMockData" style="margin-left: 10px;">
+          <el-button
+            type="primary"
+            size="small"
+            style="margin-left: 10px;"
+            @click="generateMockData"
+          >
             <el-icon><Refresh /></el-icon>
             重新生成
           </el-button>
         </h3>
-        <el-input v-model="generatedMockData" type="textarea" :rows="15" readonly placeholder="点击生成按钮查看Mock数据" />
+        <el-input
+          v-model="generatedMockData"
+          type="textarea"
+          :rows="15"
+          readonly
+          placeholder="点击生成按钮查看Mock数据"
+        />
       </div>
 
       <!-- 操作按钮 -->
       <div class="actions">
-        <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="copyMockData" :disabled="!generatedMockData">
+        <el-button @click="handleClose">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          :disabled="!generatedMockData"
+          @click="copyMockData"
+        >
           <el-icon><DocumentCopy /></el-icon>
           复制数据
         </el-button>
-        <el-button type="success" @click="saveMockConfig">
+        <el-button
+          type="success"
+          @click="saveMockConfig"
+        >
           <el-icon><Check /></el-icon>
           保存配置
         </el-button>

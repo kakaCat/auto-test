@@ -1,16 +1,30 @@
 <template>
   <div class="json-preview-tree">
-    <div v-if="data.length === 0" class="empty-tree">
+    <div
+      v-if="data.length === 0"
+      class="empty-tree"
+    >
       <el-empty description="暂无预览数据" />
     </div>
     
-    <div v-else class="tree-content">
+    <div
+      v-else
+      class="tree-content"
+    >
       <!-- 树形结构头部 -->
       <div class="tree-header">
-        <div class="header-cell name">参数名</div>
-        <div class="header-cell type">类型</div>
-        <div class="header-cell required">必填</div>
-        <div class="header-cell description">描述</div>
+        <div class="header-cell name">
+          参数名
+        </div>
+        <div class="header-cell type">
+          类型
+        </div>
+        <div class="header-cell required">
+          必填
+        </div>
+        <div class="header-cell description">
+          描述
+        </div>
       </div>
       
       <!-- 树形结构内容 -->
@@ -27,16 +41,28 @@
     </div>
     
     <!-- 统计信息 -->
-    <div v-if="data.length > 0" class="tree-stats">
-      <el-tag size="small" type="info">
+    <div
+      v-if="data.length > 0"
+      class="tree-stats"
+    >
+      <el-tag
+        size="small"
+        type="info"
+      >
         <el-icon><DataLine /></el-icon>
         总计 {{ data.length }} 个参数
       </el-tag>
-      <el-tag size="small" type="success">
+      <el-tag
+        size="small"
+        type="success"
+      >
         <el-icon><Folder /></el-icon>
         最大 {{ maxDepth }} 层深度
       </el-tag>
-      <el-tag size="small" type="warning">
+      <el-tag
+        size="small"
+        type="warning"
+      >
         <el-icon><Key /></el-icon>
         {{ requiredCount }} 个必填
       </el-tag>

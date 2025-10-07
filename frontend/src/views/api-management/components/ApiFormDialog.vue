@@ -1,185 +1,551 @@
 <template>
-  <el-dialog :model-value="modelValue" :title="title" width="80%" top="5vh" :close-on-click-modal="false" :destroy-on-close="true" @update:modelValue="handleClose" class="api-form-dialog">
+  <el-dialog
+    :model-value="modelValue"
+    :title="title"
+    width="80%"
+    top="5vh"
+    :close-on-click-modal="false"
+    :destroy-on-close="true"
+    class="api-form-dialog"
+    @update:model-value="handleClose"
+  >
     <div class="dialog-content">
       <!-- 导航菜单 -->
       <div class="navigation-menu">
-        <el-button text :type="getSectionButtonType('basic')" @click="scrollToSection('basic')">基本信息</el-button>
-        <el-button text :type="getSectionButtonType('params')" @click="scrollToSection('params')">请求参数</el-button>
-        <el-button text :type="getSectionButtonType('response')" @click="scrollToSection('response')">响应参数</el-button>
-        <el-button text :type="getSectionButtonType('tags')" @click="scrollToSection('tags')">标签与认证</el-button>
+        <el-button
+          text
+          :type="getSectionButtonType('basic')"
+          @click="scrollToSection('basic')"
+        >
+          基本信息
+        </el-button>
+        <el-button
+          text
+          :type="getSectionButtonType('params')"
+          @click="scrollToSection('params')"
+        >
+          请求参数
+        </el-button>
+        <el-button
+          text
+          :type="getSectionButtonType('response')"
+          @click="scrollToSection('response')"
+        >
+          响应参数
+        </el-button>
+        <el-button
+          text
+          :type="getSectionButtonType('tags')"
+          @click="scrollToSection('tags')"
+        >
+          标签与认证
+        </el-button>
         <div class="progress-container">
-          <el-progress :percentage="formProgress" :stroke-width="10" striped />
+          <el-progress
+            :percentage="formProgress"
+            :stroke-width="10"
+            striped
+          />
           <span>完成度</span>
         </div>
       </div>
 
       <!-- 表单内容 -->
-      <el-form ref="formRef" :model="localFormData" :rules="rules" label-position="top" class="api-form-content">
-        <el-collapse :model-value="activeCollapse" @change="handleCollapseChange">
+      <el-form
+        ref="formRef"
+        :model="localFormData"
+        :rules="rules"
+        label-position="top"
+        class="api-form-content"
+      >
+        <el-collapse
+          v-model="activeCollapse"
+          @change="handleCollapseChange"
+        >
           <!-- 基本信息 -->
-          <el-collapse-item name="basic" ref="basicSection">
+          <el-collapse-item
+            ref="basicSection"
+            name="basic"
+          >
             <template #title>
-             <div class="panel-title">
-               <el-icon><InfoFilled /></el-icon>
-               <span>基本信息</span>
-               <el-tag v-if="basicInfoComplete" type="success" size="small">已完成</el-tag>
-               <el-tag v-else type="warning" size="small">{{ basicInfoProgress }}/5</el-tag>
-             </div>
-           </template>
+              <div class="panel-title">
+                <el-icon><InfoFilled /></el-icon>
+                <span>基本信息</span>
+                <el-tag
+                  v-if="basicInfoComplete"
+                  type="success"
+                  size="small"
+                >
+                  已完成
+                </el-tag>
+                <el-tag
+                  v-else
+                  type="warning"
+                  size="small"
+                >
+                  {{ basicInfoProgress }}/5
+                </el-tag>
+              </div>
+            </template>
            
-           <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="API名称" prop="name">
-                <el-input v-model="localFormData.name" placeholder="请输入API名称" clearable />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="请求方法" prop="method">
-                <el-select v-model="localFormData.method" placeholder="选择请求方法" style="width: 100%">
-                  <el-option v-for="method in httpMethods" :key="method.value" :label="method.label" :value="method.value" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item
+                  label="API名称"
+                  prop="name"
+                >
+                  <el-input
+                    v-model="localFormData.name"
+                    placeholder="请输入API名称"
+                    clearable
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item
+                  label="请求方法"
+                  prop="method"
+                >
+                  <el-select
+                    v-model="localFormData.method"
+                    placeholder="选择请求方法"
+                    style="width: 100%"
+                  >
+                    <el-option
+                      v-for="method in httpMethods"
+                      :key="method.value"
+                      :label="method.label"
+                      :value="method.value"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="所属系统" prop="systemId">
-                <el-select v-model="localFormData.systemId" placeholder="选择所属系统" style="width: 100%" @change="handleSystemChange">
-                  <el-option v-for="system in systemList" :key="String(system.id)" :label="system.name" :value="String(system.id)" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="所属模块" prop="moduleId">
-                <el-select v-model="localFormData.moduleId" placeholder="选择所属模块" style="width: 100%" :disabled="!localFormData.systemId">
-                  <el-option v-for="module in availableModules" :key="String(module.id)" :label="module.name" :value="String(module.id)" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item
+                  label="所属系统"
+                  prop="systemId"
+                >
+                  <el-select
+                    v-model="localFormData.systemId"
+                    placeholder="选择所属系统"
+                    style="width: 100%"
+                    @change="handleSystemChange"
+                  >
+                    <el-option
+                      v-for="system in systemList"
+                      :key="String(system.id)"
+                      :label="system.name"
+                      :value="String(system.id)"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item
+                  label="所属模块"
+                  prop="moduleId"
+                >
+                  <el-select
+                    v-model="localFormData.moduleId"
+                    placeholder="选择所属模块"
+                    style="width: 100%"
+                    :disabled="!localFormData.systemId"
+                  >
+                    <el-option
+                      v-for="module in availableModules"
+                      :key="String(module.id)"
+                      :label="module.name"
+                      :value="String(module.id)"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
-          <el-form-item label="URL路径" prop="url">
-            <el-input v-model="localFormData.url" placeholder="请输入API路径，如：/api/users 或完整URL" clearable>
-              <template #prepend>
-                <span>{{ baseUrl }}</span>
-              </template>
-              <template #append>
-                <el-button :disabled="localFormData.method !== 'GET'" @click="handleParseQueryClick" title="从URL中解析GET参数并填充表格">解析GET参数</el-button>
-              </template>
-            </el-input>
-            <div class="url-hint" v-if="localFormData.method === 'GET'">
-              <el-text type="info" size="small">
-                示例：/api/api-interfaces/v1/list?system_id=10&enabled_only=false，点击“解析GET参数”自动生成参数表
+            <el-form-item
+              label="URL路径"
+              prop="url"
+            >
+              <el-input
+                v-model="localFormData.url"
+                placeholder="请输入API路径，如：/api/users 或完整URL"
+                clearable
+              >
+                <template #prepend>
+                  <span>{{ baseUrl }}</span>
+                </template>
+                <template #append>
+                  <el-button
+                    :disabled="localFormData.method !== 'GET'"
+                    title="从URL中解析GET参数并填充表格"
+                    @click="handleParseQueryClick"
+                  >
+                    解析GET参数
+                  </el-button>
+                </template>
+              </el-input>
+              <div
+                v-if="localFormData.method === 'GET'"
+                class="url-hint"
+              >
+                <el-text
+                  type="info"
+                  size="small"
+                >
+                  示例：/api/api-interfaces/v1/list?system_id=10&enabled_only=false，点击“解析GET参数”自动生成参数表
+                </el-text>
+              </div>
+            </el-form-item>
+
+            <el-form-item
+              label="API描述"
+              prop="description"
+            >
+              <el-input
+                v-model="localFormData.description"
+                type="textarea"
+                :rows="3"
+                placeholder="请输入API功能描述"
+                maxlength="500"
+                show-word-limit
+              />
+            </el-form-item>
+
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item label="状态">
+                  <el-switch
+                    v-model="localFormData.enabled"
+                    active-text="启用"
+                    inactive-text="禁用"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="需要登录">
+                  <el-switch
+                    v-model="localFormData.authRequired"
+                    active-text="需要认证"
+                    inactive-text="公开访问"
+                  />
+                  <div class="auth-hint">
+                    <el-text
+                      size="small"
+                      type="info"
+                    >
+                      {{ localFormData.authRequired ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
+                    </el-text>
+                  </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row
+              justify="end"
+              class="section-actions"
+            >
+              <el-button
+                type="primary"
+                :loading="saving"
+                @click="handleSaveBasic"
+              >
+                保存基本信息
+              </el-button>
+            </el-row>
+          </el-collapse-item>
+
+          <!-- 请求参数面板 -->
+          <el-collapse-item
+            ref="paramsSection"
+            name="params"
+          >
+            <template #title>
+              <div class="panel-title">
+                <el-icon><Setting /></el-icon>
+                <span>请求参数</span>
+                <el-tag
+                  v-if="paramsCount > 0"
+                  type="success"
+                  size="small"
+                >
+                  {{ paramsCount }} 个参数
+                </el-tag>
+                <el-tag
+                  v-else
+                  type="info"
+                  size="small"
+                >
+                  暂无参数
+                </el-tag>
+              </div>
+            </template>
+
+            <!-- 请求参数面板：四标签视图（Query / Path / JSON Body / Form Body） -->
+            <el-form-item label="请求参数">
+              <el-tabs
+                v-model="activeParamsTab"
+                type="border-card"
+                class="full-width-tabs"
+                style="width: 100%"
+              >
+                <el-tab-pane name="query">
+                  <template #label>
+                    <span>Query</span>
+                    <el-tooltip
+                      content="URL查询参数：用于拼接在URL的问号后，如 ?page=1&size=10。适合GET/DELETE请求，或无主体的请求。"
+                      placement="top"
+                    >
+                      <el-icon style="margin-left:6px; color:#909399">
+                        <InfoFilled />
+                      </el-icon>
+                    </el-tooltip>
+                  </template>
+                  <ParamsEditor
+                    v-model="localFormData.requestParameters"
+                    :fixed-location="'query'"
+                  />
+                </el-tab-pane>
+                <el-tab-pane name="path">
+                  <template #label>
+                    <span>Path</span>
+                    <el-tooltip
+                      content="路径参数：URL路径中的占位符，例如 /users/{id} 或 /users/:id。用于标识资源的唯一位置。"
+                      placement="top"
+                    >
+                      <el-icon style="margin-left:6px; color:#909399">
+                        <InfoFilled />
+                      </el-icon>
+                    </el-tooltip>
+                  </template>
+                  <ParamsEditor
+                    v-model="localFormData.requestParameters"
+                    :fixed-location="'path'"
+                  />
+                </el-tab-pane>
+                <el-tab-pane name="json">
+                  <template #label>
+                    <span>JSON Body</span>
+                    <el-tooltip
+                      content="请求体(JSON)：以 application/json 作为内容类型，适合复杂结构与嵌套对象的提交。常用于POST/PUT/PATCH请求。"
+                      placement="top"
+                    >
+                      <el-icon style="margin-left:6px; color:#909399">
+                        <InfoFilled />
+                      </el-icon>
+                    </el-tooltip>
+                  </template>
+                  <ParamsEditor
+                    v-model="localFormData.requestParameters"
+                    :fixed-location="'json'"
+                  />
+                </el-tab-pane>
+                <el-tab-pane name="form">
+                  <template #label>
+                    <span>Form Body</span>
+                    <el-tooltip
+                      content="表单请求体：适用于简单键值对提交。常用 Content-Type: application/x-www-form-urlencoded 或 multipart/form-data。"
+                      placement="top"
+                    >
+                      <el-icon style="margin-left:6px; color:#909399">
+                        <InfoFilled />
+                      </el-icon>
+                    </el-tooltip>
+                  </template>
+                  <ParamsEditor
+                    v-model="localFormData.requestParameters"
+                    :fixed-location="'form'"
+                  />
+                </el-tab-pane>
+              </el-tabs>
+              <!-- 请求参数示例预览 -->
+              <div
+                v-if="requestExampleJson"
+                class="parameter-example"
+              >
+                <el-collapse>
+                  <el-collapse-item
+                    title="参数示例预览"
+                    name="request-example"
+                  >
+                    <pre class="example-json">{{ requestExampleJson }}</pre>
+                  </el-collapse-item>
+                </el-collapse>
+              </div>
+            </el-form-item>
+
+            <el-row
+              justify="end"
+              class="section-actions"
+            >
+              <el-button
+                type="primary"
+                :loading="saving"
+                :disabled="!localFormData.id"
+                @click="handleSaveParams"
+              >
+                保存请求参数
+              </el-button>
+              <el-text
+                v-if="!localFormData.id"
+                type="warning"
+                size="small"
+                style="margin-left:8px"
+              >
+                请先保存基本信息以生成ID
               </el-text>
-            </div>
-          </el-form-item>
+            </el-row>
+          </el-collapse-item>
 
-          <el-form-item label="API描述" prop="description">
-            <el-input v-model="localFormData.description" type="textarea" :rows="3" placeholder="请输入API功能描述" maxlength="500" show-word-limit />
-          </el-form-item>
+          <!-- 响应配置面板 -->
+          <el-collapse-item
+            ref="responseSection"
+            name="response"
+          >
+            <template #title>
+              <div class="panel-title">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>响应参数</span>
+                <el-tag
+                  v-if="localFormData.responseParameters && localFormData.responseParameters.length > 0"
+                  type="success"
+                  size="small"
+                >
+                  {{ localFormData.responseParameters.length }} 个字段
+                </el-tag>
+                <el-tag
+                  v-else
+                  type="info"
+                  size="small"
+                >
+                  未配置
+                </el-tag>
+              </div>
+            </template>
 
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="状态">
-                <el-switch v-model="localFormData.enabled" active-text="启用" inactive-text="禁用" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="需要登录">
-                <el-switch v-model="localFormData.authRequired" active-text="需要认证" inactive-text="公开访问" />
-                <div class="auth-hint">
-                  <el-text size="small" type="info">
-                    {{ localFormData.authRequired ? '调用时需要传递认证Token或Session' : '公开API，无需认证即可访问' }}
-                  </el-text>
-                </div>
-              </el-form-item>
-            </el-col>
-           </el-row>
-           <el-row justify="end" class="section-actions">
-             <el-button type="primary" @click="handleSaveBasic" :loading="saving">保存基本信息</el-button>
-           </el-row>
-         </el-collapse-item>
+            <!-- 响应配置 (增强版) -->
+            <el-form-item label="响应参数">
+              <ParamsEditor v-model="localFormData.responseParameters" />
+              <!-- 响应参数示例预览 -->
+              <div
+                v-if="responseExampleJson"
+                class="parameter-example"
+                style="margin-top: 12px;"
+              >
+                <el-collapse>
+                  <el-collapse-item
+                    title="响应示例预览"
+                    name="response-example"
+                  >
+                    <pre class="example-json">{{ responseExampleJson }}</pre>
+                  </el-collapse-item>
+                </el-collapse>
+              </div>
+            </el-form-item>
+            <el-row
+              justify="end"
+              class="section-actions"
+            >
+              <el-button
+                type="primary"
+                :loading="saving"
+                :disabled="!localFormData.id"
+                @click="handleSaveResponse"
+              >
+                保存响应参数
+              </el-button>
+              <el-text
+                v-if="!localFormData.id"
+                type="warning"
+                size="small"
+                style="margin-left:8px"
+              >
+                请先保存基本信息以生成ID
+              </el-text>
+            </el-row>
+          </el-collapse-item>
 
-         <!-- 请求参数面板 -->
-         <el-collapse-item name="params" ref="paramsSection">
-           <template #title>
-             <div class="panel-title">
-               <el-icon><Setting /></el-icon>
-               <span>请求参数</span>
-               <el-tag v-if="localFormData.requestParameters.length > 0" type="success" size="small">
-                 {{ localFormData.requestParameters.length }} 个参数
-               </el-tag>
-               <el-tag v-else type="info" size="small">暂无参数</el-tag>
-             </div>
-           </template>
+          <!-- 标签管理面板 -->
+          <el-collapse-item
+            ref="tagsSection"
+            name="tags"
+          >
+            <template #title>
+              <div class="panel-title">
+                <el-icon><PriceTag /></el-icon>
+                <span>标签管理</span>
+                <el-tag
+                  v-if="localFormData.tags.length > 0"
+                  type="success"
+                  size="small"
+                >
+                  {{ localFormData.tags.length }} 个标签
+                </el-tag>
+                <el-tag
+                  v-else
+                  type="info"
+                  size="small"
+                >
+                  无标签
+                </el-tag>
+              </div>
+            </template>
 
-           <!-- 请求参数配置 (增强版) -->
-          <el-form-item label="请求参数">
-            <ParameterConfig v-model="localFormData.requestParameters" @change="handleParametersChange" />
-          </el-form-item>
-          <el-row justify="end" class="section-actions">
-            <el-button type="primary" @click="handleSaveParams" :loading="saving" :disabled="!localFormData.id">保存请求参数</el-button>
-            <el-text v-if="!localFormData.id" type="warning" size="small" style="margin-left:8px">请先保存基本信息以生成ID</el-text>
-          </el-row>
-         </el-collapse-item>
-
-         <!-- 响应配置面板 -->
-         <el-collapse-item name="response" ref="responseSection">
-           <template #title>
-             <div class="panel-title">
-               <el-icon><DataAnalysis /></el-icon>
-               <span>响应参数</span>
-               <el-tag v-if="localFormData.responseParameters && localFormData.responseParameters.length > 0" type="success" size="small">{{ localFormData.responseParameters.length }} 个字段</el-tag>
-               <el-tag v-else type="info" size="small">未配置</el-tag>
-             </div>
-           </template>
-
-           <!-- 响应配置 (增强版) -->
-          <el-form-item label="响应参数">
-            <ParamsEditor v-model="localFormData.responseParameters" />
-          </el-form-item>
-          <el-row justify="end" class="section-actions">
-            <el-button type="primary" @click="handleSaveResponse" :loading="saving" :disabled="!localFormData.id">保存响应参数</el-button>
-            <el-text v-if="!localFormData.id" type="warning" size="small" style="margin-left:8px">请先保存基本信息以生成ID</el-text>
-          </el-row>
-        </el-collapse-item>
-
-        <!-- 标签管理面板 -->
-        <el-collapse-item name="tags" ref="tagsSection">
-          <template #title>
-            <div class="panel-title">
-              <el-icon><PriceTag /></el-icon>
-              <span>标签管理</span>
-              <el-tag v-if="localFormData.tags.length > 0" type="success" size="small">
-                {{ localFormData.tags.length }} 个标签
-              </el-tag>
-              <el-tag v-else type="info" size="small">无标签</el-tag>
-            </div>
-          </template>
-
-          <!-- 标签 -->
-          <el-form-item label="标签">
-            <el-select v-model="localFormData.tags" multiple filterable allow-create placeholder="选择或创建标签" style="width: 100%">
-              <el-option v-for="tag in predefinedTags" :key="tag" :label="tag" :value="tag" />
-            </el-select>
-          </el-form-item>
-          <el-row justify="end" class="section-actions">
-            <el-button type="primary" @click="handleSaveTags" :loading="saving" :disabled="!localFormData.id">保存标签与认证</el-button>
-            <el-text v-if="!localFormData.id" type="warning" size="small" style="margin-left:8px">请先保存基本信息以生成ID</el-text>
-          </el-row>
-        </el-collapse-item>
-
-        
-
-      </el-collapse>
-    </el-form>
+            <!-- 标签 -->
+            <el-form-item label="标签">
+              <el-select
+                v-model="localFormData.tags"
+                multiple
+                filterable
+                allow-create
+                placeholder="选择或创建标签"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="tag in predefinedTags"
+                  :key="tag"
+                  :label="tag"
+                  :value="tag"
+                />
+              </el-select>
+            </el-form-item>
+            <el-row
+              justify="end"
+              class="section-actions"
+            >
+              <el-button
+                type="primary"
+                :loading="saving"
+                :disabled="!localFormData.id"
+                @click="handleSaveTags"
+              >
+                保存标签与认证
+              </el-button>
+              <el-text
+                v-if="!localFormData.id"
+                type="warning"
+                size="small"
+                style="margin-left:8px"
+              >
+                请先保存基本信息以生成ID
+              </el-text>
+            </el-row>
+          </el-collapse-item>
+        </el-collapse>
+      </el-form>
     </div>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" @click="handleSave" :loading="saving">
+        <el-button @click="handleCancel">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          :loading="saving"
+          @click="handleSave"
+        >
           {{ saving ? '保存中...' : '保存' }}
         </el-button>
       </div>
@@ -198,6 +564,7 @@ import { apiManagementApi } from '@/api/unified-api'
 import ParameterConfig from './ParameterConfig.vue'
 import ParamsEditor from '@/components/common/ParamsEditor.vue'
 import { ParamsConverter } from '@/utils/paramsConverter'
+import SchemaConverter from '@/utils/schemaConversion'
 import { debounce } from 'lodash-es'
 import { useServiceStore } from '@/stores/service'
 
@@ -285,9 +652,14 @@ const predefinedTags = [
   '认证授权', '数据查询', '数据更新', '文件上传'
 ]
 
-// 基础URL
+// 基础URL：从所选系统中获取其配置的url
 const baseUrl = computed(() => {
-  return 'http://localhost:8002'
+  const sid = String(localFormData.systemId || '')
+  if (!sid) return ''
+  const list = Array.isArray(props.systemList) ? props.systemList : []
+  const system = list.find((s) => String(s.id) === sid)
+  const url = system && typeof system.url === 'string' ? system.url : ''
+  return url || ''
 })
 
 // 可用模块
@@ -353,6 +725,38 @@ const rawFormProgress = computed(() => {
 
 // 防抖的进度值
 const formProgress = ref(rawFormProgress.value)
+
+// 请求参数：根据当前激活Tab进行筛选，用于示例预览
+const requestParamsForActiveTab = computed(() => {
+  const tab = activeParamsTab.value
+  const params = Array.isArray(localFormData.requestParameters) ? localFormData.requestParameters : []
+  const filtered = params.filter(p => (p.location || '') === tab)
+  return filtered
+})
+
+// 请求参数示例JSON字符串
+const requestExampleJson = computed(() => {
+  const params = requestParamsForActiveTab.value
+  if (!Array.isArray(params) || params.length === 0) return ''
+  try {
+    const example = SchemaConverter.toExampleJson(params)
+    return JSON.stringify(example, null, 2)
+  } catch (e) {
+    return ''
+  }
+})
+
+// 响应参数示例JSON字符串
+const responseExampleJson = computed(() => {
+  const params = Array.isArray(localFormData.responseParameters) ? localFormData.responseParameters : []
+  if (params.length === 0) return ''
+  try {
+    const example = SchemaConverter.toExampleJson(params)
+    return JSON.stringify(example, null, 2)
+  } catch (e) {
+    return ''
+  }
+})
 
 // 监听原始进度变化，使用防抖更新
 watch(rawFormProgress, debounce((newProgress) => {
@@ -467,6 +871,124 @@ watch(() => props.formData, (newData) => {
 
 // 已移除：弹框打开即加载模块列表的监听，避免旧的 systemId 触发请求。
 // 现在仅在 systemId 变化时加载模块列表（见上方对 formData 的 watch 和 handleSystemChange）。
+
+// 四表格面板状态与方法
+const activeParamsTab = ref('query')
+const queryList = ref([])
+const formList = ref([])
+const pathParamsList = ref([])
+const showQueryJson = ref(false)
+const queryJson = ref('')
+const showFormJson = ref(false)
+const formJson = ref('')
+const showPathJson = ref(false)
+const pathJson = ref('')
+const jsonBody = ref('')
+const activeBodyType = ref('none')
+
+const hasBothBodies = computed(() => {
+  const hasJson = (jsonBody.value || '').trim().length > 0
+  const hasForm = formList.value.filter(item => (item.key ?? '').trim()).length > 0
+  return hasJson && hasForm
+})
+
+const paramsCount = computed(() => Array.isArray(localFormData.requestParameters) ? localFormData.requestParameters.length : 0)
+
+const addQueryParam = () => { queryList.value.push({ key: '', value: '' }) }
+const removeQueryParam = (index) => { queryList.value.splice(index, 1) }
+const applyQueryJson = () => {
+  try {
+    const obj = JSON.parse(queryJson.value || '{}')
+    queryList.value = Object.keys(obj).map(k => ({ key: k, value: String(obj[k] ?? '') }))
+  } catch (e) {
+    ElMessage.error('Query JSON解析失败')
+  }
+}
+
+const addFormParam = () => { formList.value.push({ key: '', value: '' }) }
+const removeFormParam = (index) => { formList.value.splice(index, 1) }
+const applyFormJson = () => {
+  try {
+    const obj = JSON.parse(formJson.value || '{}')
+    formList.value = Object.keys(obj).map(k => ({ key: k, value: String(obj[k] ?? '') }))
+  } catch (e) {
+    ElMessage.error('Form JSON解析失败')
+  }
+}
+
+const addPathParam = () => { pathParamsList.value.push({ key: '', value: '' }) }
+const removePathParam = (index) => { pathParamsList.value.splice(index, 1) }
+const applyPathJson = () => {
+  try {
+    const obj = JSON.parse(pathJson.value || '{}')
+    pathParamsList.value = Object.keys(obj).map(k => ({ key: k, value: String(obj[k] ?? '') }))
+  } catch (e) {
+    ElMessage.error('Path JSON解析失败')
+  }
+}
+
+const parseUrlToQueryAndPath = () => {
+  // 优先使用 Query 面板中的输入（允许直接粘贴完整 URL）；若无则回退到基本信息中的 URL 字段
+  const candidate = (queryJson.value || localFormData.url || '').trim()
+  if (!candidate) {
+    ElMessage.warning('请先输入URL')
+    return
+  }
+
+  // 选择解析来源：当内容看起来像 URL（含 ?、以 http(s):// 或 / 开头）时，直接使用；否则回退到基本信息中的 URL
+  const source = (() => {
+    if (/^https?:\/\//i.test(candidate) || candidate.startsWith('/') || candidate.includes('?')) return candidate
+    const basic = String(localFormData.url || '').trim()
+    return basic || candidate
+  })()
+
+  const toFullUrl = (u) => {
+    if (/^https?:\/\//i.test(u)) return u
+    // 支持以 / 开头的相对路径或纯路径
+    const path = u.startsWith('/') ? u : `/${u}`
+    return `${baseUrl.value}${path}`
+  }
+
+  let parsed
+  try {
+    parsed = new URL(toFullUrl(source))
+  } catch {
+    ElMessage.error('URL格式不正确，无法解析')
+    return
+  }
+
+  // 解析 Query 参数
+  const entries = []
+  parsed.searchParams.forEach((value, key) => { entries.push({ key, value: String(value ?? '') }) })
+  queryList.value = entries
+
+  // 若勾选了 JSON 模式，则同步填充 queryJson 便于查看
+  if (showQueryJson.value) {
+    const obj = {}
+    entries.forEach(({ key, value }) => { obj[key] = value })
+    try { queryJson.value = JSON.stringify(obj, null, 2) } catch {}
+  }
+
+  // 将基础信息中的 URL 规范为纯路径（去除查询串和协议域名）
+  localFormData.url = parsed.pathname
+
+  // 识别路径占位符（{id} 形式）
+  const matches = [...parsed.pathname.matchAll(/\{([a-zA-Z0-9_]+)\}/g)]
+  pathParamsList.value = matches.map(m => ({ key: m[1], value: '' }))
+
+  ElMessage.success(`已解析 ${entries.length} 个Query参数，识别 ${pathParamsList.value.length} 个占位符`)
+}
+
+watch(jsonBody, (newVal) => {
+  const hasJson = (newVal || '').trim().length > 0
+  const hasForm = formList.value.filter(i => (i.key ?? '').trim()).length > 0
+  activeBodyType.value = hasJson && !hasForm ? 'json' : (hasForm && !hasJson ? 'form' : activeBodyType.value)
+})
+watch(formList, () => {
+  const hasJson = (jsonBody.value || '').trim().length > 0
+  const hasForm = formList.value.filter(i => (i.key ?? '').trim()).length > 0
+  activeBodyType.value = hasForm && !hasJson ? 'form' : (hasJson && !hasForm ? 'json' : activeBodyType.value)
+}, { deep: true })
 
 // 方法
 async function loadModuleList(systemId = null) {
@@ -624,6 +1146,44 @@ const handleSave = async () => {
 
     // 响应参数采用统一编辑器结构，无需示例校验
 
+    // 从四表格面板构建请求体Schema与格式
+    const selectedBodyType = (() => {
+      const hasJson = (jsonBody.value || '').trim().length > 0
+      const hasForm = formList.value.filter(i => (i.key ?? '').trim()).length > 0
+      if (hasJson && hasForm) return activeBodyType.value === 'form' ? 'form' : 'json'
+      if (hasJson) return 'json'
+      if (hasForm) return 'form'
+      return 'json'
+    })()
+    const schemaObj = (() => {
+      try {
+        if (selectedBodyType === 'json') {
+          const parsed = JSON.parse(jsonBody.value || '{}')
+          let params = ParamsConverter.fromExample(parsed)
+          // 标注 JSON Body 的 location
+          params = params.map(p => ({ ...p, location: 'json' }))
+          return ParamsConverter.toRequestSchema(params)
+        } else if (selectedBodyType === 'form') {
+          const obj = {}
+          formList.value.forEach(item => {
+            const k = (item.key || '').trim()
+            if (!k) return
+            obj[k] = item.value ?? ''
+          })
+          let params = ParamsConverter.fromExample(obj)
+          // 标注 Form Body 的 location
+          params = params.map(p => ({ ...p, location: 'form' }))
+          return ParamsConverter.toRequestSchema(params)
+        }
+      } catch (e) {
+        console.warn('构建请求体Schema失败:', e)
+      }
+      if (Array.isArray(localFormData.requestParameters) && localFormData.requestParameters.length > 0) {
+        return ParamsConverter.toRequestSchema(localFormData.requestParameters)
+      }
+      return null
+    })()
+
     // 准备保存数据，严格按照后端ApiInterfaceCreate模型构建
     const saveData = {
       id: localFormData.id,
@@ -635,7 +1195,7 @@ const handleSave = async () => {
       module_id: localFormData.moduleId ? parseInt(localFormData.moduleId) : null,
       version: 'v1',
       status: localFormData.enabled ? 'active' : 'inactive',
-      request_format: 'json',
+      request_format: selectedBodyType,
       response_format: 'json',
       auth_required: localFormData.authRequired ? 1 : 0,
       rate_limit: 1000,
@@ -644,17 +1204,9 @@ const handleSave = async () => {
         const arr = toStringArray(localFormData.tags)
         return arr.length > 0 ? arr.join(',') : null
       })(),
-      request_schema: localFormData.requestParameters && localFormData.requestParameters.length > 0 ? 
-        JSON.stringify(localFormData.requestParameters.filter(param => param.name.trim()).reduce((acc, param) => {
-          acc[param.name] = {
-            type: param.type || 'string',
-            required: param.required || false,
-            description: param.description || ''
-          }
-          return acc
-        }, {})) : null,
+      request_schema: schemaObj ?? null,
       response_schema: (Array.isArray(localFormData.responseParameters) && localFormData.responseParameters.length > 0)
-        ? JSON.stringify(ParamsConverter.toSchema(localFormData.responseParameters))
+        ? ParamsConverter.toSchema(localFormData.responseParameters)
         : null,
       example_response: null
     }
@@ -759,11 +1311,12 @@ const handleSaveParams = async () => {
   }
   try {
     saving.value = true
-    const schemaObj = Array.isArray(localFormData.requestParameters) && localFormData.requestParameters.length > 0
-      ? ParamsConverter.toSchema(localFormData.requestParameters)
-      : null
+    const hasParams = Array.isArray(localFormData.requestParameters) && localFormData.requestParameters.length > 0
+    const schemaObj = hasParams
+      ? ParamsConverter.toRequestSchema(localFormData.requestParameters)
+      : {}
     const payload = {
-      request_schema: schemaObj || undefined,
+      request_schema: schemaObj,
       request_format: 'json'
     }
     const resp = await apiProxy.updateApi(String(localFormData.id), payload)
@@ -779,8 +1332,10 @@ const handleSaveParams = async () => {
       }
       if (normalizedSchema) {
         localFormData.requestParameters = ParamsConverter.fromSchema(normalizedSchema)
+      } else if (!hasParams) {
+        localFormData.requestParameters = []
       }
-      ElMessage.success('请求参数已保存')
+      ElMessage.success(hasParams ? '请求参数已保存' : '已清空请求参数')
     } else {
       throw new Error(resp?.message || '保存请求参数失败')
     }
@@ -1220,5 +1775,24 @@ onMounted(() => {
 
 :deep(.el-progress-bar__inner) {
   border-radius: 10px;
+}
+
+/* 让请求参数的 Tabs 卡片占满宽度 */
+.full-width-tabs { width: 100%; }
+.full-width-tabs :deep(.el-tabs__header),
+.full-width-tabs :deep(.el-tabs__content) { width: 100%; }
+
+/* 示例展示样式 */
+.parameter-example {
+  margin-top: 12px;
+}
+.example-json {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 280px;
+  overflow: auto;
 }
 </style>

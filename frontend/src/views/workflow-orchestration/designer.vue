@@ -3,7 +3,10 @@
     <!-- 工具栏 -->
     <div class="designer-toolbar">
       <div class="toolbar-left">
-        <el-button type="primary" @click="saveWorkflow">
+        <el-button
+          type="primary"
+          @click="saveWorkflow"
+        >
           <el-icon><Document /></el-icon>
           保存
         </el-button>
@@ -12,35 +15,38 @@
           加载
         </el-button>
         <el-button @click="clearCanvas">
-            <el-icon><Delete /></el-icon>
-            清空
-          </el-button>
-          <el-button @click="loadTestWorkflow">
-            <el-icon><Upload /></el-icon>
-            加载测试
-          </el-button>
+          <el-icon><Delete /></el-icon>
+          清空
+        </el-button>
+        <el-button @click="loadTestWorkflow">
+          <el-icon><Upload /></el-icon>
+          加载测试
+        </el-button>
       </div>
       
       <div class="toolbar-center">
         <el-button-group>
           <el-button 
             type="success" 
-            @click="executeWorkflow"
             :disabled="isExecuting"
             :loading="isExecuting"
+            @click="executeWorkflow"
           >
             <el-icon><VideoPlay /></el-icon>
             {{ isExecuting ? '执行中...' : '执行' }}
           </el-button>
           <el-button 
             type="danger" 
-            @click="stopWorkflow"
             :disabled="!isExecuting"
+            @click="stopWorkflow"
           >
             <el-icon><VideoPause /></el-icon>
             停止
           </el-button>
-          <el-button @click="debugWorkflow" :disabled="isExecuting">
+          <el-button
+            :disabled="isExecuting"
+            @click="debugWorkflow"
+          >
             <el-icon><Tools /></el-icon>
             调试
           </el-button>
@@ -51,11 +57,17 @@
         </el-button-group>
         
         <!-- 执行状态显示 -->
-        <div v-if="workflowState" class="execution-status">
+        <div
+          v-if="workflowState"
+          class="execution-status"
+        >
           <span class="status-text">
             状态: {{ getStatusText(workflowState.status) }}
           </span>
-          <span v-if="workflowState.startTime" class="execution-time">
+          <span
+            v-if="workflowState.startTime"
+            class="execution-time"
+          >
             耗时: {{ getExecutionTime(workflowState) }}ms
           </span>
         </div>
@@ -104,9 +116,15 @@
             class="node-category"
           >
             <div class="category-header">
-              <h4>{{ category.title }}
-                <el-tooltip :content="category.description" placement="right">
-                  <el-icon class="category-info"><InfoFilled /></el-icon>
+              <h4>
+                {{ category.title }}
+                <el-tooltip
+                  :content="category.description"
+                  placement="right"
+                >
+                  <el-icon class="category-info">
+                    <InfoFilled />
+                  </el-icon>
                 </el-tooltip>
               </h4>
             </div>
@@ -121,16 +139,22 @@
                 <div
                   class="node-item"
                   draggable="true"
-                  @dragstart="onDragStart($event, node)"
                   :style="{ borderLeftColor: node.color }"
+                  @dragstart="onDragStart($event, node)"
                 >
                   <div class="node-content">
-                    <el-icon class="node-icon" :style="{ color: node.color }">
+                    <el-icon
+                      class="node-icon"
+                      :style="{ color: node.color }"
+                    >
                       <component :is="node.icon" />
                     </el-icon>
                     <span class="node-label">{{ node.label }}</span>
                   </div>
-                  <div class="node-indicator" :style="{ backgroundColor: node.color }"></div>
+                  <div
+                    class="node-indicator"
+                    :style="{ backgroundColor: node.color }"
+                  />
                 </div>
               </el-tooltip>
             </div>
@@ -161,14 +185,14 @@
         <VueFlow
           v-model:nodes="nodes"
           v-model:edges="edges"
+          :snap-to-grid="true"
+          :snap-grid="[15, 15]"
+          class="vue-flow-container"
           @dragover="onDragOver"
           @drop="onDrop"
           @node-click="onNodeClick"
           @edge-click="onEdgeClick"
           @connect="onConnect"
-          :snap-to-grid="true"
-          :snap-grid="[15, 15]"
-          class="vue-flow-container"
         >
           <Background />
           <Controls />
@@ -207,8 +231,6 @@
           </template>
         </VueFlow>
       </div>
-
-
     </div>
     
     <!-- 执行进度面板 -->

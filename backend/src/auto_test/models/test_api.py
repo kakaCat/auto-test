@@ -1,16 +1,17 @@
 """
-测试API管理 数据模型
-Test APIs Management Data Models
+API测试场景管理 数据模型
+API Test Scenario Management Data Models
 
 与 docs/design/test-api-management-backend/04_REQUEST_RESPONSE_SCHEMAS.md 对齐：
 - TestApi, RunResult, BatchExecuteRequest 等模型
 - 字段命名采用下划线风格，tags 使用字符串列表
 """
 
+from __future__ import annotations
 from typing import Optional, List, Dict, Any
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 
 
 class TestApiBase(BaseModel):
@@ -25,7 +26,11 @@ class TestApiBase(BaseModel):
 
 class TestApiCreate(TestApiBase):
     """创建测试API模型"""
-    pass
+    # 允许直接传入仓储层的JSON字段
+    request_config: Optional[RequestConfig] = Field(None, description="请求配置")
+    execution_config: Optional[ExecutionConfig] = Field(None, description="执行配置")
+    expected_response: Optional[ExpectedResponse] = Field(None, description="期望响应")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
 
 
 class TestApiUpdate(BaseModel):
@@ -36,6 +41,11 @@ class TestApiUpdate(BaseModel):
     tags: Optional[str] = Field(None, description="标签字符串（逗号分隔）")
     description: Optional[str] = Field(None, description="描述")
     config: Optional[Dict[str, Any]] = Field(None, description="执行配置(JSON)")
+    # 允许更新仓储层的JSON字段
+    request_config: Optional[RequestConfig] = Field(None, description="请求配置")
+    execution_config: Optional[ExecutionConfig] = Field(None, description="执行配置")
+    expected_response: Optional[ExpectedResponse] = Field(None, description="期望响应")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
 
 
 class TestApi(TestApiBase):
@@ -53,6 +63,11 @@ class TestApiDetail(BaseModel):
     tags: Optional[str] = Field(default=None, description="标签字符串（逗号分隔）")
     description: Optional[str] = Field(default=None, description="描述")
     config: Optional[Dict[str, Any]] = Field(default=None, description="执行配置(JSON)")
+    # 仓储层JSON字段直出，补充到详情模型，避免被过滤
+    request_config: Optional[RequestConfig] = Field(None, description="请求配置")
+    execution_config: Optional[ExecutionConfig] = Field(None, description="执行配置")
+    expected_response: Optional[ExpectedResponse] = Field(None, description="期望响应")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
     api_id: Optional[int] = Field(None, description="关联的API接口ID")
     created_at: Optional[datetime] = Field(None, description="创建时间")
     updated_at: Optional[datetime] = Field(None, description="更新时间")
@@ -183,11 +198,23 @@ class RequestConfig(BaseModel):
     url: Optional[str] = Field(None, description="请求URL")
     headers: Optional[Dict[str, Any]] = Field(None, description="请求头")
     params: Optional[Dict[str, Any]] = Field(None, description="查询参数")
+    # 为前端兼容提供别名字段
+    query_params: Optional[Dict[str, Any]] = Field(None, description="查询参数(别名: query_params)")
     body: Optional[Any] = Field(None, description="请求体")
     body_type: Optional[str] = Field(None, description="请求体类型")
     timeout: Optional[int] = Field(None, description="超时时间")
     follow_redirects: Optional[bool] = Field(None, description="跟随重定向")
     validate_ssl: Optional[bool] = Field(None, description="校验SSL")
+
+    @root_validator(pre=True)
+    def _sync_params(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        qp = values.get("query_params")
+        p = values.get("params")
+        if qp is not None and p is None:
+            values["params"] = qp
+        elif p is not None and qp is None:
+            values["query_params"] = p
+        return values
 
 
 class ExecutionConfig(BaseModel):

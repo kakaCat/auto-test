@@ -1,11 +1,14 @@
 <template>
-  <div class="execution-progress" v-if="visible">
+  <div
+    v-if="visible"
+    class="execution-progress"
+  >
     <div class="progress-header">
       <h4>执行进度</h4>
       <el-button 
         type="text" 
-        @click="$emit('close')"
         class="close-btn"
+        @click="$emit('close')"
       >
         <el-icon><Close /></el-icon>
       </el-button>
@@ -27,7 +30,9 @@
       
       <!-- 节点执行状态列表 -->
       <div class="node-list">
-        <div class="list-header">节点执行状态</div>
+        <div class="list-header">
+          节点执行状态
+        </div>
         <div class="node-items">
           <div 
             v-for="node in nodeList" 
@@ -36,8 +41,12 @@
             :class="getNodeStatusClass(node.status)"
           >
             <div class="node-info">
-              <div class="node-name">{{ node.label }}</div>
-              <div class="node-type">{{ getNodeTypeText(node.type) }}</div>
+              <div class="node-name">
+                {{ node.label }}
+              </div>
+              <div class="node-type">
+                {{ getNodeTypeText(node.type) }}
+              </div>
             </div>
             
             <div class="node-status">
@@ -51,7 +60,10 @@
             </div>
             
             <!-- 执行时间 -->
-            <div class="execution-time" v-if="node.executionTime">
+            <div
+              v-if="node.executionTime"
+              class="execution-time"
+            >
               {{ node.executionTime }}ms
             </div>
           </div>
@@ -59,16 +71,25 @@
       </div>
       
       <!-- 错误信息 -->
-      <div v-if="errorNodes.length > 0" class="error-section">
-        <div class="error-header">执行错误</div>
+      <div
+        v-if="errorNodes.length > 0"
+        class="error-section"
+      >
+        <div class="error-header">
+          执行错误
+        </div>
         <div class="error-items">
           <div 
             v-for="error in errorNodes" 
             :key="error.id"
             class="error-item"
           >
-            <div class="error-node">{{ error.label }}</div>
-            <div class="error-message">{{ error.error }}</div>
+            <div class="error-node">
+              {{ error.label }}
+            </div>
+            <div class="error-message">
+              {{ error.error }}
+            </div>
           </div>
         </div>
       </div>

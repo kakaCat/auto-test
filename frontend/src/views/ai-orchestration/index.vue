@@ -19,11 +19,18 @@
             placeholder="例如：创建一个新用户，然后给他发送欢迎邮件，最后验证邮件是否发送成功"
           />
           <div class="input-actions">
-            <el-button type="primary" @click="executeOrchestration" :loading="executing">
-<el-icon><VideoPlay /></el-icon>
+            <el-button
+              type="primary"
+              :loading="executing"
+              @click="executeOrchestration"
+            >
+              <el-icon><VideoPlay /></el-icon>
               执行编排
             </el-button>
-            <el-button @click="generatePlan" :loading="generating">
+            <el-button
+              :loading="generating"
+              @click="generatePlan"
+            >
               <el-icon><Document /></el-icon>
               生成计划
             </el-button>
@@ -36,45 +43,101 @@
       </div>
       
       <!-- 计划预览（Step3） -->
-      <div class="plan-preview" v-if="executionPlan">
+      <div
+        v-if="executionPlan"
+        class="plan-preview"
+      >
         <el-card>
           <template #header>
             <span>计划预览（Step3）</span>
-            <el-tag :type="planValidation?.ok ? 'success' : 'danger'" style="margin-left: 10px">
+            <el-tag
+              :type="planValidation?.ok ? 'success' : 'danger'"
+              style="margin-left: 10px"
+            >
               {{ planValidation?.ok ? '校验通过' : '校验失败' }}
             </el-tag>
           </template>
           
           <!-- 计划摘要 -->
-          <div class="plan-summary" v-if="planSummary">
-            <el-descriptions :column="3" border size="small">
-              <el-descriptions-item label="总步骤数">{{ planSummary.total_steps }}</el-descriptions-item>
-              <el-descriptions-item label="预估时长">{{ planSummary.estimated_duration }}秒</el-descriptions-item>
-              <el-descriptions-item label="涉及系统">{{ planSummary.involved_systems }}</el-descriptions-item>
+          <div
+            v-if="planSummary"
+            class="plan-summary"
+          >
+            <el-descriptions
+              :column="3"
+              border
+              size="small"
+            >
+              <el-descriptions-item label="总步骤数">
+                {{ planSummary.total_steps }}
+              </el-descriptions-item>
+              <el-descriptions-item label="预估时长">
+                {{ planSummary.estimated_duration }}秒
+              </el-descriptions-item>
+              <el-descriptions-item label="涉及系统">
+                {{ planSummary.involved_systems }}
+              </el-descriptions-item>
             </el-descriptions>
           </div>
           
           <!-- 步骤列表 -->
-          <el-table :data="executionPlan.steps" style="margin-top: 15px;">
-            <el-table-column prop="step_id" label="步骤ID" width="100" />
-            <el-table-column prop="step_name" label="步骤名称" />
-            <el-table-column prop="step_type" label="类型" width="120" />
-            <el-table-column prop="tool_name" label="工具" width="120" />
-            <el-table-column label="参数" width="200">
+          <el-table
+            :data="executionPlan.steps"
+            style="margin-top: 15px;"
+          >
+            <el-table-column
+              prop="step_id"
+              label="步骤ID"
+              width="100"
+            />
+            <el-table-column
+              prop="step_name"
+              label="步骤名称"
+            />
+            <el-table-column
+              prop="step_type"
+              label="类型"
+              width="120"
+            />
+            <el-table-column
+              prop="tool_name"
+              label="工具"
+              width="120"
+            />
+            <el-table-column
+              label="参数"
+              width="200"
+            >
               <template #default="{ row }">
-                <el-popover placement="top" :width="400" trigger="hover">
+                <el-popover
+                  placement="top"
+                  :width="400"
+                  trigger="hover"
+                >
                   <template #reference>
-                    <el-button size="small" type="text">查看参数</el-button>
+                    <el-button
+                      size="small"
+                      type="text"
+                    >
+                      查看参数
+                    </el-button>
                   </template>
                   <pre>{{ JSON.stringify(row.parameters, null, 2) }}</pre>
                 </el-popover>
               </template>
             </el-table-column>
-            <el-table-column prop="timeout" label="超时(秒)" width="100" />
+            <el-table-column
+              prop="timeout"
+              label="超时(秒)"
+              width="100"
+            />
           </el-table>
           
           <!-- 校验结果 -->
-          <div class="validation-result" v-if="planValidation && !planValidation.ok">
+          <div
+            v-if="planValidation && !planValidation.ok"
+            class="validation-result"
+          >
             <el-alert
               title="计划校验问题"
               type="warning"
@@ -84,55 +147,106 @@
               <div v-if="planValidation.issues?.length">
                 <p><strong>错误：</strong></p>
                 <ul>
-                  <li v-for="issue in planValidation.issues" :key="issue">{{ issue }}</li>
+                  <li
+                    v-for="issue in planValidation.issues"
+                    :key="issue"
+                  >
+                    {{ issue }}
+                  </li>
                 </ul>
               </div>
               <div v-if="planValidation.warnings?.length">
                 <p><strong>警告：</strong></p>
                 <ul>
-                  <li v-for="warning in planValidation.warnings" :key="warning">{{ warning }}</li>
+                  <li
+                    v-for="warning in planValidation.warnings"
+                    :key="warning"
+                  >
+                    {{ warning }}
+                  </li>
                 </ul>
               </div>
             </el-alert>
           </div>
           
-          <div class="plan-actions" style="margin-top: 15px;">
-            <el-button @click="validatePlan" type="primary" :loading="validating">校验计划</el-button>
-            <el-button @click="executePlan" type="success" :loading="executing" :disabled="!planValidation?.ok">执行计划</el-button>
+          <div
+            class="plan-actions"
+            style="margin-top: 15px;"
+          >
+            <el-button
+              type="primary"
+              :loading="validating"
+              @click="validatePlan"
+            >
+              校验计划
+            </el-button>
+            <el-button
+              type="success"
+              :loading="executing"
+              :disabled="!planValidation?.ok"
+              @click="executePlan"
+            >
+              执行计划
+            </el-button>
           </div>
         </el-card>
       </div>
 
       <!-- 执行结果区域（Run 视图） -->
-      <div class="result-section" v-if="executionResult">
+      <div
+        v-if="executionResult"
+        class="result-section"
+      >
         <el-card>
           <template #header>
             <span>执行结果</span>
-            <el-tag :type="getStatusType(executionResult.status)" style="margin-left: 10px;">
+            <el-tag
+              :type="getStatusType(executionResult.status)"
+              style="margin-left: 10px;"
+            >
               {{ executionResult.status }}
             </el-tag>
           </template>
           
           <!-- 执行统计 -->
-          <div class="execution-stats" v-if="executionStatus">
+          <div
+            v-if="executionStatus"
+            class="execution-stats"
+          >
             <el-row :gutter="20">
               <el-col :span="6">
-                <el-statistic title="总步骤" :value="executionStatus.steps?.total || 0" />
+                <el-statistic
+                  title="总步骤"
+                  :value="executionStatus.steps?.total || 0"
+                />
               </el-col>
               <el-col :span="6">
-                <el-statistic title="已完成" :value="executionStatus.steps?.completed || 0" />
+                <el-statistic
+                  title="已完成"
+                  :value="executionStatus.steps?.completed || 0"
+                />
               </el-col>
               <el-col :span="6">
-                <el-statistic title="失败" :value="executionStatus.steps?.failed || 0" />
+                <el-statistic
+                  title="失败"
+                  :value="executionStatus.steps?.failed || 0"
+                />
               </el-col>
               <el-col :span="6">
-                <el-statistic title="进度" :value="Math.round((executionStatus.progress || 0) * 100)" suffix="%" />
+                <el-statistic
+                  title="进度"
+                  :value="Math.round((executionStatus.progress || 0) * 100)"
+                  suffix="%"
+                />
               </el-col>
             </el-row>
           </div>
           
           <!-- 执行步骤（DAG简化渲染） -->
-          <div class="execution-steps" style="margin-top: 20px;">
+          <div
+            class="execution-steps"
+            style="margin-top: 20px;"
+          >
             <h4>执行步骤</h4>
             <el-timeline>
               <el-timeline-item
@@ -144,14 +258,35 @@
                 <div class="step-content">
                   <div class="step-header">
                     <strong>{{ step.step_name }}</strong>
-                    <el-tag :type="getStepStatusType(step.status)" size="small">{{ step.status }}</el-tag>
+                    <el-tag
+                      :type="getStepStatusType(step.status)"
+                      size="small"
+                    >
+                      {{ step.status }}
+                    </el-tag>
                   </div>
                   <p>类型: {{ step.step_type }} | 工具: {{ step.tool_name || 'N/A' }}</p>
-                  <div v-if="step.error_message" class="step-error">
-                    <el-alert :title="step.error_message" type="error" :closable="false" />
+                  <div
+                    v-if="step.error_message"
+                    class="step-error"
+                  >
+                    <el-alert
+                      :title="step.error_message"
+                      type="error"
+                      :closable="false"
+                    />
                   </div>
-                  <div v-if="step.output_data" class="step-output">
-                    <el-button size="small" type="text" @click="showStepOutput(step)">查看输出</el-button>
+                  <div
+                    v-if="step.output_data"
+                    class="step-output"
+                  >
+                    <el-button
+                      size="small"
+                      type="text"
+                      @click="showStepOutput(step)"
+                    >
+                      查看输出
+                    </el-button>
                   </div>
                 </div>
               </el-timeline-item>
@@ -161,11 +296,20 @@
       </div>
       
       <!-- 实时日志 -->
-      <div class="logs-section" v-if="executionLogs.length > 0">
+      <div
+        v-if="executionLogs.length > 0"
+        class="logs-section"
+      >
         <el-card>
           <template #header>
             <span>实时日志</span>
-            <el-button size="small" @click="clearLogs" style="float: right;">清空日志</el-button>
+            <el-button
+              size="small"
+              style="float: right;"
+              @click="clearLogs"
+            >
+              清空日志
+            </el-button>
           </template>
           <div class="logs-container">
             <div 
@@ -184,7 +328,11 @@
     </div>
     
     <!-- 步骤输出对话框 -->
-    <el-dialog v-model="outputDialogVisible" title="步骤输出" width="60%">
+    <el-dialog
+      v-model="outputDialogVisible"
+      title="步骤输出"
+      width="60%"
+    >
       <pre>{{ selectedStepOutput }}</pre>
     </el-dialog>
   </div>

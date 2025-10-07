@@ -1,32 +1,75 @@
 <template>
-  <div class="api-call-node" :class="{ selected: data.selected, running: data.status === 'running', expanded: isExpanded }">
-    <div class="node-header" @click="toggleExpanded">
-      <el-icon class="node-icon"><Connection /></el-icon>
+  <div
+    class="api-call-node"
+    :class="{ selected: data.selected, running: data.status === 'running', expanded: isExpanded }"
+  >
+    <div
+      class="node-header"
+      @click="toggleExpanded"
+    >
+      <el-icon class="node-icon">
+        <Connection />
+      </el-icon>
       <span class="node-title">{{ data.config?.api || 'API调用' }}</span>
       <div class="node-controls">
-        <el-icon class="expand-icon" :class="{ rotated: isExpanded }"><ArrowDown /></el-icon>
+        <el-icon
+          class="expand-icon"
+          :class="{ rotated: isExpanded }"
+        >
+          <ArrowDown />
+        </el-icon>
         <div class="node-status">
-          <el-icon v-if="data.status === 'running'" class="rotating"><Loading /></el-icon>
-          <el-icon v-else-if="data.status === 'success'" style="color: #67c23a"><Check /></el-icon>
-          <el-icon v-else-if="data.status === 'error'" style="color: #f56c6c"><Close /></el-icon>
+          <el-icon
+            v-if="data.status === 'running'"
+            class="rotating"
+          >
+            <Loading />
+          </el-icon>
+          <el-icon
+            v-else-if="data.status === 'success'"
+            style="color: #67c23a"
+          >
+            <Check />
+          </el-icon>
+          <el-icon
+            v-else-if="data.status === 'error'"
+            style="color: #f56c6c"
+          >
+            <Close />
+          </el-icon>
         </div>
       </div>
     </div>
     
     <!-- 折叠状态下的简要信息 -->
-    <div v-if="!isExpanded" class="node-summary">
-      <div v-if="data.config?.method" class="method-tag">
-        <el-tag :type="getMethodTagType(data.config.method)" size="small">
+    <div
+      v-if="!isExpanded"
+      class="node-summary"
+    >
+      <div
+        v-if="data.config?.method"
+        class="method-tag"
+      >
+        <el-tag
+          :type="getMethodTagType(data.config.method)"
+          size="small"
+        >
           {{ data.config.method }}
         </el-tag>
       </div>
-      <div v-if="data.config?.system" class="summary-text">
+      <div
+        v-if="data.config?.system"
+        class="summary-text"
+      >
         {{ data.config.system }} > {{ data.config.module }}
       </div>
     </div>
 
     <!-- 展开状态下的完整配置界面 -->
-    <div v-if="isExpanded" class="node-config">
+    <div
+      v-if="isExpanded"
+      class="node-config"
+    >
       <!-- 系统选择 -->
       <div class="config-section">
         <label class="config-label">选择系统:</label>
@@ -34,8 +77,8 @@
           v-model="selectedSystem" 
           placeholder="请选择系统"
           size="small"
-          @change="onSystemChange"
           class="config-select"
+          @change="onSystemChange"
         >
           <el-option
             v-for="system in systemOptions"
@@ -47,14 +90,17 @@
       </div>
 
       <!-- 模块选择 -->
-      <div class="config-section" v-if="selectedSystem">
+      <div
+        v-if="selectedSystem"
+        class="config-section"
+      >
         <label class="config-label">选择模块:</label>
         <el-select 
           v-model="selectedModule" 
           placeholder="请选择模块"
           size="small"
-          @change="onModuleChange"
           class="config-select"
+          @change="onModuleChange"
         >
           <el-option
             v-for="module in moduleOptions"
@@ -66,14 +112,17 @@
       </div>
 
       <!-- API选择 -->
-      <div class="config-section" v-if="selectedModule">
+      <div
+        v-if="selectedModule"
+        class="config-section"
+      >
         <label class="config-label">选择API:</label>
         <el-select 
           v-model="selectedApi" 
           placeholder="请选择API"
           size="small"
-          @change="onApiChange"
           class="config-select"
+          @change="onApiChange"
         >
           <el-option
             v-for="api in apiOptions"
@@ -83,46 +132,81 @@
           >
             <div class="api-option">
               <span class="api-name">{{ api.name }}</span>
-              <el-tag :type="getMethodTagType(api.method)" size="small">{{ api.method }}</el-tag>
+              <el-tag
+                :type="getMethodTagType(api.method)"
+                size="small"
+              >
+                {{ api.method }}
+              </el-tag>
             </div>
           </el-option>
         </el-select>
       </div>
 
       <!-- API详细信息 -->
-      <div v-if="selectedApiInfo" class="api-info">
+      <div
+        v-if="selectedApiInfo"
+        class="api-info"
+      >
         <div class="api-basic-info">
           <div class="info-row">
-            <el-tag :type="getMethodTagType(selectedApiInfo.method)" size="small">
+            <el-tag
+              :type="getMethodTagType(selectedApiInfo.method)"
+              size="small"
+            >
               {{ selectedApiInfo.method }}
             </el-tag>
             <code class="api-path">{{ selectedApiInfo.path }}</code>
           </div>
-        <div v-if="selectedApiInfo.description" class="api-description">
-          {{ selectedApiInfo.description }}
-        </div>
-      </div>
-
-      <!-- 响应字段参考（优先使用 response_schema，回退 example_response） -->
-      <div class="response-ref">
-        <label class="config-label">响应字段参考:</label>
-        <div v-if="responseFieldRef.length > 0" class="response-list">
           <div
-            v-for="item in responseFieldRef"
-            :key="item.id"
-            class="response-item"
-            :style="{ marginLeft: (item.level || 0) * 12 + 'px' }"
+            v-if="selectedApiInfo.description"
+            class="api-description"
           >
-            <span class="field-name">{{ item.name }}</span>
-            <el-tag size="small" type="info" class="field-type">{{ item.type }}</el-tag>
-            <el-tag size="small" :type="item.required ? 'danger' : 'success'" class="field-required">
-              {{ item.required ? '必填' : '可选' }}
-            </el-tag>
-            <span v-if="item.description" class="field-desc">{{ item.description }}</span>
+            {{ selectedApiInfo.description }}
           </div>
         </div>
-        <div v-else class="empty-tip">暂无响应字段参考</div>
-      </div>
+
+        <!-- 响应字段参考（优先使用 response_schema，回退 example_response） -->
+        <div class="response-ref">
+          <label class="config-label">响应字段参考:</label>
+          <div
+            v-if="responseFieldRef.length > 0"
+            class="response-list"
+          >
+            <div
+              v-for="item in responseFieldRef"
+              :key="item.id"
+              class="response-item"
+              :style="{ marginLeft: (item.level || 0) * 12 + 'px' }"
+            >
+              <span class="field-name">{{ item.name }}</span>
+              <el-tag
+                size="small"
+                type="info"
+                class="field-type"
+              >
+                {{ item.type }}
+              </el-tag>
+              <el-tag
+                size="small"
+                :type="item.required ? 'danger' : 'success'"
+                class="field-required"
+              >
+                {{ item.required ? '必填' : '可选' }}
+              </el-tag>
+              <span
+                v-if="item.description"
+                class="field-desc"
+              >{{ item.description }}</span>
+            </div>
+          </div>
+          <div
+            v-else
+            class="empty-tip"
+          >
+            暂无响应字段参考
+          </div>
+        </div>
 
         <!-- 请求参数配置 -->
         <div class="params-config">
@@ -131,7 +215,7 @@
             v-model="requestParams"
             type="textarea"
             :rows="3"
-            placeholder='{"key": "value"}'
+            placeholder="{&quot;key&quot;: &quot;value&quot;}"
             size="small"
             class="params-input"
           />
@@ -144,7 +228,7 @@
             v-model="requestHeaders"
             type="textarea"
             :rows="2"
-            placeholder='{"Content-Type": "application/json"}'
+            placeholder="{&quot;Content-Type&quot;: &quot;application/json&quot;}"
             size="small"
             class="params-input"
           />
@@ -152,8 +236,14 @@
 
         <!-- 高级配置 -->
         <div class="advanced-config">
-          <el-collapse v-model="activeAdvanced" size="small">
-            <el-collapse-item title="高级配置" name="advanced">
+          <el-collapse
+            v-model="activeAdvanced"
+            size="small"
+          >
+            <el-collapse-item
+              title="高级配置"
+              name="advanced"
+            >
               <!-- 超时设置 -->
               <div class="config-section">
                 <label class="config-label">超时时间 (秒):</label>
@@ -181,19 +271,38 @@
               <!-- 错误处理 -->
               <div class="config-section">
                 <label class="config-label">错误处理:</label>
-                <el-select v-model="errorHandling" size="small" style="width: 100%">
-                  <el-option label="停止执行" value="stop" />
-                  <el-option label="继续执行" value="continue" />
-                  <el-option label="重试后停止" value="retry_stop" />
+                <el-select
+                  v-model="errorHandling"
+                  size="small"
+                  style="width: 100%"
+                >
+                  <el-option
+                    label="停止执行"
+                    value="stop"
+                  />
+                  <el-option
+                    label="继续执行"
+                    value="continue"
+                  />
+                  <el-option
+                    label="重试后停止"
+                    value="retry_stop"
+                  />
                 </el-select>
               </div>
 
               <!-- 缓存配置 -->
               <div class="config-section">
-                <el-checkbox v-model="enableCache" size="small">
+                <el-checkbox
+                  v-model="enableCache"
+                  size="small"
+                >
                   启用响应缓存
                 </el-checkbox>
-                <div v-if="enableCache" style="margin-top: 8px;">
+                <div
+                  v-if="enableCache"
+                  style="margin-top: 8px;"
+                >
                   <label class="config-label">缓存时间 (分钟):</label>
                   <el-input-number
                     v-model="cacheTime"

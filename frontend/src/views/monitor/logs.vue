@@ -2,15 +2,26 @@
   <div class="monitor-logs">
     <div class="page-header">
       <div>
-        <h1 class="page-title">日志管理</h1>
-        <p class="page-description">系统日志收集和分析</p>
+        <h1 class="page-title">
+          日志管理
+        </h1>
+        <p class="page-description">
+          系统日志收集和分析
+        </p>
       </div>
       <div class="header-actions">
-        <el-button @click="refreshLogs" :loading="loading">
+        <el-button
+          :loading="loading"
+          @click="refreshLogs"
+        >
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
-        <el-button @click="clearLogs" type="danger" plain>
+        <el-button
+          type="danger"
+          plain
+          @click="clearLogs"
+        >
           <el-icon><Delete /></el-icon>
           清空日志
         </el-button>
@@ -19,26 +30,66 @@
 
     <!-- 过滤器 -->
     <div class="filter-section">
-      <el-form :model="filterForm" inline>
+      <el-form
+        :model="filterForm"
+        inline
+      >
         <el-form-item label="日志级别">
-          <el-select v-model="filterForm.level" placeholder="选择日志级别" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="INFO" value="INFO" />
-            <el-option label="WARNING" value="WARNING" />
-            <el-option label="ERROR" value="ERROR" />
-            <el-option label="DEBUG" value="DEBUG" />
+          <el-select
+            v-model="filterForm.level"
+            placeholder="选择日志级别"
+            clearable
+          >
+            <el-option
+              label="全部"
+              value=""
+            />
+            <el-option
+              label="INFO"
+              value="INFO"
+            />
+            <el-option
+              label="WARNING"
+              value="WARNING"
+            />
+            <el-option
+              label="ERROR"
+              value="ERROR"
+            />
+            <el-option
+              label="DEBUG"
+              value="DEBUG"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="显示条数">
-          <el-select v-model="filterForm.limit" placeholder="选择显示条数">
-            <el-option label="5条" :value="5" />
-            <el-option label="10条" :value="10" />
-            <el-option label="20条" :value="20" />
-            <el-option label="50条" :value="50" />
+          <el-select
+            v-model="filterForm.limit"
+            placeholder="选择显示条数"
+          >
+            <el-option
+              label="5条"
+              :value="5"
+            />
+            <el-option
+              label="10条"
+              :value="10"
+            />
+            <el-option
+              label="20条"
+              :value="20"
+            />
+            <el-option
+              label="50条"
+              :value="50"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="loadLogs">
+          <el-button
+            type="primary"
+            @click="loadLogs"
+          >
             <el-icon><Search /></el-icon>
             查询
           </el-button>
@@ -49,39 +100,70 @@
     <!-- 统计信息 -->
     <div class="stats-section">
       <div class="stat-card">
-        <div class="stat-value">{{ logStats.total }}</div>
-        <div class="stat-label">总日志数</div>
+        <div class="stat-value">
+          {{ logStats.total }}
+        </div>
+        <div class="stat-label">
+          总日志数
+        </div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ logStats.info }}</div>
-        <div class="stat-label">信息日志</div>
+        <div class="stat-value">
+          {{ logStats.info }}
+        </div>
+        <div class="stat-label">
+          信息日志
+        </div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ logStats.warning }}</div>
-        <div class="stat-label">警告日志</div>
+        <div class="stat-value">
+          {{ logStats.warning }}
+        </div>
+        <div class="stat-label">
+          警告日志
+        </div>
       </div>
       <div class="stat-card error">
-        <div class="stat-value">{{ logStats.error }}</div>
-        <div class="stat-label">错误日志</div>
+        <div class="stat-value">
+          {{ logStats.error }}
+        </div>
+        <div class="stat-label">
+          错误日志
+        </div>
       </div>
       <div class="stat-card debug">
-        <div class="stat-value">{{ logStats.debug }}</div>
-        <div class="stat-label">调试日志</div>
+        <div class="stat-value">
+          {{ logStats.debug }}
+        </div>
+        <div class="stat-label">
+          调试日志
+        </div>
       </div>
     </div>
 
     <!-- 日志列表 -->
     <div class="logs-section">
-      <div v-if="loading" class="loading-container">
-        <el-icon class="is-loading"><Loading /></el-icon>
+      <div
+        v-if="loading"
+        class="loading-container"
+      >
+        <el-icon class="is-loading">
+          <Loading />
+        </el-icon>
         <span>加载日志中...</span>
       </div>
       
-      <div v-else-if="logs.length === 0" class="empty-container">
+      <div
+        v-else-if="logs.length === 0"
+        class="empty-container"
+      >
         <el-empty description="暂无日志数据" />
       </div>
       
-      <div v-else class="log-list">
+      <div
+        v-else
+        class="log-list"
+      >
         <div
           v-for="log in logs"
           :key="log.id"
@@ -89,7 +171,10 @@
         >
           <div class="log-header">
             <div class="log-meta">
-              <el-tag :type="getLogLevelType(log.level)" size="small">
+              <el-tag
+                :type="getLogLevelType(log.level)"
+                size="small"
+              >
                 {{ log.level }}
               </el-tag>
               <span class="log-module">{{ log.module }}</span>
@@ -107,10 +192,20 @@
             </div>
           </div>
           
-          <div class="log-message">{{ log.message }}</div>
+          <div class="log-message">
+            {{ log.message }}
+          </div>
           
-          <div v-if="expandedLogs.includes(log.id)" class="log-details">
-            <el-descriptions title="详细信息" :column="2" size="small" border>
+          <div
+            v-if="expandedLogs.includes(log.id)"
+            class="log-details"
+          >
+            <el-descriptions
+              title="详细信息"
+              :column="2"
+              size="small"
+              border
+            >
               <el-descriptions-item
                 v-for="(value, key) in log.details"
                 :key="key"

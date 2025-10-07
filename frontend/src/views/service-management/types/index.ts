@@ -39,7 +39,7 @@ export const SystemCategoryLabels: Record<SystemCategory, string> = {
 
 // 基础实体接口
 export interface BaseEntity {
-  id: string
+  id: number
   name: string
   description: string
   enabled: boolean
@@ -59,7 +59,7 @@ export interface System extends BaseEntity {
 
 // 模块接口
 export interface Module extends BaseEntity {
-  system_id: string
+  system_id: number
   icon: string
   path: string
   method: HttpMethod
@@ -83,8 +83,8 @@ export interface SystemFormData {
 }
 
 export interface ModuleFormData {
-  id: string | null
-  system_id: string | null
+  id: number | null
+  system_id: number | null
   name: string
   description: string
   icon: string
@@ -136,15 +136,26 @@ export interface FormRules {
   [key: string]: FormRule[]
 }
 
-// 树形表格节点接口
-export interface TreeTableNode {
-  id: string
+// 树形表格节点接口（判别联合）
+export interface BaseTreeTableNode {
   type: 'system' | 'module'
   hasChildren: boolean
   children?: TreeTableNode[]
-  parentId?: string
+  parentId?: number
   [key: string]: any
 }
+
+export interface TreeTableSystemNode extends BaseTreeTableNode {
+  id: number
+  type: 'system'
+}
+
+export interface TreeTableModuleNode extends BaseTreeTableNode {
+  id: string
+  type: 'module'
+}
+
+export type TreeTableNode = TreeTableSystemNode | TreeTableModuleNode
 
 // 图标映射接口
 export interface IconMap {
